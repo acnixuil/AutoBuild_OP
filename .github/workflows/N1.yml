@@ -126,7 +126,9 @@ jobs:
       run: |
         cd openwrt/bin/targets/*/*
         rm -rf packages
+        shopt -s extglob
         rm -rf !(openwrt-armvirt-64-default-rootfs.tar.gz)
+        shopt -u extglob
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "::set-output name=status::success"
 
