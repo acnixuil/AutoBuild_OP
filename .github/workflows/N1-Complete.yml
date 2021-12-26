@@ -168,7 +168,7 @@ jobs:
         tag: openwrt_s9xxx_${{ env.PACKAGED_OUTPUTDATE }}
         artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
         allowUpdates: true
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.G_TOKEN }}
         body: |
           首次使用建议全新刷入
           * 固件基础信息
