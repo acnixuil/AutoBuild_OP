@@ -135,10 +135,10 @@ jobs:
       if: steps.compile.outputs.status == 'success' && !cancelled()
       uses: unifreq/openwrt_packit@master
       with:
-        armvirt64_path: openwrt/bin/targets/*/*/*.tar.gz
-        amlogic_openwrt: s905d
-        amlogic_kernel: 5.10.87
-        auto_kernel: true
+        OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
+        PACKAGE_SOC: s905d
+        KERNEL_VERSION_NAME: 5.10.87
+        KERNEL_AUTO_LATEST: true
         WHOAMI: Eyn1x
 
     - name: Upload artifact to Actions
