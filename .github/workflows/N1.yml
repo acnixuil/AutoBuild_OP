@@ -109,7 +109,6 @@ jobs:
       run: df -hT
 
     - name: Package Armvirt as OpenWrt
-      if: steps.compile.outputs.status == 'success' && !cancelled()
       uses: unifreq/openwrt_packit@master
       env:
         OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
@@ -124,6 +123,7 @@ jobs:
         tag: openwrt_armvirt_v8_${{ env.PACKAGED_OUTPUTDATE }}
         artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
         allowUpdates: true
+        token: ${{ secrets.GITHUB_TOKEN }}
         body: |
           首次使用建议全新刷入
           * 固件基础信息
