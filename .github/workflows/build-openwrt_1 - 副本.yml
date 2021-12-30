@@ -140,6 +140,7 @@ jobs:
         token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         message: |
           编译时间：${{env.DATE}}
+          ${{env.FILE_NAME}} 镜像打包成功
 
     - name: Delete workflow runs
       uses: GitRML/delete-workflow-runs@main
