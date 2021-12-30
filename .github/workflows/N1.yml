@@ -129,12 +129,9 @@ jobs:
           Default IP: 192.168.2.88
           Default username: root
           Default password: password
-      run: |
-        echo "::set-output name=status::success"
 
     - name: Telegram notification
       uses: appleboy/telegram-action@master
-      if: steps.push.outputs.status == 'success' && !cancelled()
       with:
         to: ${{ secrets.TELEGRAM_CHAT_ID }}
         token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
