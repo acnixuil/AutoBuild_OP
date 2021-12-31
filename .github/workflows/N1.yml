@@ -138,7 +138,7 @@ jobs:
         to: ${{ secrets.TELEGRAM_TO }}
         token: ${{ secrets.TELEGRAM_TOKEN }}
         message: |
-          编译时间：${{env.DATE}}
+          编译时间：${{env.PACKAGED_OUTPUTDATE}}
 
     - name: Delete workflow runs
       uses: GitRML/delete-workflow-runs@main
