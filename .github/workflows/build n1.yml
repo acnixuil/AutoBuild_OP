@@ -27,6 +27,7 @@ env:
   DIY_P1_SH: diy-part1.sh
   DIY_P2_SH: n1.sh
   TZ: Asia/Shanghai
+  PRODUCT_NAME: ARMv8
 
 jobs:
   build:
@@ -56,6 +57,11 @@ jobs:
         df -hT $PWD
         git clone $REPO_URL -b $REPO_BRANCH openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+        cd openwrt
+        useVersionInfo=$(git show -s --date=short --format="Author: %an<br/>date: %cd<br/>commit: %s<br/>commit hash: %H")
+        echo "useVersionInfo=$useVersionInfo" >> $GITHUB_ENV
+        echo "DATE=$(date "+%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
+        echo "DATE1=$(date "+%Y-%m-%d")" >> $GITHUB_ENV
 
     - name: Load custom feeds
       run: |
@@ -125,12 +131,6 @@ jobs:
         artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
-        body: |
-          This is OpenWrt firmware for Armvirt 64
-          * Firmware information
-          Default IP: 192.168.2.88
-          Default username: root
-          Default password: password
 
     - name: Telegram notification
       uses: appleboy/telegram-action@master
@@ -139,6 +139,8 @@ jobs:
         token: ${{ secrets.TELEGRAM_TOKEN }}
         message: |
           编译时间：${{env.PACKAGED_OUTPUTDATE}}
+          lede 更新信息：${{env.useVersionInfo}}
+          ${{env.PRODUCT_NAME}} 打包完成
 
     - name: Delete workflow runs
       uses: GitRML/delete-workflow-runs@main
