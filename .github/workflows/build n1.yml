@@ -27,7 +27,7 @@ env:
   DIY_P1_SH: diy-part1.sh
   DIY_P2_SH: n1.sh
   TZ: Asia/Shanghai
-  PRODUCT_NAME: ARMv8
+  PRODUCT_NAME: N1
 
 jobs:
   build:
@@ -138,10 +138,10 @@ jobs:
         to: ${{ secrets.TELEGRAM_TO }}
         token: ${{ secrets.TELEGRAM_TOKEN }}
         message: |
+          打包${{ env.PACKAGED_STATUS }}~
+          型号：${{env.FILE_DATE}} 
           编译时间：${{env.PACKAGED_OUTPUTDATE}}
-          lede 更新信息：${{env.useVersionInfo}}
-          ${{env.PRODUCT_NAME}} 打包完成
-
+          
     - name: Delete workflow runs
       uses: GitRML/delete-workflow-runs@main
       with:
