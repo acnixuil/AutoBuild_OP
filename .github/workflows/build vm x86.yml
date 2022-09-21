@@ -32,7 +32,7 @@ env:
   UPLOAD_WETRANSFER: false
   UPLOAD_RELEASE: false
   TZ: Asia/Shanghai
-  PRODUCT_NAME: x86
+  PRODUCT_NAME: X86
   
 
 jobs:
@@ -147,7 +147,8 @@ jobs:
         [ $UPLOAD_COWTRANSFER = true ] && echo "🔗 [Cowtransfer](${{ steps.cowtransfer.outputs.url }})" >> release.txt
         [ $UPLOAD_WETRANSFER = true ] && echo "🔗 [WeTransfer](${{ steps.wetransfer.outputs.url }})" >> release.txt
         echo "::set-output name=status::success"
-        echo "FILE_DATE=$(date +"%Y-%m-%d %H:%i:%S")" >> $GITHUB_ENV
+        echo "OUTPUT_DATE1=$(date +"%Y-%m-%d %H:%M.%S")" >> $GITHUB_ENV
+        echo "OUTPUT_STATUS1=success" >> $GITHUB_ENV
 
     - name: Upload firmware to release
       uses: softprops/action-gh-release@v1
@@ -165,9 +166,9 @@ jobs:
         to: ${{ secrets.TELEGRAM_TO }}
         token: ${{ secrets.TELEGRAM_TOKEN }}
         message: |
-          打包${{ env.PACKAGED_STATUS }}~
-          型号：${{env.PRODUCT_NAME}} 
-          编译时间：${{env.FILE_DATE}}
+          打包${{ env.OUTPUT_STATUS1 }}~
+          型号：${{ env.PRODUCT_NAME }} 
+          编译时间：${{ env.OUTPUT_DATE1 }}
 
     - name: Delete workflow runs
       uses: GitRML/delete-workflow-runs@main
