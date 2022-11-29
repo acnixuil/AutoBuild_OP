@@ -60,7 +60,7 @@ jobs:
         cd openwrt
         useVersionInfo=$(git show -s --date=short --format="Author: %an<br/>date: %cd<br/>commit: %s<br/>commit hash: %H")
         echo "useVersionInfo=$useVersionInfo" >> $GITHUB_ENV
-        echo "DATE=$(date +"%Y-%m-%d %H:%M.%S")" >> $GITHUB_ENV
+        echo "DATE=$(date "+%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
         echo "DATE1=$(date "+%Y-%m-%d")" >> $GITHUB_ENV
 
     - name: Load custom feeds
@@ -109,7 +109,7 @@ jobs:
         echo "::set-output name=status::success"
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
-        echo "FILE_DATE=$(date +"%Y-%m-%d %H:%i:%S")" >> $GITHUB_ENV
+        echo "FILE_DATE=$(date "+%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
 
     - name: Check space usage
       if: (!cancelled())
@@ -120,9 +120,9 @@ jobs:
       env:
         OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
         PACKAGE_SOC: s905d
-        KERNEL_VERSION_NAME: 6.0
+        KERNEL_VERSION_NAME: 6.0.10
         KERNEL_AUTO_LATEST: true
-        WHOAMI: Eyn1x
+        WHOAMI: EYN1X
  
     - name: Upload OpenWrt Firmware to Release
       uses: ncipollo/release-action@v1
