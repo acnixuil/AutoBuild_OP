@@ -133,7 +133,6 @@ jobs:
           编译时间：${{env.FILE_DATE}}
           
     - name: Delete workflow runs
-      using: 'node16'
       uses: GitRML/delete-workflow-runs@main
       with:
         retain_days: 1
