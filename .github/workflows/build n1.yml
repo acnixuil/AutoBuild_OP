@@ -18,7 +18,7 @@ on:
         description: 'SSH connection to Actions'
         required: false
         default: 'false'
-        
+
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
@@ -57,11 +57,6 @@ jobs:
         df -hT $PWD
         git clone $REPO_URL -b $REPO_BRANCH openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
-        cd openwrt
-        useVersionInfo=$(git show -s --date=short --format="Author: %an<br/>date: %cd<br/>commit: %s<br/>commit hash: %H")
-        echo "useVersionInfo=$useVersionInfo" >> $GITHUB_ENV
-        echo "DATE=$(date "+%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
-        echo "DATE1=$(date "+%Y-%m-%d")" >> $GITHUB_ENV
 
     - name: Load custom feeds
       run: |
@@ -84,13 +79,6 @@ jobs:
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
 
-    - name: SSH connection to Actions
-      uses: P3TERX/ssh2actions@v1.0.0
-      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
-      env:
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-
     - name: Download package
       id: package
       run: |
@@ -106,10 +94,10 @@ jobs:
         cd openwrt
         echo -e "$(nproc) thread compile"
         make -j$(nproc) || make -j1 || make -j1 V=s
-        echo "::set-output name=status::success"
+        echo "complile_status=success" >> $GITHUB_OUTPUT
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
-        echo "FILE_DATE=$(date "+%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
+        
 
     - name: Check space usage
       if: (!cancelled())
@@ -123,6 +111,8 @@ jobs:
         KERNEL_VERSION_NAME: 6.0.10
         KERNEL_AUTO_LATEST: true
         WHOAMI: EYN1X
+      run: |
+        echo "FILE_DATE=$(date "+%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
  
     - name: Upload OpenWrt Firmware to Release
       uses: ncipollo/release-action@v1
@@ -138,11 +128,12 @@ jobs:
         to: ${{ secrets.TELEGRAM_TO }}
         token: ${{ secrets.TELEGRAM_TOKEN }}
         message: |
-          打包${{ env.PACKAGED_STATUS }}~
+          打包 ${{ env.complile_status }}~
           型号：${{env.PRODUCT_NAME}} 
           编译时间：${{env.FILE_DATE}}
           
     - name: Delete workflow runs
+      using: 'node16'
       uses: GitRML/delete-workflow-runs@main
       with:
         retain_days: 1
