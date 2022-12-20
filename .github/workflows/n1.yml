@@ -155,8 +155,8 @@ jobs:
         release_tag="N1-OpenWrt-$time"
         release_name="N1-OpenWrt-$Rtime"
         echo "默认网关：192.168.2.254
-        默认密码：无 
-        插件：SSR+ UPNP">> release.txt
+        默认密码：password 
+        插件：SSR+ UPNP Zerotier">> release.txt
         echo "release_name=$release_name" >> $GITHUB_OUTPUT
         echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
         echo "status=success" >> $GITHUB_OUTPUT
