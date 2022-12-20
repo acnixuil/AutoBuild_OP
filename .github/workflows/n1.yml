@@ -147,7 +147,7 @@ jobs:
       if: steps.organize.outputs.status == 'success' && !cancelled()
       with:
         name: ${{env.PRODUCT_NAME}}-OpenWrt
-        path: ${{ env.FIRMWARE }}
+        path: ${{ env.PACKAGED_OUTPUTPATH }}
 
     - name: 生成标签
       id: tag
@@ -172,7 +172,7 @@ jobs:
         name: ${{ steps.tag.outputs.release_name }} 
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt
-        files: ${{ env.FIRMWARE }}/*
+        files: ${{ env.PACKAGED_OUTPUTPATH }}/*
 
     - name: Telegram 通知
       if: env.TELEGRAM_TOKEN && ! contains(github.event.action, 'notg')
@@ -180,3 +180,10 @@ jobs:
       run: |
         curl -k --data chat_id="${{ env.TELEGRAM_CHAT_ID }}" --data "text=🎉 OpenWrt ${{ env.VERSION }} ${{matrix.target}} ${{env.PRODUCT_NAME}}-OpenWrt 固件编译成功 😋" "https://api.telegram.org/bot${{ env.TELEGRAM_TOKEN }}/sendMessage"
 
+    - name: Remove old Releases
+      uses: dev-drprasad/delete-older-releases@v0.1.0
+      with:
+        keep_latest: 1
+        delete_tags: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
