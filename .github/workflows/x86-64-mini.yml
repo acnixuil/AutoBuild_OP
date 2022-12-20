@@ -184,5 +184,6 @@ jobs:
       with:
         keep_latest: 1
         delete_tags: true
+        delete_tag_pattern: x86-*
       env:
         GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
