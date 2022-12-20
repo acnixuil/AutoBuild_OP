@@ -4,3 +4,5 @@ echo "iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE" >> package/network/c
 # Modify default IP
 sed -i 's/192.168.1.1/192.168.2.254/g' package/base-files/files/bin/config_generate
 sed -i "/CYXluq4wUazHjmCDBCqXF/d" package/base-files/files/etc/shadow
+sed -i "/CYXluq4wUazHjmCDBCqXF/d" package/lean/default-settings/files/zzz-default-settings
+sed -i "/CYXluq4wUazHjmCDBCqXF/d" /etc/shadow
