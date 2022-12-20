@@ -143,7 +143,7 @@ jobs:
       if: steps.organize.outputs.status == 'success' && !cancelled()
       with:
         name: ${{env.PRODUCT_NAME}}-OpenWrt
-        path: ${{ env.FIRMWARE }}
+        path: ${{ env.FIRMWARE }}/*
 
     - name: 生成标签
       id: tag
@@ -185,7 +185,7 @@ jobs:
     - name: Remove old Releases
       uses: dev-drprasad/delete-older-releases@v0.2.1
       with:
-        keep_latest: 1
+        keep_latest: 2
         delete_tags: true
         delete_tag_pattern: N1-*
       env:
