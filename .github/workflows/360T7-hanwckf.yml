@@ -8,7 +8,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: x86-64-mini
+name: 360T7-hanwckf
 
 on:
   repository_dispatch:
@@ -24,8 +24,8 @@ on:
   #- cron: 0 17 * * 1
 
 env:
-  REPO_URL: https://github.com/coolsnowwolf/lede
-  REPO_BRANCH: master
+  REPO_URL: https://github.com/hanwckf/immortalwrt-mt798x
+  REPO_BRANCH: openwrt-21.02
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: ./config/x86-64-mini.config
   DIY_P1_SH: ./custom/diy-part1.sh
@@ -36,7 +36,7 @@ env:
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
   TZ: Asia/Shanghai
-  PRODUCT_NAME: x86-64-mini
+  PRODUCT_NAME: 360T7-hanwckf
   
 jobs:
   build:
@@ -126,7 +126,7 @@ jobs:
         rm -rf *kernel*
         rm -rf *.manifest
         rm -rf sha256sums
-        rm -rf package
+        rm -rf packages
         rm -rf *rootfs*
         rm -rf profiles.json
         rm -rf *.buildinfo
@@ -147,11 +147,11 @@ jobs:
       run: |
         time=$(date +%Y.%m.%d)
         Rtime=$(date +%Y.%m.%d-%H:%M)
-        release_tag="x86-64-OpenWrt-$time"
-        release_name="x86-64-OpenWrt-$Rtime"
-        echo "默认网关：192.168.2.254
+        release_tag="360T7-hanwckf-OpenWrt-$time"
+        release_name="360T7-hanwckf-OpenWrt-$Rtime"
+        echo "默认网关：192.168.2.1
         默认密码：无 
-        插件：SSR+ UPNP SQM Zerotier">> release.txt
+        插件：SSR+ UPNP Zerotier">> release.txt
         echo "release_name=$release_name" >> $GITHUB_OUTPUT
         echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
         echo "status=success" >> $GITHUB_OUTPUT
@@ -183,6 +183,6 @@ jobs:
       with:
         keep_latest: 2
         delete_tags: true
-        delete_tag_pattern: x86-*
+        delete_tag_pattern: 360T7-hanwckf-*
       env:
         GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
