@@ -29,7 +29,7 @@ env:
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: ./config/x86-64-mini-ipv6.config
   DIY_P1_SH: ./custom/diy-part1.sh
-  DIY_P2_SH: ./custom/diy-part2-ipv6.sh
+  DIY_P2_SH: ./custom/diy-part2.sh
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
