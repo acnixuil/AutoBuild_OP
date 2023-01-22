@@ -183,6 +183,6 @@ jobs:
       with:
         keep_latest: 1
         delete_tags: true
-        delete_tag_pattern: x86-*
+        delete_tag_pattern: x86-64-OpenWrt-*
       env:
         GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
