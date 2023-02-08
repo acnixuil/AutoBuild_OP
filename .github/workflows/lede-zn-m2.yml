@@ -8,7 +8,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: zn-m2-passwall-ipv6
+name: Lede-zn-m2
 
 on:
   repository_dispatch:
