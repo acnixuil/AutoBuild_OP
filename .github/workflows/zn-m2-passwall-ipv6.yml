@@ -24,7 +24,7 @@ on:
   #- cron: 0 17 * * 1
 
 env:
-  REPO_URL: https://github.com/sdf8057/ipq6000
+  REPO_URL: https://github.com/acnixuil/ipq6000
   REPO_BRANCH: main
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: ./config/m2-passwall.config
