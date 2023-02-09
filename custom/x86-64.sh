@@ -15,4 +15,4 @@ sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generat
 # 取消登录密码
 sed -i "/CYXluq4wUazHjmCDBCqXF/d" package/lean/default-settings/files/zzz-default-settings
 # 修改默认主题
-sed -i 's/luci-theme-argon/luci-theme-bootstrap/' feeds/luci/collections/luci/Makefile
+#sed -i 's/luci-theme-argon/luci-theme-bootstrap/' feeds/luci/collections/luci/Makefile

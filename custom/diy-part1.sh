@@ -21,8 +21,8 @@ sed -i '$a src-git helloworld https://github.com/fw876/helloworld' feeds.conf.de
 #sed -i '$a src-git lienol https://github.com/Lienol/openwrt-package' feeds.conf.default
 #sed -i '$a src-git jerryk https://github.com/jerrykuku/openwrt-package.git' feeds.conf.default
 
-# 添加dnsfilter
-git clone https://github.com/acnixuil/luci-app-dnsfilter.git package/luci-app-dnsfilter
+# 添加adguardhome
+git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/luci-app-adguardhome
 
 # 更换argon为最新版本
 git clone https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
