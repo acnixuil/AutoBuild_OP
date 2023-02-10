@@ -28,8 +28,8 @@ env:
   REPO_BRANCH: master
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: ./n1/n1.config
-  DIY_P1_SH: /n1/n1-part1-p.sh
-  DIY_P2_SH: /n1/n1-part2.sh
+  DIY_P1_SH: ./n1/n1-part1-p.sh
+  DIY_P2_SH: ./n1/n1-part2.sh
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
