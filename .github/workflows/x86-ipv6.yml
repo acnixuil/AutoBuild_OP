@@ -8,7 +8,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: x86-64-mini
+name: x86-ipv6
 
 on:
   repository_dispatch:
@@ -27,16 +27,16 @@ env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: ./config/x86-64-mini.config
-  DIY_P1_SH: ./custom/diy-part1.sh
-  DIY_P2_SH: ./custom/x86-64.sh
+  CONFIG_FILE: ./x86/x86-ipv6.config
+  DIY_P1_SH: ./x86/x86-part1.sh
+  DIY_P2_SH: ./x86/x86-part2.sh
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
   TZ: Asia/Shanghai
-  PRODUCT_NAME: x86-64-mini
+  PRODUCT_NAME: x86-ipv6
   
 jobs:
   build:
@@ -147,11 +147,11 @@ jobs:
       run: |
         time=$(date +%Y.%m.%d)
         Rtime=$(date +%Y.%m.%d-%H:%M)
-        release_tag="x86-64-OpenWrt-$time"
-        release_name="x86-64-OpenWrt-$Rtime"
+        release_tag="x86-ipv6-OpenWrt-$time"
+        release_name="x86-ipv6-OpenWrt-$Rtime"
         echo "默认网关：192.168.2.1
         默认密码：无 
-        插件：SSR+ UPNP SQM Zerotier">> release.txt
+        插件：ssrp adh zerotier upnp">> release.txt
         echo "release_name=$release_name" >> $GITHUB_OUTPUT
         echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
         echo "status=success" >> $GITHUB_OUTPUT
@@ -183,6 +183,6 @@ jobs:
       with:
         keep_latest: 1
         delete_tags: true
-        delete_tag_pattern: x86-64-OpenWrt-*
+        delete_tag_pattern: x86-ipv6
       env:
         GITHUB_TOKEN: ${{ secrets.G_TOKEN }}

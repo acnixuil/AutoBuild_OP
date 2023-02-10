@@ -8,7 +8,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: x86-64-mini-ipv6
+name: zn-m2-ipv6
 
 on:
   repository_dispatch:
@@ -24,19 +24,19 @@ on:
   #- cron: 0 17 * * 1
 
 env:
-  REPO_URL: https://github.com/coolsnowwolf/lede
-  REPO_BRANCH: master
+  REPO_URL: https://github.com/acnixuil/ipq6000
+  REPO_BRANCH: main
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: ./config/x86-64-mini-ipv6.config
-  DIY_P1_SH: ./custom/diy-part1.sh
-  DIY_P2_SH: ./custom/x86-64.sh
+  CONFIG_FILE: ./zn-m2/zn-m2.config
+  DIY_P1_SH: ./zn-m2/zn-m2-part1.sh
+  DIY_P2_SH: ./zn-m2/zn-m2-part2.sh
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
   TZ: Asia/Shanghai
-  PRODUCT_NAME: x86-64-mini-ipv6
+  PRODUCT_NAME: zn-m2-ipv6
   
 jobs:
   build:
@@ -52,6 +52,7 @@ jobs:
       run: |
         sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
         sudo bash -c 'bash <(curl -s https://build-scripts.immortalwrt.eu.org/init_build_environment.sh)'
+        sudo apt install libfuse-dev
         sudo timedatectl set-timezone "$TZ"
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
@@ -147,11 +148,11 @@ jobs:
       run: |
         time=$(date +%Y.%m.%d)
         Rtime=$(date +%Y.%m.%d-%H:%M)
-        release_tag="x86-64-ipv6-OpenWrt-$time"
-        release_name="x86-64-ipv6-OpenWrt-$Rtime"
+        release_tag="zn-m2-ipv6-OpenWrt-$time"
+        release_name="zn-m2-ipv6-OpenWrt-$Rtime"
         echo "默认网关：192.168.2.1
-        默认密码：无 
-        插件：SSR+ UPNP SQM Zerotier">> release.txt
+        默认密码： 
+        插件：pw upnp zerotier sqm(暂不可用) adh alist">> release.txt
         echo "release_name=$release_name" >> $GITHUB_OUTPUT
         echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
         echo "status=success" >> $GITHUB_OUTPUT
@@ -183,6 +184,6 @@ jobs:
       with:
         keep_latest: 1
         delete_tags: true
-        delete_tag_pattern: x86-64-ipv6-*
+        delete_tag_pattern: zn-m2*
       env:
         GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
