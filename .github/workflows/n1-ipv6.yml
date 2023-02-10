@@ -8,7 +8,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: N1_ipv6
+name: N1-ipv6
 
 on:
   repository_dispatch:
@@ -36,7 +36,7 @@ env:
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
   TZ: Asia/Shanghai
-  PRODUCT_NAME: N1
+  PRODUCT_NAME: N1-ipv6
   
 jobs:
   build:
