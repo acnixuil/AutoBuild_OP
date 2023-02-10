@@ -1,12 +1,8 @@
-# cpufreq
-#sed -i 's/LUCI_DEPENDS.*/LUCI_DEPENDS:=\@\(arm\|\|aarch64\)/g' package/lean/luci-app-cpufreq/Makefile
-#sed -i 's/services/system/g' package/lean/luci-app-cpufreq/luasrc/controller/cpufreq.lua
+# sed -i '$a src-git helloworld https://github.com/fw876/helloworld' feeds.conf.default
 
-# Add a feed source
-sed -i '$a src-git helloworld https://github.com/fw876/helloworld' feeds.conf.default
-
-#sed -i '$a src-git passwall_packages https://github.com/xiaorouji/openwrt-passwall.git;packages' feeds.conf.default
-#sed -i '$a src-git passwall_luci https://github.com/xiaorouji/openwrt-passwall.git;luci' feeds.conf.default
+# passwall
+sed -i '$a src-git passwall_packages https://github.com/xiaorouji/openwrt-passwall.git;packages' feeds.conf.default
+sed -i '$a src-git passwall_luci https://github.com/xiaorouji/openwrt-passwall.git;luci' feeds.conf.default
 
 # 添加adguardhome
 git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/luci-app-adguardhome
