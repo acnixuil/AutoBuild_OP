@@ -13,6 +13,6 @@ git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/luci
 #git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
 
 # 添加alist
-#git clone https://github.com/sbwml/luci-app-alist package/alist
+git clone https://github.com/sbwml/luci-app-alist package/alist
 
 
