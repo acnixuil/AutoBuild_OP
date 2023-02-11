@@ -8,7 +8,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: x86-ipv6
+name: Build x86-ipv6
 
 on:
   repository_dispatch:
