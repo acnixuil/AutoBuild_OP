@@ -8,7 +8,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: zn-m2-ipv6
+name: zn-m2
 
 on:
   repository_dispatch:
@@ -36,8 +36,7 @@ env:
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
   TZ: Asia/Shanghai
-  PRODUCT_NAME: zn-m2-ipv6
-  
+  PRODUCT_NAME: zn-m2
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -148,8 +147,8 @@ jobs:
       run: |
         time=$(date +%Y.%m.%d)
         Rtime=$(date +%Y.%m.%d-%H:%M)
-        release_tag="zn-m2-ipv6-OpenWrt-$time"
-        release_name="zn-m2-ipv6-OpenWrt-$Rtime"
+        release_tag="zn-m2-OpenWrt-$time"
+        release_name="zn-m2-OpenWrt-$Rtime"
         echo "默认网关：192.168.2.1
         默认密码： 
         插件：pw upnp zerotier sqm(暂不可用) adh alist">> release.txt
