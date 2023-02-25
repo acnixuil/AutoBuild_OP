@@ -8,7 +8,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: Build zn-m2-ipv6
+name: Build 360T7 18.06_k5.4
 
 on:
   repository_dispatch:
@@ -24,19 +24,20 @@ on:
   #- cron: 0 17 * * 1
 
 env:
-  REPO_URL: https://github.com/sdf8057/ipq6000
-  REPO_BRANCH: main
+  REPO_URL: https://github.com/padavanonly/immortalwrtARM
+  REPO_BRANCH: mt7981
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: ./zn-m2/s_zn-m2.config
-  DIY_P1_SH: ./zn-m2/zn-m2-part1.sh
-  DIY_P2_SH: ./zn-m2/zn-m2-part2.sh
+  CONFIG_FILE: ./config/t7_18.06.config
+  DIY_P1_SH: ./custom/diy-part1.sh
+  DIY_P2_SH: ./custom/diy-part2.sh
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
   TZ: Asia/Shanghai
-  PRODUCT_NAME: zn-m2-ipv6
+  PRODUCT_NAME: 360T7 18.06_k5.4
+  
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -51,7 +52,6 @@ jobs:
       run: |
         sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
         sudo bash -c 'bash <(curl -s https://build-scripts.immortalwrt.eu.org/init_build_environment.sh)'
-        sudo apt install libfuse-dev
         sudo timedatectl set-timezone "$TZ"
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
@@ -126,7 +126,7 @@ jobs:
         rm -rf *kernel*
         rm -rf *.manifest
         rm -rf sha256sums
-        rm -rf package
+        rm -rf packages
         rm -rf *rootfs*
         rm -rf profiles.json
         rm -rf *.buildinfo
@@ -147,11 +147,10 @@ jobs:
       run: |
         time=$(date +%Y.%m.%d)
         Rtime=$(date +%Y.%m.%d-%H:%M)
-        release_tag="zn-m2-ipv6-OpenWrt-$time"
-        release_name="zn-m2-ipv6-OpenWrt-$Rtime"
-        echo "默认网关：192.168.2.1
-        默认密码：password
-        插件：s/(pw+adh) upnp zerotier">> release.txt
+        release_tag="360T7-ap-OpenWrt-$time"
+        release_name="360T7-ap-OpenWrt-$Rtime"
+        echo "默认网关：192.168.2.3
+        默认密码：password ">> release.txt
         echo "release_name=$release_name" >> $GITHUB_OUTPUT
         echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
         echo "status=success" >> $GITHUB_OUTPUT
@@ -183,5 +182,6 @@ jobs:
       with:
         keep_latest: 1
         delete_tags: true
+        delete_tag_pattern: 360T7-hanwckf-*
       env:
         GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
