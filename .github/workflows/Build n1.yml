@@ -28,8 +28,8 @@ env:
   REPO_BRANCH: master
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: ./n1/n1.config
-  DIY_P1_SH: ./n1/n1-part1-p.sh
-  DIY_P2_SH: ./n1/n1-part2.sh
+  DIY_P1_SH: ./n1/n1_part1_o.sh
+  DIY_P2_SH: ./n1/n1_part2.sh
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
@@ -155,7 +155,7 @@ jobs:
         release_name="N1-OpenWrt-$Rtime"
         echo "默认网关：192.168.2.254
         默认密码：password 
-        插件：pw adh alist zerotier">> release.txt
+        插件：openclash adh zerotier">> release.txt
         echo "release_name=$release_name" >> $GITHUB_OUTPUT
         echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
         echo "status=success" >> $GITHUB_OUTPUT
