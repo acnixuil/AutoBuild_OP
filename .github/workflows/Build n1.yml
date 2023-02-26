@@ -155,7 +155,7 @@ jobs:
         release_name="N1-OpenWrt-$Rtime"
         echo "默认网关：192.168.2.254
         默认密码：password 
-        插件：openclash adh zerotier">> release.txt
+        插件：p adh zerotier">> release.txt
         echo "release_name=$release_name" >> $GITHUB_OUTPUT
         echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
         echo "status=success" >> $GITHUB_OUTPUT
