@@ -27,7 +27,7 @@ env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: ./n1/n1.config
+  CONFIG_FILE: ./n1/n1_ipv6.config
   DIY_P1_SH: ./n1/n1_part1.sh
   DIY_P2_SH: ./n1/n1_part2.sh
   UPLOAD_BIN_DIR: false
@@ -84,7 +84,7 @@ jobs:
 
     - name: 加载自定义配置
       run: |
-        [ -e files ] && mv n1/files openwrt/files
+        [ -e files ] && mv n1/ipv6_files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
