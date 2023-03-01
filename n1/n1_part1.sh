@@ -10,7 +10,7 @@ sed -i '$a src-git passwall_packages https://github.com/xiaorouji/openwrt-passwa
 sed -i '$a src-git passwall_luci https://github.com/xiaorouji/openwrt-passwall.git;luci' feeds.conf.default
 
 # 添加adguardhome
-git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/luci-app-adguardhome
+git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
 
 # 更换argon为最新版本
 git clone https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
