@@ -8,7 +8,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: Build n1
+name: Build s_n1_ipv6
 
 on:
   repository_dispatch:
@@ -27,7 +27,7 @@ env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: ./n1/n1.config
+  CONFIG_FILE: ./n1/n1_ipv6.config
   DIY_P1_SH: ./n1/n1_part1.sh
   DIY_P2_SH: ./n1/n1_part2.sh
   UPLOAD_BIN_DIR: false
@@ -36,7 +36,7 @@ env:
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
   TZ: Asia/Shanghai
-  PRODUCT_NAME: N1
+  PRODUCT_NAME: N1-ipv6
   
 jobs:
   build:
@@ -84,7 +84,7 @@ jobs:
 
     - name: 加载自定义配置
       run: |
-        [ -e files ] && mv n1/files openwrt/files
+        [ -e files ] && mv n1/ipv6_files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
@@ -119,11 +119,11 @@ jobs:
       run: df -hT
 
     - name: 打包N1固件
-      uses: unifreq/openwrt_packit@master
+      uses: acnixuil/openwrt_packit@master
       env:
         OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
         PACKAGE_SOC: s905d
-        KERNEL_VERSION_NAME: 5.4.230
+        KERNEL_VERSION_NAME: 5.15.86_6.1.2
         KERNEL_AUTO_LATEST: true
         WHOAMI: EYN1X
 
@@ -151,11 +151,11 @@ jobs:
       run: |
         time=$(date +%Y.%m.%d)
         Rtime=$(date +%Y.%m.%d-%H:%M)
-        release_tag="N1-OpenWrt-$time"
-        release_name="N1-OpenWrt-$Rtime"
+        release_tag="N1_ipv6-OpenWrt[s]-$time"
+        release_name="N1_ipv6-OpenWrt[s]-$Rtime"
         echo "默认网关：192.168.2.254
         默认密码：password 
-        插件：p adh zerotier">> release.txt
+        插件：ssrp zerotier">> release.txt
         echo "release_name=$release_name" >> $GITHUB_OUTPUT
         echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
         echo "status=success" >> $GITHUB_OUTPUT
@@ -179,14 +179,14 @@ jobs:
     - name: Remove old Workflow
       uses: GitRML/delete-workflow-runs@main
       with:
-        retain_days: 7
-        keep_minimum_runs: 20
+        retain_days: 1
+        keep_minimum_runs: 3
 
     - name: Remove old Releases
       uses: dev-drprasad/delete-older-releases@v0.2.1
       with:
-        keep_latest: 20
+        keep_latest: 2
         delete_tags: true
-        delete_tag_pattern: 
+        delete_tag_pattern: N1_ipv6-*
       env:
         GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
