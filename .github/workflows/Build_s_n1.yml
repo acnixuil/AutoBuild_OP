@@ -151,8 +151,8 @@ jobs:
       run: |
         time=$(date +%Y.%m.%d)
         Rtime=$(date +%Y.%m.%d-%H:%M)
-        release_tag="N1-OpenWrt[s]-$time"
-        release_name="N1-OpenWrt[s]-$Rtime"
+        release_tag="N1-OpenWrt-s-$time"
+        release_name="N1-OpenWrt-s-$Rtime"
         echo "默认网关：192.168.2.254
         默认密码：password 
         插件：s adh zerotier">> release.txt
