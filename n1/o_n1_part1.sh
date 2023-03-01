@@ -9,7 +9,7 @@
 svn co https://github.com/vernesong/OpenClash/trunk/luci-app-openclash package/luci-app-openclash
 
 # 添加adguardhome
-git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/luci-app-adguardhome
+git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
 
 # 更换argon为最新版本
 git clone https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
