@@ -135,7 +135,6 @@ jobs:
       run: |
         cd /opt/openwrt_packit/output
         rm -rf sha256sums
-        rm -rf *rootfs*
         sleep 2
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
