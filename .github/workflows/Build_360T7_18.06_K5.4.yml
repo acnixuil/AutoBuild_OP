@@ -27,7 +27,7 @@ env:
   REPO_URL: https://github.com/padavanonly/immortalwrtARM
   REPO_BRANCH: mt7981
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: ./config/t7_18.06.config
+  CONFIG_FILE: ./config/ap_t7.config
   DIY_P1_SH: ./custom/diy-part1.sh
   DIY_P2_SH: ./custom/diy-part2.sh
   UPLOAD_BIN_DIR: false

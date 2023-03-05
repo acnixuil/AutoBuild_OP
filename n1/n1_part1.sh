@@ -18,3 +18,8 @@ git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon package/luci-th
 
 # 添加晶晨宝盒
 svn co https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic package/luci-app-amlogic
+
+# 更换design为最新版本
+rm -rf feeds/luci/themes/luci-theme-design
+git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
+git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
