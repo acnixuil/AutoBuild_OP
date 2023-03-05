@@ -175,14 +175,15 @@ jobs:
     - name: Remove old Workflow
       uses: GitRML/delete-workflow-runs@main
       with:
-        retain_days: 1
-        keep_minimum_runs: 3
+        retain_days: 7
+        keep_minimum_runs: 20
 
     - name: Remove old Releases
       uses: dev-drprasad/delete-older-releases@v0.2.1
       with:
-        keep_latest: 1
+      with:
+        keep_latest: 20
         delete_tags: true
-        delete_tag_pattern: x86-ipv6
+        delete_tag_pattern: 
       env:
         GITHUB_TOKEN: ${{ secrets.G_TOKEN }}

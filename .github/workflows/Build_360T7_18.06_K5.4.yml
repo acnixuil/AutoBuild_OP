@@ -149,7 +149,7 @@ jobs:
         Rtime=$(date +%Y.%m.%d-%H:%M)
         release_tag="360T7-ap-OpenWrt-$time"
         release_name="360T7-ap-OpenWrt-$Rtime"
-        echo "默认网关：192.168.2.3
+        echo "默认网关：192.168.2.2
         默认密码：password ">> release.txt
         echo "release_name=$release_name" >> $GITHUB_OUTPUT
         echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
@@ -174,14 +174,14 @@ jobs:
     - name: Remove old Workflow
       uses: GitRML/delete-workflow-runs@main
       with:
-        retain_days: 1
-        keep_minimum_runs: 3
+        retain_days: 7
+        keep_minimum_runs: 20
 
     - name: Remove old Releases
       uses: dev-drprasad/delete-older-releases@v0.2.1
       with:
-        keep_latest: 1
+        keep_latest: 20
         delete_tags: true
-        delete_tag_pattern: 360T7-hanwckf-*
+        delete_tag_pattern: 
       env:
         GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
