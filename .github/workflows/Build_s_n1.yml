@@ -125,6 +125,8 @@ jobs:
         PACKAGE_SOC: s905d
         KERNEL_VERSION_NAME: 5.4.230
         KERNEL_AUTO_LATEST: true
+        ENABLE_WIFI_K504: 0
+        ENABLE_WIFI_K510: 0
         WHOAMI: EYN1X
 
     - name: 组织文件
