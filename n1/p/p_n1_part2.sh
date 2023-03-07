@@ -19,17 +19,17 @@ sed -i 's/192.168.1.1/192.168.2.254/g' package/base-files/files/bin/config_gener
 
 # 添加adguardhome
 #git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/luci-app-adguardhome
-#git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
+git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
 
 # 更换design为最新版本
-#rm -rf feeds/luci/themes/luci-theme-design
-#git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
-#git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
+rm -rf feeds/luci/themes/luci-theme-design
+git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
+git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
 
 # 更换argon为最新版本
-#git clone https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
-#rm -rf feeds/luci/themes/luci-theme-argon
-#git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
+git clone https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
+rm -rf feeds/luci/themes/luci-theme-argon
+git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
 
 # 添加晶晨宝盒
-#svn co https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic package/luci-app-amlogic
+svn co https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic package/luci-app-amlogic
