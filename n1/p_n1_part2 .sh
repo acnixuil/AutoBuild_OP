@@ -3,8 +3,12 @@
 # 以下部分为更新并安装feeds后后后运行
 #============================================================
 
+# firewall custom
+#echo "iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE" >> package/network/config/firewall/files/firewall.user
+echo "iptables -t nat -I POSTROUTING -j FULLCONENAT" >> package/network/config/firewall/files/firewall.user
+
 # Modify default IP
-sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
+sed -i 's/192.168.1.1/192.168.2.254/g' package/base-files/files/bin/config_generate
 
 # 配置alist3编译环境
 #rm -rf feeds/packages/lang/golang
@@ -23,11 +27,14 @@ git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-desi
 git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
 
 # 更换argon为最新版本
-#git clone https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
-#rm -rf feeds/luci/themes/luci-theme-argon
-#git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
+git clone https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
+rm -rf feeds/luci/themes/luci-theme-argon
+git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
 
-# passwall
-#rm -rf feeds/luci/applications/luci-app-passwall
-#git clone https://github.com/xiaorouji/openwrt-passwall.git -b packages ./package/passwall_package
-#git clone https://github.com/xiaorouji/openwrt-passwall.git -b luci ./package/passwall
+# 添加晶晨宝盒
+svn co https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic package/luci-app-amlogic
+
+# 替换mosdns为最新版本
+rm -rf feeds/packages/net/v2ray-geodata
+git clone https://github.com/sbwml/luci-app-mosdns package/mosdns
+git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata

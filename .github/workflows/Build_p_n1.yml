@@ -29,7 +29,7 @@ env:
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: ./n1/p_n1.config
   DIY_P1_SH: ./n1/n1_part1.sh
-  DIY_P2_SH: ./n1/n1_part2.sh
+  DIY_P2_SH: ./n1/p_n1_part2.sh
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
