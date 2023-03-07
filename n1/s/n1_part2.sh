@@ -33,8 +33,3 @@ git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon package/luci-th
 
 # 添加晶晨宝盒
 svn co https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic package/luci-app-amlogic
-
-# 替换mosdns为最新版本
-rm -rf feeds/packages/net/v2ray-geodata
-git clone https://github.com/sbwml/luci-app-mosdns package/mosdns
-git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
