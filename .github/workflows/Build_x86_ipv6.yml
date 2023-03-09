@@ -181,9 +181,7 @@ jobs:
     - name: Remove old Releases
       uses: dev-drprasad/delete-older-releases@v0.2.1
       with:
-      with:
         keep_latest: 20
         delete_tags: true
-        delete_tag_pattern: 
       env:
         GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
