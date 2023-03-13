@@ -128,7 +128,8 @@ jobs:
         rm -rf package
         rm -rf *rootfs*
         rm -rf profiles.json
-        rm -rf *.buildinfo
+        rm -rf version.buildinfo
+        rm -rf feeds.buildinfo
         sleep 2
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
