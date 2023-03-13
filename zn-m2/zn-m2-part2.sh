@@ -23,5 +23,5 @@ git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-d
 
 # passwall
 rm -rf feeds/luci/applications/luci-app-passwall
-#git clone https://github.com/xiaorouji/openwrt-passwall.git -b packages ./package/passwall_package
+git clone https://github.com/xiaorouji/openwrt-passwall.git -b packages ./package/passwall_package
 git clone https://github.com/xiaorouji/openwrt-passwall.git -b luci ./package/passwall
