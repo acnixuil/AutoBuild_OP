@@ -4,7 +4,7 @@
 #============================================================
 
 # 修改内核版本
-sed -i '/.*KERNEL_PATCHVER*/c\KERNEL_PATCHVER:=5.15' target/linux/x86/Makefile
+#sed -i '/.*KERNEL_PATCHVER*/c\KERNEL_PATCHVER:=5.15' target/linux/x86/Makefile
 # 修改网关ip
 sed -i 's/192.168.1.1/192.168.3.1/g' package/base-files/files/bin/config_generate
 # 取消登录密码
