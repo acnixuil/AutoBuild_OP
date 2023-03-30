@@ -19,8 +19,8 @@ sed -i 's/192.168.1.1/192.168.2.254/g' package/base-files/files/bin/config_gener
 
 # 添加adguardhome
 #git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/luci-app-adguardhome
-#git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
-svn co https://github.com/kenzok8/openwrt-packages/trunk/luci-app-adguardhome package/luci-app-adguardhome
+git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
+#svn co https://github.com/kenzok8/openwrt-packages/trunk/luci-app-adguardhome package/luci-app-adguardhome
 
 # 更换design为最新版本
 rm -rf feeds/luci/themes/luci-theme-design
