@@ -123,11 +123,14 @@ jobs:
       env:
         OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
         PACKAGE_SOC: s905d
-        KERNEL_VERSION_NAME: 5.4.230
         KERNEL_AUTO_LATEST: true
+        KERNEL_VERSION_NAME: 5.15.0
         ENABLE_WIFI_K504: 0
         ENABLE_WIFI_K510: 0
-        WHOAMI: EYN1X
+        WHOAMI: EnjoyToday
+        KERNEL_REPO_URL: breakings/OpenWrt
+        SCRIPT_REPO_URL: https://github.com/acnixuil/openwrt_packit
+        SCRIPT_REPO_BRANCH: master
 
     - name: 组织文件
       id: organize
