@@ -3,6 +3,10 @@
 # 以下部分为更新并安装feeds后后后运行
 #============================================================
 
+echo "开始 DIY2 配置……"
+echo "========================="
+
+
 # 修改内核版本
 #sed -i '/.*KERNEL_PATCHVER*/c\KERNEL_PATCHVER:=5.15' target/linux/x86/Makefile
 # 修改网关ip
@@ -33,3 +37,9 @@ git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-d
 git clone https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
 rm -rf feeds/luci/themes/luci-theme-argon
 git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
+
+./scripts/feeds update -a
+./scripts/feeds install -a
+
+echo "========================="
+echo " DIY2 配置完成……"
