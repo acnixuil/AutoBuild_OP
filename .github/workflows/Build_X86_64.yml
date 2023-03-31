@@ -42,16 +42,16 @@ on:
         description: 'SSH61 connection to Actions'
         required: false
         default: 'false'
-  schedule:
-    - cron: 58 18 * * *
+#  schedule:
+#    - cron: 58 18 * * *
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: ./x86/x86-ipv6.config
-  DIY_P1_SH: /x86/x86-part1.sh
-  DIY_P2_SH: ./x86/x86-part2.sh
+  CONFIG_FILE: x86/x86-ipv6.config
+  DIY_P1_SH: x86/x86-part1.sh
+  DIY_P2_SH: x86/x86-part2.sh
   UPLOAD_BIN_DIR: false
   UPLOAD_CONFIG: true
   UPLOAD_FIRMWARE: false
@@ -184,6 +184,7 @@ jobs:
 
     - name: Load custom configuration
       run: |
+        [ -e files ] && mv files openwrt/files      
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
@@ -435,6 +436,7 @@ jobs:
 
     - name: Load custom configuration
       run: |
+        [ -e files ] && mv files openwrt/files      
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
@@ -685,7 +687,8 @@ jobs:
       run: cd openwrt && ./scripts/feeds install -a
 
     - name: Load custom configuration
-      run: |
+      run: |     
+        [ -e files ] && mv files openwrt/files      
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
@@ -937,6 +940,7 @@ jobs:
 
     - name: Load custom configuration
       run: |
+        [ -e files ] && mv files openwrt/files      
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
