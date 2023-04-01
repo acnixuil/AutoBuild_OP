@@ -40,7 +40,7 @@ env:
   PRODUCT_NAME: ipq60xx
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - name: 检查
@@ -175,18 +175,21 @@ jobs:
       if: (!cancelled())
       run: df -hT
 
-    - name: Delete files
-      run: |
-        cd openwrt/bin/targets/*/*
-        bash rename.sh
-
     - name: 组织文件
       id: organize
       if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
       run: |
         cd openwrt/bin/targets/*/*
+        rm -rf *kernel*
+        rm -rf *.manifest
+        rm -rf sha256sums
+        rm -rf *rootfs*
+        rm -rf profiles.json
+        rm -rf *.buildinfo
         rm -rf package
         sleep 2
+        mv *factory.ubi openwrt_ipq60xx_factory.ubi
+        mv *sysupgrade.bin openwrt_ipq60xx_sysupgrade.bin
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
 
