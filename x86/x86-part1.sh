@@ -14,7 +14,7 @@ cat>rename.sh<<-\EOF
 rm -rf  bin/targets/x86/64/config.buildinfo
 rm -rf  bin/targets/x86/64/feeds.buildinfo
 rm -rf  bin/targets/x86/64/openwrt-x86-64-generic-kernel.bin
-rm -rf  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.vmdk
+#rm -rf  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.vmdk
 rm -rf  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.vmdk
 rm -rf  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-rootfs.img.gz
 rm -rf  bin/targets/x86/64/openwrt-x86-64-generic.manifest
