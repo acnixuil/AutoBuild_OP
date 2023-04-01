@@ -246,7 +246,7 @@ jobs:
       run: |
         cd openwrt
         echo -e "$(nproc) thread compile"
-        make -j$(nproc) || make -j1 V=s
+        make -j$(nproc) || make -j1 V=s || (curl -k --data chat_id="${{ env.TELEGRAM_CHAT_ID }}" --data "text=😅${{env.PRODUCT_NAME}}-OpenWrt 固件编译失败😅" "https://api.telegram.org/bot${{ env.TELEGRAM_TOKEN }}/sendMessage";exit 1)
         echo "status=success" >> $GITHUB_OUTPUT
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
@@ -343,8 +343,8 @@ jobs:
         🔖开始时间：${{ env.DATE }}
         🔖完成时间：${{ env.DATE1 }}
         🔖编译耗时：${{ env.time }}
-        🛒时间: ${{ env.date }}
-        📝hash: ${{ env.hash }}
+        ⏱时间: ${{ env.date }}
+        🎲hash: ${{ env.hash }}
         🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/${{ env.TAG }}_${{ env.KERNEL }}
         "
         curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
@@ -495,7 +495,7 @@ jobs:
       run: |
         cd openwrt
         echo -e "$(nproc) thread compile"
-        make -j$(nproc) || make -j1 V=s
+        make -j$(nproc) || make -j1 V=s || (curl -k --data chat_id="${{ env.TELEGRAM_CHAT_ID }}" --data "text=😅${{env.PRODUCT_NAME}}-OpenWrt 固件编译失败😅" "https://api.telegram.org/bot${{ env.TELEGRAM_TOKEN }}/sendMessage";exit 1)
         echo "status=success" >> $GITHUB_OUTPUT
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
@@ -592,8 +592,8 @@ jobs:
         🔖开始时间：${{ env.DATE }}
         🔖完成时间：${{ env.DATE1 }}
         🔖编译耗时：${{ env.time }}
-        🛒时间: ${{ env.date }}
-        📝hash: ${{ env.hash }}
+        ⏱时间: ${{ env.date }}
+        🎲hash: ${{ env.hash }}
         🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/${{ env.TAG }}_${{ env.KERNEL }}
         "
         curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
@@ -744,7 +744,7 @@ jobs:
       run: |
         cd openwrt
         echo -e "$(nproc) thread compile"
-        make -j$(nproc) || make -j1 V=s
+        make -j$(nproc) || make -j1 V=s || (curl -k --data chat_id="${{ env.TELEGRAM_CHAT_ID }}" --data "text=😅${{env.PRODUCT_NAME}}-OpenWrt 固件编译失败😅" "https://api.telegram.org/bot${{ env.TELEGRAM_TOKEN }}/sendMessage";exit 1)
         echo "status=success" >> $GITHUB_OUTPUT
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
@@ -841,8 +841,8 @@ jobs:
         🔖开始时间：${{ env.DATE }}
         🔖完成时间：${{ env.DATE1 }}
         🔖编译耗时：${{ env.time }}
-        🛒时间: ${{ env.date }}
-        📝hash: ${{ env.hash }}
+        ⏱时间: ${{ env.date }}
+        🎲hash: ${{ env.hash }}
         🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/${{ env.TAG }}_${{ env.KERNEL }}
         "
         curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
@@ -993,7 +993,7 @@ jobs:
       run: |
         cd openwrt
         echo -e "$(nproc) thread compile"
-        make -j$(nproc) || make -j1 V=s
+        make -j$(nproc) || make -j1 V=s || (curl -k --data chat_id="${{ env.TELEGRAM_CHAT_ID }}" --data "text=😅${{env.PRODUCT_NAME}}-OpenWrt 固件编译失败😅" "https://api.telegram.org/bot${{ env.TELEGRAM_TOKEN }}/sendMessage";exit 1)
         echo "status=success" >> $GITHUB_OUTPUT
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
@@ -1091,8 +1091,8 @@ jobs:
         🔖开始时间：${{ env.DATE }}
         🔖完成时间：${{ env.DATE1 }}
         🔖编译耗时：${{ env.time }}
-        🛒时间: ${{ env.date }}
-        📝hash: ${{ env.hash }}
+        ⏱时间: ${{ env.date }}
+        🎲hash: ${{ env.hash }}
         🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/${{ env.TAG }}_${{ env.KERNEL }}
         "
         curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
