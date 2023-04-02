@@ -344,7 +344,7 @@ jobs:
         🔖 完成时间：${{ env.DATE1 }}
         🔖 编译耗时：${{ env.time }}
         ⏱ 时间: ${{ env.date }}
-        🎈 hash: ${{ env.hash }}
+        ⌛ hash: ${{ env.hash }}
         🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/${{ env.TAG }}_${{ env.KERNEL }}
         "
         curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
@@ -593,7 +593,7 @@ jobs:
         🔖 完成时间：${{ env.DATE1 }}
         🔖 编译耗时：${{ env.time }}
         ⏱ 时间: ${{ env.date }}
-        🎈 hash: ${{ env.hash }}
+        ⌛ hash: ${{ env.hash }}
         🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/${{ env.TAG }}_${{ env.KERNEL }}
         "
         curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
@@ -842,7 +842,7 @@ jobs:
         🔖 完成时间：${{ env.DATE1 }}
         🔖 编译耗时：${{ env.time }}
         ⏱ 时间: ${{ env.date }}
-        🎈 hash: ${{ env.hash }}
+        ⌛ hash: ${{ env.hash }}
         🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/${{ env.TAG }}_${{ env.KERNEL }}
         "
         curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
@@ -1092,7 +1092,7 @@ jobs:
         🔖 完成时间：${{ env.DATE1 }}
         🔖 编译耗时：${{ env.time }}
         ⏱ 时间: ${{ env.date }}
-        🎈 hash: ${{ env.hash }}
+        ⌛ hash: ${{ env.hash }}
         🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/${{ env.TAG }}_${{ env.KERNEL }}
         "
         curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
