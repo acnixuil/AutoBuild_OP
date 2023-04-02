@@ -165,7 +165,7 @@ jobs:
       run: |
         cd openwrt
         echo -e "$(nproc) thread compile"
-        make -j$(nproc) || make -j1 || make -j1 V=s || (curl -k --data chat_id="${{ env.TELEGRAM_CHAT_ID }}" --data "text=😅${{env.PRODUCT_NAME}}-OpenWrt 固件编译失败😅" "https://api.telegram.org/bot${{ env.TELEGRAM_TOKEN }}/sendMessage";exit 1)
+        make -j$(nproc) || make -j1 || make -j1 V=s || (curl -k --data chat_id="${{ env.TELEGRAM_CHAT_ID }}" --data "text=😅 ${{env.PRODUCT_NAME}}-OpenWrt 固件编译失败 😅" "https://api.telegram.org/bot${{ env.TELEGRAM_TOKEN }}/sendMessage";exit 1)
         echo "status=success" >> $GITHUB_OUTPUT
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
@@ -187,6 +187,7 @@ jobs:
         rm -rf profiles.json
         rm -rf *.buildinfo
         rm -rf package
+        rm -rf *.itb
         sleep 2
         mv *factory.ubi openwrt_ipq60xx_factory.ubi
         mv *sysupgrade.bin openwrt_ipq60xx_sysupgrade.bin
@@ -207,14 +208,14 @@ jobs:
       with:
         name: ${{ env.DATE }} 「 ${{ env.FILE_NAME }} 」固件
         allowUpdates: true
-        tag: ${{ env.TAG }}
+        tag: ${{ env.TAG }}_{{ env.PRODUCT_NAME$ }}
         token: ${{ secrets.G_TOKEN }}
         body: |
-          - 🔖此为 ${{ env.FILE_NAME }} 固件
-          - 🔖默认IP：192.168.2.1 默认密码：无密码
-          - 🔖感谢源码作者无私分享！
-          - 🔖时间: ${{ env.date }}
-          - 🔖hash: ${{ env.hash }}
+          - 🔖 此为 ${{ env.FILE_NAME }} 固件
+          - 🔖 默认IP：192.168.2.1 默认密码：无密码
+          - 🔖 感谢源码作者无私分享！
+          - 🔖 时间: ${{ env.date }}
+          - 🔖 hash: ${{ env.hash }}
         artifacts: ${{ env.FIRMWARE }}/*
         
     - name: Completion time 
@@ -231,13 +232,13 @@ jobs:
     - name: Telegram or Push notification
       run: |
         MSG="
-        📌${{ env.FILE_NAME }}编译完成
-        🔖开始时间：${{ env.DATE }}
-        🔖完成时间：${{ env.DATE1 }}
-        🔖编译耗时：${{ env.time }}
-        ⏱时间: ${{ env.date }}
-        🎲hash: ${{ env.hash }}
-        🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/${{ env.TAG }}
+        😺 ${{ env.FILE_NAME }} 编译完成
+        🔖 开始时间：${{ env.DATE }}
+        🔖 完成时间：${{ env.DATE1 }}
+        🔖 编译耗时：${{ env.time }}
+        ⏱ 时间: ${{ env.date }}
+        🎈 hash: ${{ env.hash }}
+        🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/${{ env.TAG }}_{{ env.PRODUCT_NAME$ }}
         "
         curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
         curl "http://www.pushplus.plus/send?token=${{ secrets.PUSH_PLUS_TOKEN }}" -d "title=${{ env.FILE_NAME }}编译完成 &content=${MSG}"
