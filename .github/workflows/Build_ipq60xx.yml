@@ -261,6 +261,6 @@ jobs:
       with:
         keep_latest: 36
         delete_tags: true
-        delete_tag_pattern: _
+        delete_tag_pattern: _ipq60xx
       env:
         GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
