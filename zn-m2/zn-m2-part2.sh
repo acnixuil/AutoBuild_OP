@@ -17,9 +17,9 @@ git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-desi
 git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
 
 # 更换argon为最新版本
-#git clone https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
-#rm -rf feeds/luci/themes/luci-theme-argon
-#git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
+rm -rf feeds/luci/themes/luci-theme-argon*
+git clone https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
+git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
 
 # passwall
 rm -rf feeds/luci/applications/luci-app-passwall
