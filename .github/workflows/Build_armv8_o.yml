@@ -8,7 +8,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: Build armv8_p
+name: Build armv8_s
 
 on:
   repository_dispatch:
@@ -27,9 +27,9 @@ env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: ./n1/p/p_n1.config
-  DIY_P1_SH: ./n1/p/p_n1_part1.sh
-  DIY_P2_SH: ./n1/p/p_n1_part2.sh
+  CONFIG_FILE: ./n1/o/o_n1.config
+  DIY_P1_SH: ./n1/o/o_n1_part1.sh
+  DIY_P2_SH: ./n1/o/o_n1_part2.sh
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
@@ -109,7 +109,7 @@ jobs:
 
     - name: 加载自定义配置
       run: |
-        [ -e files ] && mv n1/p/files openwrt/files
+        [ -e files ] && mv n1/o/files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
@@ -181,7 +181,7 @@ jobs:
         OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
         PACKAGE_SOC: s905d
         KERNEL_AUTO_LATEST: true
-        KERNEL_VERSION_NAME: 5.4.1
+        KERNEL_VERSION_NAME: 5.15.1
         ENABLE_WIFI_K504: 0
         ENABLE_WIFI_K510: 0
         WHOAMI: EnjoyToday
@@ -217,7 +217,7 @@ jobs:
         tag: ${{ env.TAG }}_${{ env.PRODUCT_NAME }}
         token: ${{ secrets.G_TOKEN }}
         body: |
-          - 🔖 此为 ${{ env.FILE_NAME }} [Passwall] 固件
+          - 🔖 此为 ${{ env.FILE_NAME }} [Openclash] 固件
           - 🔖 默认IP：192.168.2.254 默认密码：password
           - 🔖 感谢源码作者无私分享！
           - 🔖 时间: ${{ env.date }}
@@ -238,7 +238,7 @@ jobs:
     - name: Telegram or Push notification
       run: |
         MSG="
-        😺 ${{ env.FILE_NAME }} [Passwall] 编译完成
+        😺 ${{ env.FILE_NAME }} [Openclash] 编译完成
         🔖 开始时间：${{ env.DATE }}
         🔖 完成时间：${{ env.DATE1 }}
         🔖 编译耗时：${{ env.time }}
