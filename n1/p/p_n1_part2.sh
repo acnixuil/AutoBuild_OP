@@ -43,7 +43,7 @@ git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon package/luci-th
 svn co https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic package/luci-app-amlogic
 sed -i "s|ARMv8|ARMv8|g" package/luci-app-amlogic/root/etc/config/amlogic
 
- mosdns
+# mosdns
 # find ./ | grep Makefile | grep mosdns | xargs rm -f
 #rm -rf feeds/packages/net/mosdns
 #rm -rf feeds/luci/applications/luci-app-mosdns
