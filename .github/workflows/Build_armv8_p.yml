@@ -8,7 +8,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: Build ipq60xx
+name: Build armv8_N1
 
 on:
   repository_dispatch:
@@ -24,20 +24,20 @@ on:
   #- cron: 0 17 * * 1
 
 env:
-  REPO_URL: https://github.com/acnixuil/ipq6000
+  REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: main
-  FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: ./zn-m2/p_zn-m2.config
-  DIY_P1_SH: ./zn-m2/zn-m2-part1.sh
-  DIY_P2_SH: ./zn-m2/zn-m2-part2.sh
+  FEEDS_CONF: master
+  CONFIG_FILE: ./n1/p/p_n1.config
+  DIY_P1_SH: ./n1/p/p_n1_part1.sh
+  DIY_P2_SH: ./n1/p/p_n1_part2.sh
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
   TZ: Asia/Shanghai
-  FILE_NAME: ipq60xx
-  PRODUCT_NAME: ipq60xx
+  FILE_NAME: armv8
+  PRODUCT_NAME: armv8
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -109,7 +109,7 @@ jobs:
 
     - name: 加载自定义配置
       run: |
-        [ -e files ] && mv files openwrt/files
+        [ -e files ] && mv n1/p/files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
@@ -175,22 +175,28 @@ jobs:
       if: (!cancelled())
       run: df -hT
 
+    - name: 打包固件
+      uses: acnixuil/openwrt_packit@master
+      env:
+        OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
+        PACKAGE_SOC: s905d
+        KERNEL_AUTO_LATEST: true
+        KERNEL_VERSION_NAME: 5.4.1
+        ENABLE_WIFI_K504: 0
+        ENABLE_WIFI_K510: 0
+        WHOAMI: EnjoyToday
+        KERNEL_REPO_URL: breakings/OpenWrt
+        SCRIPT_REPO_URL: acnixuil/openwrt_packit
+        SCRIPT_REPO_BRANCH: master
+
     - name: 组织文件
       id: organize
       if: steps.compile.outputs.status == 'success' && !cancelled()
       run: |
-        cd openwrt/bin/targets/*/*
-        rm -rf *kernel*
-        rm -rf *.manifest
-        rm -rf sha256sums
+        cd /opt/openwrt_packit/output
         rm -rf *rootfs*
-        rm -rf profiles.json
-        rm -rf *.buildinfo
-        rm -rf package
-        rm -rf *.itb
+        rm -rf sha256sums
         sleep 2
-        mv *factory.ubi openwrt_ipq60xx_factory.ubi
-        mv *sysupgrade.bin openwrt_ipq60xx_sysupgrade.bin
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
 
@@ -212,7 +218,7 @@ jobs:
         token: ${{ secrets.G_TOKEN }}
         body: |
           - 🔖 此为 ${{ env.FILE_NAME }} 固件
-          - 🔖 默认IP：192.168.2.1 默认密码：password
+          - 🔖 默认IP：192.168.2.254 默认密码：password
           - 🔖 感谢源码作者无私分享！
           - 🔖 时间: ${{ env.date }}
           - 🔖 hash: ${{ env.hash }}
@@ -261,6 +267,6 @@ jobs:
       with:
         keep_latest: 36
         delete_tags: true
-        delete_tag_pattern: _ipq60xx
+        delete_tag_pattern: _armv8
       env:
         GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
