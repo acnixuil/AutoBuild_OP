@@ -12,9 +12,9 @@ git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app
 #svn co https://github.com/kenzok8/openwrt-packages/trunk/luci-app-adguardhome package/luci-app-adguardhome
 
 # 更换design为最新版本
-rm -rf feeds/luci/themes/luci-theme-design
-git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
-git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
+#rm -rf feeds/luci/themes/luci-theme-design
+#git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
+#git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
 
 # 更换argon为最新版本
 rm -rf feeds/luci/themes/luci-theme-argon*
@@ -23,6 +23,6 @@ git clone https://github.com/jerrykuku/luci-app-argon-config package/luci-app-ar
 git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
 
 # passwall
-#rm -rf feeds/luci/applications/luci-app-passwall
-#git clone https://github.com/xiaorouji/openwrt-passwall.git -b packages ./package/passwall_package
-#git clone https://github.com/xiaorouji/openwrt-passwall.git -b luci-smartdns-new-version ./package/passwall
+rm -rf feeds/luci/applications/luci-app-passwall
+git clone https://github.com/xiaorouji/openwrt-passwall.git -b packages ./package/passwall_package
+git clone https://github.com/xiaorouji/openwrt-passwall.git -b luci ./package/passwall
