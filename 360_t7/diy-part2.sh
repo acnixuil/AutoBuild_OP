@@ -11,9 +11,9 @@ sed -i 's/192.168.6.1/192.168.2.1/g' package/base-files/files/bin/config_generat
 git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
 
 # 更换design为最新版本
-#rm -rf feeds/luci/themes/luci-theme-design
-#git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
-#git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
+rm -rf feeds/luci/themes/luci-theme-design
+git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
+git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
 
 # 更换argon为最新版本
 rm -rf feeds/luci/themes/luci-theme-argon*
