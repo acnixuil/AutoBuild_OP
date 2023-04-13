@@ -61,52 +61,11 @@ env:
   FILE_NAME: x86_64
   PRODUCT_NAME: x86_64
 
-jobs:
-  Checka:
-    runs-on: ubuntu-latest
-    env:
-      REPO_URL_Lede: https://github.com/coolsnowwolf/lede
-      REPO_BRANCH_Lede: master
-      REPO_PATH_Lede : "Lede_x86"
-    outputs:
-      output: ${{ steps.outputunifreq.outputs.unifreq }}
-    steps:
-    - name: Get Commit Hash
-      id: getHash
-      run: |
-        git clone --depth 1 $REPO_URL_Lede -b $REPO_BRANCH_Lede $REPO_PATH_Lede
-        cd $REPO_PATH_Lede
-        echo "commitHash_x86=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-        cd
-
-    - name: Show Commit Head and Combination Heads
-      id: combHeader
-      run: |
-        echo "commitHash_x86: ${{ steps.getHash.outputs.commitHash_x86 }}"
-
-    - name: Compare Commit Hash
-      id: cacheHash
-      uses: actions/cache@main
-      with:
-        path: .commitHash_x86
-        key: HEAD-${{ steps.getHash.outputs.commitHash_x86 }}
-
-    - name: Set output for next job
-      id: outputunifreq
-      if: steps.cacheHash.outputs.cache-hit == 'true'
-      run: |
-        echo "unifreq=hello" >> $GITHUB_OUTPUT
-
-    - name: Save New Commit Hash
-      if: steps.cacheHash.outputs.cache-hit != 'true'
-      run: |
-        echo ${{ steps.getHash.outputs.commitHash_x86 }} | tee .commitHash_x86
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////
+jobs:        
+# =================================================================================================
   Build_x86_64_515:
-    needs: [Checka]
-    if: ${{ needs.Checka.outputs.output != 'hello' || github.event.inputs.checkupdates515 == 'true'}}
+    if: github.event.inputs.checkupdates515 == 'true'
     runs-on: ubuntu-22.04
-
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -179,12 +138,9 @@ jobs:
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config   
         chmod +x $DIY_P2_SH
         cd openwrt
-        $GITHUB_WORKSPACE/$DIY_P2_SH
-        
-        sed -i 's/CONFIG_LINUX.*/CONFIG_LINUX_5_15=y/g' .config
-        
+        $GITHUB_WORKSPACE/$DIY_P2_SH       
+        sed -i 's/CONFIG_LINUX.*/CONFIG_LINUX_5_15=y/g' .config       
         sed -i 's/KERNEL_PATCHVER:=*.*/KERNEL_PATCHVER:=5.15/g' target/linux/x86/Makefile
-
         sed -i 's/KERNEL_TESTING_PATCHVER:=*.*/KERNEL_TESTING_PATCHVER:=5.15/g' target/linux/x86/Makefile
         
     - name: 读取BETA版config
@@ -194,12 +150,9 @@ jobs:
         [ -e $CONFIG_BETA_FILE ] && mv $CONFIG_BETA_FILE openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
-        $GITHUB_WORKSPACE/$DIY_P2_SH
-        
-        sed -i 's/CONFIG_LINUX.*/CONFIG_LINUX_5_15=y/g' .config
-        
+        $GITHUB_WORKSPACE/$DIY_P2_SH      
+        sed -i 's/CONFIG_LINUX.*/CONFIG_LINUX_5_15=y/g' .config        
         sed -i 's/KERNEL_PATCHVER:=*.*/KERNEL_PATCHVER:=5.15/g' target/linux/x86/Makefile
-
         sed -i 's/KERNEL_TESTING_PATCHVER:=*.*/KERNEL_TESTING_PATCHVER:=5.15/g' target/linux/x86/Makefile
 
     - name: SSH connection to Actions
@@ -355,10 +308,10 @@ jobs:
         "
         curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
         curl "http://www.pushplus.plus/send?token=${{ secrets.PUSH_PLUS_TOKEN }}" -d "title=${{ env.FILE_NAME }}_${{ env.KERNEL }} 编译完成&content=${MSG}"
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+# =================================================================================================
   Build_x86_64_61:
-    needs: [Checka]
-    if: ${{ needs.Checka.outputs.output != 'hello' || github.event.inputs.checkupdates61 == 'true'}}
+    if: github.event.inputs.checkupdates61 == 'true'
     runs-on: ubuntu-22.04
 
     steps:
@@ -426,18 +379,27 @@ jobs:
     - name: Install feeds
       run: cd openwrt && ./scripts/feeds install -a
 
-    - name: Load custom configuration
+    - name: 读取RC版config
+      if: github.event.inputs.checkconfigfile == 'rc' 
+      run: |     
+        [ -e files ] && mv files openwrt/files
+        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config   
+        chmod +x $DIY_P2_SH
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P2_SH        
+        sed -i 's/CONFIG_LINUX.*/CONFIG_LINUX_6_0=y/g' .config        
+        sed -i 's/KERNEL_PATCHVER:=*.*/KERNEL_PATCHVER:=6.1/g' target/linux/x86/Makefile        
+        sed -i 's/KERNEL_TESTING_PATCHVER:=*.*/KERNEL_TESTING_PATCHVER:=6.1/g' target/linux/x86/Makefile
+        
+    - name: 读取BETA版config
       run: |
         [ -e files ] && mv files openwrt/files      
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
-        $GITHUB_WORKSPACE/$DIY_P2_SH
-        
-        sed -i 's/CONFIG_LINUX.*/CONFIG_LINUX_6_0=y/g' .config
-        
-        sed -i 's/KERNEL_PATCHVER:=*.*/KERNEL_PATCHVER:=6.1/g' target/linux/x86/Makefile
-        
+        $GITHUB_WORKSPACE/$DIY_P2_SH      
+        sed -i 's/CONFIG_LINUX.*/CONFIG_LINUX_6_0=y/g' .config        
+        sed -i 's/KERNEL_PATCHVER:=*.*/KERNEL_PATCHVER:=6.1/g' target/linux/x86/Makefile        
         sed -i 's/KERNEL_TESTING_PATCHVER:=*.*/KERNEL_TESTING_PATCHVER:=6.1/g' target/linux/x86/Makefile
 
     - name: SSH connection to Actions
@@ -593,11 +555,11 @@ jobs:
         🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/${{ env.TAG }}_${{ env.KERNEL }}
         "
         curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
-        curl "http://www.pushplus.plus/send?token=${{ secrets.PUSH_PLUS_TOKEN }}" -d "title=${{ env.FILE_NAME }}_${{ env.KERNEL }} 编译完成&content=${MSG}"
-# //////////////////////////////////////////////////////////////////////////////////////////////
+        
+# =================================================================================================
   Cleaning:
     if: ${{ always() }}
-    needs: [Checka,Build_x86_64_515,Build_x86_64_61]
+    needs: [Build_x86_64_515,Build_x86_64_61]
     runs-on: ubuntu-latest
     steps:
     - name: Delete workflow runs

@@ -14,8 +14,45 @@ on:
   repository_dispatch:
   workflow_dispatch:
     inputs:
-      ssh:
-        description: 'SSH connection to Actions'
+      checkupdates54:
+        description: '内核版本5.4'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+        - false
+        - true
+      checkupdates515:
+        description: '内核版本5.15'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+        - false
+        - true
+      checkupdates61:
+        description: '内核版本6.1'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+        - false
+        - true
+      checkconfigfile:
+        description: '选择配置文件'
+        required: true
+        default: 'pw'
+        type: choice
+        options:
+        - s+
+        - pw
+        - openclash       
+      ssh515:
+        description: 'SSH515 connection to Actions'
+        required: false
+        default: 'false'
+      ssh61:
+        description: 'SSH61 connection to Actions'
         required: false
         default: 'false'
 

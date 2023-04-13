@@ -189,7 +189,8 @@ jobs:
         rm -rf package
         rm -rf *.itb
         sleep 2
-        mv *factory.ubi openwrt_ipq60xx_factory.ubi
+        ls
+        mv *.ubi openwrt_ipq60xx_factory.ubi
         mv *sysupgrade.bin openwrt_ipq60xx_sysupgrade.bin
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
@@ -241,9 +242,8 @@ jobs:
         🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/${{ env.TAG }}_${{ env.PRODUCT_NAME }}
         "
         curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
-        curl "http://www.pushplus.plus/send?token=${{ secrets.PUSH_PLUS_TOKEN }}" -d "title=${{ env.FILE_NAME }}编译完成 &content=${MSG}"
 
-# //////////////////////////////////////////////////////////////////////////////////////////////
+# ==============================================
   Cleaning:
     if: ${{ always() }}
     needs: [build]
