@@ -26,6 +26,14 @@ on:
         options:
         - false
         - true
+      checkconfigfile:
+        description: '选择配置文件'
+        required: true
+        default: 'rc'
+        type: choice
+        options:
+        - rc
+        - beta       
       ssh515:
         description: 'SSH515 connection to Actions'
         required: false
@@ -41,7 +49,8 @@ env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: x86/test.config
+  CONFIG_FILE: x86/x86-ipv6.config
+  CONFIG_BETA_FILE: x86/test.config
   DIY_P1_SH: x86/x86-part1.sh
   DIY_P2_SH: x86/x86-part2.sh
   UPLOAD_BIN_DIR: false
@@ -163,10 +172,26 @@ jobs:
     - name: Install feeds
       run: cd openwrt && ./scripts/feeds install -a
 
-    - name: Load custom configuration
+    - name: 读取RC版config
+      if: github.event.inputs.checkconfigfile == 'rc' 
+      run: |     
+        [ -e files ] && mv files openwrt/files
+        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config   
+        chmod +x $DIY_P2_SH
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P2_SH
+        
+        sed -i 's/CONFIG_LINUX.*/CONFIG_LINUX_5_15=y/g' .config
+        
+        sed -i 's/KERNEL_PATCHVER:=*.*/KERNEL_PATCHVER:=5.15/g' target/linux/x86/Makefile
+
+        sed -i 's/KERNEL_TESTING_PATCHVER:=*.*/KERNEL_TESTING_PATCHVER:=5.15/g' target/linux/x86/Makefile
+        
+    - name: 读取BETA版config
+      if: github.event.inputs.checkconfigfile == 'beta' 
       run: |     
         [ -e files ] && mv files openwrt/files      
-        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
+        [ -e $CONFIG_BETA_FILE ] && mv $CONFIG_BETA_FILE openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
@@ -179,7 +204,7 @@ jobs:
 
     - name: SSH connection to Actions
       uses: P3TERX/ssh2actions@v1.0.0
-      if: (github.event.inputs.ssh515 == 'true' && github.event.inputs.ssh515  != 'false') || contains(github.event.action, 'ssh515')
+      if: (github.event.inputs.ssh515 == 'true' && github.event.inputs.ssh515 != 'false') || contains(github.event.action, 'ssh515')
       env:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
