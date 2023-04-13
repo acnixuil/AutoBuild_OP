@@ -44,8 +44,8 @@ svn co https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic package/
 sed -i "s|ARMv8|ARMv8|g" package/luci-app-amlogic/root/etc/config/amlogic
 
 # mosdns
-# find ./ | grep Makefile | grep mosdns | xargs rm -f
-#rm -rf feeds/packages/net/mosdns
-#rm -rf feeds/luci/applications/luci-app-mosdns
-#svn co https://github.com/sbwml/luci-app-mosdns/trunk/luci-app-mosdns package/luci-app-mosdns
-#svn co https://github.com/sbwml/luci-app-mosdns/trunk/mosdns package/mosdns
+#rm -rf feeds/packages/net/mosdns*
+#rm -rf feeds/luci/applications/luci-app-mosdns*
+#rm -rf feeds/packages/net/v2ray-geodata*
+#git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
+#git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
