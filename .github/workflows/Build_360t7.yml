@@ -14,10 +14,22 @@ on:
   repository_dispatch:
   workflow_dispatch:
     inputs:
+      checkconfigfile:
+        description: '选择配置文件'
+        required: true
+        default: 'MainRouter'
+        type: choice
+        options:
+        - MainRouter
+        - AP 
       ssh:
         description: 'SSH connection to Actions'
         required: false
         default: 'false'
+        type: choice
+        options:
+        - true
+        - false
 
 #定时触发开始编译
   #schedule:
@@ -27,7 +39,8 @@ env:
   REPO_URL: https://github.com/padavanonly/immortalwrtARM
   REPO_BRANCH: mt7981
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: ./360_t7/test.config
+  CONFIG_FILE: ./360_t7/mainrouter.config
+  CONFIG_AP_FILE: ./360_t7/ap.config
   DIY_P1_SH: ./360_t7/diy-part1.sh
   DIY_P2_SH: ./360_t7/diy-part2.sh
   UPLOAD_BIN_DIR: false
@@ -107,13 +120,23 @@ jobs:
     - name: 安装软件源
       run: cd openwrt && ./scripts/feeds install -a
 
-    - name: 加载自定义配置
-      run: |
+    - name: 读取主路由版配置文件
+      if: github.event.inputs.checkconfigfile == 'mainrouter' 
+      run: |     
         [ -e files ] && mv files openwrt/files
-        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
+        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config   
         chmod +x $DIY_P2_SH
         cd openwrt
-        $GITHUB_WORKSPACE/$DIY_P2_SH
+        $GITHUB_WORKSPACE/$DIY_P2_SH       
+        
+    - name: 读取AP版配置文件
+      if: github.event.inputs.checkconfigfile == 'ap' 
+      run: |     
+        [ -e files ] && mv files openwrt/files      
+        [ -e $CONFIG_AP_FILE ] && mv $CONFIG_BETA_FILE openwrt/.config
+        chmod +x $DIY_P2_SH
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P2_SH      
 
     - name: SSH 连接
       uses: P3TERX/ssh2actions@v1.0.0
@@ -181,14 +204,13 @@ jobs:
       run: |
         cd openwrt/bin/targets/*/*
         rm -rf *kernel*
-        rm -rf *.manifest
         rm -rf sha256sums
         rm -rf *rootfs*
         rm -rf profiles.json
         rm -rf *.buildinfo
-        rm -rf package
         rm -rf *.itb
         rm -rf *.bz2
+        rm -rf package*
         sleep 2
         ls
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV

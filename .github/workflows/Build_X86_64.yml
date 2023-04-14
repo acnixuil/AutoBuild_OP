@@ -38,10 +38,18 @@ on:
         description: 'SSH515 connection to Actions'
         required: false
         default: 'false'
+        type: choice
+        options:
+        - true
+        - false
       ssh61:
         description: 'SSH61 connection to Actions'
         required: false
         default: 'false'
+        type: choice
+        options:
+        - true
+        - false
 #  schedule:
 #    - cron: 58 18 * * *
 
