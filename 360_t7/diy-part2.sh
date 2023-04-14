@@ -22,9 +22,9 @@ git clone https://github.com/jerrykuku/luci-app-argon-config package/luci-app-ar
 git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
 
 # passwall
-rm -rf feeds/luci/applications/luci-app-passwall
-git clone https://github.com/xiaorouji/openwrt-passwall.git -b packages ./package/passwall_package
-git clone https://github.com/xiaorouji/openwrt-passwall.git -b luci ./package/passwall
+#rm -rf feeds/luci/applications/luci-app-passwall
+#git clone https://github.com/xiaorouji/openwrt-passwall.git -b packages ./package/passwall_package
+#git clone https://github.com/xiaorouji/openwrt-passwall.git -b luci ./package/passwall
 
 # mosdns
 #rm -rf feeds/packages/net/mosdns*
@@ -33,6 +33,6 @@ git clone https://github.com/xiaorouji/openwrt-passwall.git -b luci ./package/pa
 #git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
 #git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
 
-./scripts/feeds update -a
-./scripts/feeds install -a
+#./scripts/feeds update -a
+#./scripts/feeds install -a
 

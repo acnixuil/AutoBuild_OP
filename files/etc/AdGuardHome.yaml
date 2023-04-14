@@ -100,14 +100,14 @@ querylog:
   ignored: []
 statistics:
   enabled: true
-  interval: 1
+  interval: 720h
   ignored: []
 filters:
   - enabled: true
     url: https://cdn.jsdelivr.net/gh/o0HalfLife0o/list@master/ad.txt
     name: HalfLife
     id: 1676026291
-  - enabled: false
+  - enabled: true
     url: https://anti-ad.net/easylist.txt
     name: anti-ad
     id: 1678134955
