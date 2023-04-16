@@ -17,9 +17,10 @@ rm -rf  bin/targets/x86/64/openwrt-x86-64-generic-kernel.bin
 #rm -rf  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.vmdk
 rm -rf  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.vmdk
 rm -rf  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-rootfs.img.gz
-rm -rf  bin/targets/x86/64/openwrt-x86-64-generic.manifest
+#rm -rf  bin/targets/x86/64/openwrt-x86-64-generic.manifest
 rm -rf bin/targets/x86/64/sha256sums
 rm -rf  bin/targets/x86/64/version.buildinfo
+rm -rf  bin/targets/x86/64/profiles.json
 sleep 2
 str1=`grep "KERNEL_PATCHVER:="  target/linux/x86/Makefile | cut -d = -f 2` #判断当前默认内核版本号如5.10
 ver54=`grep "LINUX_VERSION-5.4 ="  include/kernel-5.4 | cut -d . -f 3`
@@ -35,13 +36,16 @@ elif [ "$str1" = "5.10" ];then
 elif [ "$str1" = "5.15" ];then
    mv  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz       bin/targets/x86/64/openwrt_x86-64_${str1}.${ver515}_bios.img.gz
    mv  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz   bin/targets/x86/64/openwrt_x86-64_${str1}.${ver515}_uefi.img.gz
+   mv  bin/targets/x86/64/*efi.vmdk   bin/targets/x86/64/openwrt_x86-64_${str1}.${ver515}_efi.vmdk 
 elif [ "$str1" = "6.1" ];then
    if [ ! $ver61 ]; then
    mv  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz       bin/targets/x86/64/openwrt_x86-64_${str1}.${ver61}0_bios.img.gz
    mv  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz   bin/targets/x86/64/openwrt_x86-64_${str1}.${ver61}0_uefi.img.gz
+   mv  bin/targets/x86/64/*efi.vmdk   bin/targets/x86/64/openwrt_x86-64_${str1}.${ver61}_efi.vmdk 
   else
    mv  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz       bin/targets/x86/64/openwrt_x86-64_${str1}.${ver61}_bios.img.gz
    mv  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz   bin/targets/x86/64/openwrt_x86-64_${str1}.${ver61}_uefi.img.gz
+   mv  bin/targets/x86/64/*efi.vmdk   bin/targets/x86/64/openwrt_x86-64_${str1}.${ver61}_efi.vmdk 
    fi
 fi
 #md5
