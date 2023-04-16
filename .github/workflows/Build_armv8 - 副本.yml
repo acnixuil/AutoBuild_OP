@@ -51,7 +51,9 @@ env:
   CONFIG_FILE_O: n1/o.config
   CONFIG_FILE_P: n1/p.config
   CONFIG_FILE_S: n1/s.config
-  DIY_P1_SH: n1/n1_part1.sh
+  DIY_P1_SH_O: n1/o_part1.sh
+  DIY_P1_SH_P: n1/p_part1.sh
+  DIY_P1_SH_S: n1/s_part1.sh
   DIY_P2_SH: n1/n1_part2.sh
   UPLOAD_RELEASE: true
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
@@ -117,12 +119,29 @@ jobs:
         echo "TAG=$(date "+%Y%m%d")" >> $GITHUB_ENV
         echo "start=$(date +%s)" >> $GITHUB_ENV
 
-    - name: Load custom feeds
+    - name: 读取O版feeds
+      if: github.event.inputs.checkconfigfile == 'o'
       run: |
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
-        chmod +x $DIY_P1_SH
+        chmod +x $DIY_P1_SH_O
         cd openwrt
-        $GITHUB_WORKSPACE/$DIY_P1_SH
+        $GITHUB_WORKSPACE/$DIY_P1_SH_O
+
+    - name: 读取P版feeds
+      if: github.event.inputs.checkconfigfile == 'p'
+      run: |
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
+        chmod +x $DIY_P1_SH_P
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P1_SH_P
+
+    - name: 读取S版feeds
+      if: github.event.inputs.checkconfigfile == 's'
+      run: |
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
+        chmod +x $DIY_P1_SH_S
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P1_SH_S
 
     - name: Update feeds
       run: cd openwrt && ./scripts/feeds update -a
@@ -133,7 +152,7 @@ jobs:
     - name: 读取O版配置
       if: github.event.inputs.checkconfigfile == 'o' 
       run: |     
-        [ -e files ] && mv files openwrt/files
+        [ -e files ] && mv n1/files openwrt/files
         [ -e $CONFIG_FILE_O ] && mv $CONFIG_FILE_O openwrt/.config   
         chmod +x $DIY_P2_SH
         cd openwrt
@@ -142,7 +161,7 @@ jobs:
     - name: 读取P版配置
       if: github.event.inputs.checkconfigfile == 'p' 
       run: |     
-        [ -e files ] && mv files openwrt/files      
+        [ -e files ] && mv n1/files openwrt/files      
         [ -e $CONFIG_FILE_P ] && mv $CONFIG_FILE_P openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
@@ -151,7 +170,7 @@ jobs:
     - name: 读取S版配置
       if: github.event.inputs.checkconfigfile == 's' 
       run: |     
-        [ -e files ] && mv files openwrt/files
+        [ -e files ] && mv n1/files openwrt/files
         [ -e $CONFIG_FILE_S ] && mv $CONFIG_FILE_S openwrt/.config   
         chmod +x $DIY_P2_SH
         cd openwrt
@@ -339,12 +358,29 @@ jobs:
         echo "TAG=$(date "+%Y%m%d")" >> $GITHUB_ENV
         echo "start=$(date +%s)" >> $GITHUB_ENV
 
-    - name: Load custom feeds
+    - name: 读取O版feeds
+      if: github.event.inputs.checkconfigfile == 'o'
       run: |
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
-        chmod +x $DIY_P1_SH
+        chmod +x $DIY_P1_SH_O
         cd openwrt
-        $GITHUB_WORKSPACE/$DIY_P1_SH
+        $GITHUB_WORKSPACE/$DIY_P1_SH_O
+
+    - name: 读取P版feeds
+      if: github.event.inputs.checkconfigfile == 'p'
+      run: |
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
+        chmod +x $DIY_P1_SH_P
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P1_SH_P
+
+    - name: 读取S版feeds
+      if: github.event.inputs.checkconfigfile == 's'
+      run: |
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
+        chmod +x $DIY_P1_SH_S
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P1_SH_S
 
     - name: Update feeds
       run: cd openwrt && ./scripts/feeds update -a
@@ -355,7 +391,7 @@ jobs:
     - name: 读取O版配置
       if: github.event.inputs.checkconfigfile == 'o' 
       run: |     
-        [ -e files ] && mv files openwrt/files
+        [ -e files ] && mv n1/files openwrt/files
         [ -e $CONFIG_FILE_O ] && mv $CONFIG_FILE_O openwrt/.config   
         chmod +x $DIY_P2_SH
         cd openwrt
@@ -364,7 +400,7 @@ jobs:
     - name: 读取P版配置
       if: github.event.inputs.checkconfigfile == 'p' 
       run: |     
-        [ -e files ] && mv files openwrt/files      
+        [ -e files ] && mv n1/files openwrt/files      
         [ -e $CONFIG_FILE_P ] && mv $CONFIG_FILE_P openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
@@ -373,7 +409,7 @@ jobs:
     - name: 读取S版配置
       if: github.event.inputs.checkconfigfile == 's' 
       run: |     
-        [ -e files ] && mv files openwrt/files
+        [ -e files ] && mv n1/files openwrt/files
         [ -e $CONFIG_FILE_S ] && mv $CONFIG_FILE_S openwrt/.config   
         chmod +x $DIY_P2_SH
         cd openwrt
@@ -569,12 +605,29 @@ jobs:
         echo "TAG=$(date "+%Y%m%d")" >> $GITHUB_ENV
         echo "start=$(date +%s)" >> $GITHUB_ENV
 
-    - name: Load custom feeds
+    - name: 读取O版feeds
+      if: github.event.inputs.checkconfigfile == 'o'
       run: |
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
-        chmod +x $DIY_P1_SH
+        chmod +x $DIY_P1_SH_O
         cd openwrt
-        $GITHUB_WORKSPACE/$DIY_P1_SH
+        $GITHUB_WORKSPACE/$DIY_P1_SH_O
+
+    - name: 读取P版feeds
+      if: github.event.inputs.checkconfigfile == 'p'
+      run: |
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
+        chmod +x $DIY_P1_SH_P
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P1_SH_P
+
+    - name: 读取S版feeds
+      if: github.event.inputs.checkconfigfile == 's'
+      run: |
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
+        chmod +x $DIY_P1_SH_S
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P1_SH_S
 
     - name: Update feeds
       run: cd openwrt && ./scripts/feeds update -a
@@ -585,7 +638,7 @@ jobs:
     - name: 读取O版配置
       if: github.event.inputs.checkconfigfile == 'o' 
       run: |     
-        [ -e files ] && mv files openwrt/files
+        [ -e files ] && mv n1/files openwrt/files
         [ -e $CONFIG_FILE_O ] && mv $CONFIG_FILE_O openwrt/.config   
         chmod +x $DIY_P2_SH
         cd openwrt
@@ -594,7 +647,7 @@ jobs:
     - name: 读取P版配置
       if: github.event.inputs.checkconfigfile == 'p' 
       run: |     
-        [ -e files ] && mv files openwrt/files      
+        [ -e files ] && mv n1/files openwrt/files      
         [ -e $CONFIG_FILE_P ] && mv $CONFIG_FILE_P openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
@@ -603,7 +656,7 @@ jobs:
     - name: 读取S版配置
       if: github.event.inputs.checkconfigfile == 's' 
       run: |     
-        [ -e files ] && mv files openwrt/files
+        [ -e files ] && mv n1/files openwrt/files
         [ -e $CONFIG_FILE_S ] && mv $CONFIG_FILE_S openwrt/.config   
         chmod +x $DIY_P2_SH
         cd openwrt
