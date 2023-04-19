@@ -5,6 +5,7 @@
 
 # Modify default IP
 sed -i 's/192.168.6.1/192.168.2.1/g' package/base-files/files/bin/config_generate
+sed -i "/CYXluq4wUazHjmCDBCqXF/d" package/base-files/files/etc/shadow
 
 # 添加adguardhome
 #git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/luci-app-adguardhome
