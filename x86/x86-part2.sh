@@ -45,8 +45,11 @@ rm -rf feeds/packages/net/v2ray-geodata*
 git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
 git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
 
-# speedtest
+# 测速
 git clone https://github.com/sirpdboy/netspeedtest.git package/netspeedtest
+
+# 向导
+git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a
