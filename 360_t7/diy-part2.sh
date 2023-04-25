@@ -27,9 +27,6 @@ rm -rf feeds/luci/applications/luci-app-passwall
 #git clone https://github.com/xiaorouji/openwrt-passwall.git -b packages ./package/passwall_package
 git clone https://github.com/xiaorouji/openwrt-passwall.git -b luci ./package/passwall
 
-# 测速
-git clone https://github.com/sirpdboy/netspeedtest.git package/netspeedtest
-
 # 向导
 git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
 
