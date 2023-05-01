@@ -33,10 +33,8 @@ dns:
     - https://dns.alidns.com/dns-query
   upstream_dns_file: ""
   bootstrap_dns:
-    - 119.29.29.29
-    - 119.28.28.28
+    - 116.116.116.116
     - 223.5.5.5
-    - 223.6.6.6
   all_servers: true
   fastest_addr: false
   fastest_timeout: 1s
@@ -125,8 +123,18 @@ filters:
     url: https://anti-ad.net/easylist.txt
     name: anti-ad
     id: 1678134955
+  - enabled: true
+    url: https://www.i-dont-care-about-cookies.eu/abp/
+    name: cookies
+    id: 1682615352
 whitelist_filters: []
-user_rules: []
+user_rules:
+  - '||xp.apple.com^'
+  - '||mesu.apple.com^'
+  - '||gdmf.apple.com^'
+  - '||ocsp.apple.com^'
+  - '||appldnld.apple.com^'
+  - '||world-gen.g.aaplimg.com^'
 dhcp:
   enabled: false
   interface_name: ""
