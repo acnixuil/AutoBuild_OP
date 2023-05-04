@@ -89,7 +89,7 @@ plugins:
       upstreams:
         - addr: 127.0.0.1:5554
           bootstrap: 223.5.5.5
-          enable_pipeline: false
+          enable_pipeline: true
           max_conns: 2
           insecure_skip_verify: false
           idle_timeout: 30
@@ -101,14 +101,14 @@ plugins:
       upstreams:
         - addr: https://doh.apad.pro/dns-query
           bootstrap: 223.5.5.5
-          enable_pipeline: false
+          enable_pipeline: true
           max_conns: 2
           insecure_skip_verify: false
           idle_timeout: 30
           enable_http3: false
         - addr: tls://8.8.4.4
           bootstrap: 223.5.5.5
-          enable_pipeline: false
+          enable_pipeline: true
           max_conns: 2
           insecure_skip_verify: false
           idle_timeout: 30
