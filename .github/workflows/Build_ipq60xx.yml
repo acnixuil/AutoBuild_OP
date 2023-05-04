@@ -11,7 +11,6 @@
 name: Build ipq60xx
 
 on:
-  workflow_dispatch:
 
 #定时触发开始编译
   #schedule:
