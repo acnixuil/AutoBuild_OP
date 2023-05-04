@@ -21,15 +21,7 @@ on:
         type: choice
         options:
         - MainRouter
-        - AP 
-      ssh:
-        description: 'SSH connection to Actions'
-        required: false
-        default: 'false'
-        type: choice
-        options:
-        - true
-        - false
+        - AP
 
 #定时触发开始编译
   #schedule:
@@ -137,13 +129,6 @@ jobs:
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH      
-
-    - name: SSH 连接
-      uses: P3TERX/ssh2actions@v1.0.0
-      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
-      env:
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
 
     - name: 输出预编译信息
       run: |
