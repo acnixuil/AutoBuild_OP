@@ -49,7 +49,7 @@ sed -i "s|ARMv8|ARMv8|g" package/luci-app-amlogic/root/etc/config/amlogic
 #git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
 
 # 向导
-#git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
+git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a -f
