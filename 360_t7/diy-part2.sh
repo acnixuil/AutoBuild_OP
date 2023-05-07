@@ -12,9 +12,9 @@ sed -i "/CYXluq4wUazHjmCDBCqXF/d" package/base-files/files/etc/shadow
 git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
 
 # 更换design为最新版本
-#rm -rf feeds/luci/themes/luci-theme-design
-#git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
-#git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
+rm -rf feeds/luci/themes/luci-theme-design
+git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
+git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
 
 # 更换argon为最新版本
 #rm -rf feeds/luci/themes/luci-theme-argon*
