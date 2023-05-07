@@ -12,9 +12,9 @@ sed -i "/CYXluq4wUazHjmCDBCqXF/d" package/base-files/files/etc/shadow
 git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
 
 # 更换design为最新版本
-rm -rf feeds/luci/themes/luci-theme-design
-git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
-git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
+#rm -rf feeds/luci/themes/luci-theme-design
+#git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
+#git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
 
 # 更换argon为最新版本
 #rm -rf feeds/luci/themes/luci-theme-argon*
@@ -28,7 +28,7 @@ rm -rf feeds/luci/applications/luci-app-passwall
 git clone https://github.com/xiaorouji/openwrt-passwall.git -b luci ./package/passwall
 
 # 向导
-git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
+#git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
 
 #./scripts/feeds update -a
 #./scripts/feeds install -a
