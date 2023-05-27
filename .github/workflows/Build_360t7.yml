@@ -107,10 +107,10 @@ jobs:
         $GITHUB_WORKSPACE/$DIY_P1_SH
 
     - name: 更新软件源
-      run: cd openwrt && ./scripts/feeds update -a       
+      run: cd openwrt && ./scripts/feeds update -a -f     
 
     - name: 安装软件源
-      run: cd openwrt && ./scripts/feeds install -a
+      run: cd openwrt && ./scripts/feeds install -a -f
 
     - name: 读取主路由版配置文件
       if: github.event.inputs.checkconfigfile == 'mainrouter' 
