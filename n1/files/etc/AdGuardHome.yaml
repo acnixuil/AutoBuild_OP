@@ -119,11 +119,11 @@ filters:
     url: https://cdn.jsdelivr.net/gh/o0HalfLife0o/list@master/ad.txt
     name: HalfLife
     id: 1676026291
-  - enabled: true
+  - enabled: false
     url: https://anti-ad.net/easylist.txt
     name: anti-ad
     id: 1678134955
-  - enabled: true
+  - enabled: false
     url: https://www.i-dont-care-about-cookies.eu/abp/
     name: cookies
     id: 1682615352
