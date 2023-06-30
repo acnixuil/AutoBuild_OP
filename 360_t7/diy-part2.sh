@@ -28,7 +28,14 @@ rm -rf feeds/luci/applications/luci-app-passwall
 git clone https://github.com/xiaorouji/openwrt-passwall.git -b luci ./package/passwall
 
 # 向导
-#git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
+git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
+
+# mosdns
+rm -f package/feeds/packages/mosdns
+rm -rf feeds/packages/net/mosdns
+cp -f package/openwrt-mos/v2ray-geodata/Makefile feeds/packages/net/v2ray-geodata/
+Makefile
+git clone https://github.com/QiuSimons/openwrt-mos.git package/openwrt-mos
 
 #./scripts/feeds update -a
 #./scripts/feeds install -a
