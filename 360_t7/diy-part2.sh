@@ -35,11 +35,11 @@ git clone https://github.com/kiddin9/luci-app-wizard.git package/wizard
 git clone https://github.com/kiddin9/luci-app-dnsfilter.git package/dnsfilter
 
 # mosdns
-#rm -f package/feeds/packages/mosdns
-#rm -rf feeds/packages/net/mosdns
-#cp -f package/openwrt-mos/v2ray-geodata/Makefile feeds/packages/net/v2ray-geodata/
-#Makefile
-#git clone https://github.com/QiuSimons/openwrt-mos.git package/openwrt-mos
+rm -f package/feeds/packages/mosdns
+rm -rf feeds/packages/net/mosdns
+git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
+git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
+cp -f package/v2ray-geodata/Makefile feeds/packages/net/v2ray-geodata/Makefile
 
 #./scripts/feeds update -a
 #./scripts/feeds install -a
