@@ -17,10 +17,11 @@ on:
       checkconfigfile:
         description: '选择配置文件'
         required: true
-        default: 'MainRouter'
+        default: 'PW'
         type: choice
         options:
-        - MainRouter
+        - PW
+        - SSRP
         - AP
 
 #定时触发开始编译
@@ -31,8 +32,9 @@ env:
   REPO_URL: https://github.com/padavanonly/immortalwrtARM
   REPO_BRANCH: mt7981
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: ./360_t7/mainrouter.config
+  CONFIG_PW_FILE: ./360_t7/pw.config
   CONFIG_AP_FILE: ./360_t7/ap.config
+  CONFIG_SSRP_FILE: ./360_t7/ssrp.config
   DIY_P1_SH: ./360_t7/diy-part1.sh
   DIY_P2_SH: ./360_t7/diy-part2.sh
   UPLOAD_BIN_DIR: false
@@ -112,23 +114,32 @@ jobs:
     - name: 安装软件源
       run: cd openwrt && ./scripts/feeds install -a
 
-    - name: 读取主路由版配置文件
-      if: github.event.inputs.checkconfigfile == 'mainrouter' 
+    - name: 读取PW版配置文件
+      if: github.event.inputs.checkconfigfile == 'PW' 
       run: |     
         [ -e files ] && mv files openwrt/files
-        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config   
+        [ -e $CONFIG_PW_FILE ] && mv $CONFIG_PW_FILE openwrt/.config   
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH       
         
     - name: 读取AP版配置文件
-      if: github.event.inputs.checkconfigfile == 'ap' 
+      if: github.event.inputs.checkconfigfile == 'AP' 
       run: |     
         [ -e files ] && mv files openwrt/files      
         [ -e $CONFIG_AP_FILE ] && mv $CONFIG_BETA_FILE openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH      
+
+    - name: 读取SSRP版配置文件
+      if: github.event.inputs.checkconfigfile == 'SSRP' 
+      run: |     
+        [ -e files ] && mv files openwrt/files      
+        [ -e $CONFIG_SSRP_FILE ] && mv $CONFIG_SSRP_FILE openwrt/.config
+        chmod +x $DIY_P2_SH
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P2_SH
 
     - name: 输出预编译信息
       run: |
@@ -213,7 +224,7 @@ jobs:
       uses: ncipollo/release-action@v1
       if: env.UPLOAD_RELEASE == 'true' && steps.organize.outputs.status == 'success'
       with:
-        name: ${{ env.DATE }} 「 ${{ env.FILE_NAME }} 」固件
+        name: ${{ env.DATE }} 「 ${{ env.FILE_NAME }} 」[${{ github.event.inputs.checkconfigfile }}]固件
         allowUpdates: true
         tag: ${{ env.TAG }}_${{ env.PRODUCT_NAME }}
         token: ${{ secrets.G_TOKEN }}
@@ -239,7 +250,7 @@ jobs:
     - name: Telegram or Push notification
       run: |
         MSG="
-        😺 ${{ env.FILE_NAME }} 编译完成
+        😺 ${{ env.FILE_NAME }} - [${{ github.event.inputs.checkconfigfile }}]编译完成
         🔖 开始时间：${{ env.DATE }}
         🔖 完成时间：${{ env.DATE1 }}
         🔖 编译耗时：${{ env.time }}
