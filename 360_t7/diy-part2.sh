@@ -29,10 +29,9 @@ git clone https://github.com/xiaorouji/openwrt-passwall.git -b luci ./package/pa
 
 # 向导
 #git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
-git clone https://github.com/kiddin9/luci-app-wizard.git package/wizard
 
 # dnsfilter
-git clone https://github.com/kiddin9/luci-app-dnsfilter.git package/dnsfilter
+#git clone https://github.com/kiddin9/luci-app-dnsfilter.git package/dnsfilter
 
 # mosdns
 rm -f package/feeds/packages/mosdns
