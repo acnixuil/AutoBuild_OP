@@ -16,17 +16,10 @@ sed -i "/CYXluq4wUazHjmCDBCqXF/d" package/lean/default-settings/files/zzz-defaul
 # 修改默认主题
 #sed -i 's/luci-theme-argon/luci-theme-bootstrap/' feeds/luci/collections/luci/Makefile
 
-# 配置alist3编译环境
-#rm -rf feeds/packages/lang/golang
-#svn export https://github.com/sbwml/packages_lang_golang/branches/19.x feeds/packages/lang/golang
-
-# 添加alist
-#git clone https://github.com/sbwml/luci-app-alist package/alist
-
 # 添加adguardhome
 #git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/luci-app-adguardhome
-git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
-#svn co https://github.com/kenzok8/openwrt-packages/trunk/luci-app-adguardhome package/luci-app-adguardhome
+#git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
+git clone https://github.com/kenzok78/luci-app-adguardhome.git luci-app-adguardhome
 
 # 更换design为最新版本
 #rm -rf feeds/luci/themes/luci-theme-design
