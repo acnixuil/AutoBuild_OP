@@ -18,8 +18,8 @@ sed -i "/CYXluq4wUazHjmCDBCqXF/d" package/lean/default-settings/files/zzz-defaul
 
 # 添加adguardhome
 #git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/luci-app-adguardhome
-#git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
-git clone https://github.com/kenzok78/luci-app-adguardhome.git luci-app-adguardhome
+git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
+#git clone https://github.com/kenzok78/luci-app-adguardhome.git luci-app-adguardhome
 
 # 更换design为最新版本
 #rm -rf feeds/luci/themes/luci-theme-design
