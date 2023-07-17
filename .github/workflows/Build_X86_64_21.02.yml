@@ -25,7 +25,7 @@ on:
 
 env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
-  REPO_BRANCH: openwrt-21.02
+  REPO_BRANCH: master
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: x86_21.02/x86.config
   CONFIG_ALPHA_FILE: x86_21.02/test.config
