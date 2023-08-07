@@ -243,7 +243,7 @@ jobs:
         ENABLE_WIFI_K510: 0
         WHOAMI: EnjoyToday
         KERNEL_REPO_URL: ophub/kernel
-        SCRIPT_REPO_URL: acnixuil/openwrt_packit
+        SCRIPT_REPO_URL: unifreq/openwrt_packit
         SCRIPT_REPO_BRANCH: master
 
     - name: 组织文件
