@@ -31,6 +31,7 @@ dns:
     - https://dns.pub/dns-query
     - tls://dns.alidns.com
     - https://dns.alidns.com/dns-query
+    - 114.114.114.114
   upstream_dns_file: ""
   bootstrap_dns:
     - 116.116.116.116
@@ -119,14 +120,10 @@ filters:
     url: https://cdn.jsdelivr.net/gh/o0HalfLife0o/list@master/ad.txt
     name: HalfLife
     id: 1676026291
-  - enabled: false
+  - enabled: true
     url: https://anti-ad.net/easylist.txt
     name: anti-ad
     id: 1678134955
-  - enabled: false
-    url: https://www.i-dont-care-about-cookies.eu/abp/
-    name: cookies
-    id: 1682615352
 whitelist_filters: []
 user_rules:
   - '||xp.apple.com^'
@@ -135,6 +132,11 @@ user_rules:
   - '||ocsp.apple.com^'
   - '||appldnld.apple.com^'
   - '||world-gen.g.aaplimg.com^'
+  - '#||cn-*.bilivideo.com'
+  - '||world-gen.g.aaplimg.com^'
+  - '||*pcdn*.biliapi.net^$important'
+  - '||mcdn.bilivideo.cn^$important'
+  - '||szbdyd.com^$important'
 dhcp:
   enabled: false
   interface_name: ""
