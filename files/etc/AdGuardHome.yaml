@@ -124,6 +124,10 @@ filters:
     url: https://anti-ad.net/easylist.txt
     name: anti-ad
     id: 1678134955
+  - enabled: true
+    url: https://www.i-dont-care-about-cookies.eu/abp
+    name: i-dont-care-about-cookies
+    id: 1691504448
 whitelist_filters: []
 user_rules:
   - '||xp.apple.com^'
