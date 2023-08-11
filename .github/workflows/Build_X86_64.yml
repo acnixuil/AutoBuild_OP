@@ -42,8 +42,10 @@ on:
         options:
         - Release
         - Alpha
+        
+#每周五中午12：00
   schedule:
-  - cron: 0 0 * * 4
+  - cron: 0 0 12 ? * Fri
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
