@@ -43,8 +43,9 @@ on:
         - Release
         - Alpha
 
+#定时触发开始编译
   schedule:
-  - cron: 0 12 ? * 6
+  - cron: 0 4 ? * Fri
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede

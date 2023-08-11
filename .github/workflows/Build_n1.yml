@@ -16,36 +16,37 @@ on:
         default: 'true'
         type: choice
         options:
-        - false
-        - true
+        - 'false'
+        - 'true'
       checkupdates515:
         description: '内核版本5.15'
         required: true
         default: 'false'
         type: choice
         options:
-        - false
-        - true
+        - 'false'
+        - 'true'
       checkupdates61:
         description: '内核版本6.1'
         required: true
         default: 'false'
         type: choice
         options:
-        - false
-        - true
+        - 'false'
+        - 'true'
       checkconfigfile:
         description: '选择配置文件'
         required: true
         default: 'p'
         type: choice
         options:
-        - s
-        - p
-        - o
+        - 's'
+        - 'p'
+        - 'o'
+        
 #定时触发开始编译
   schedule:
-  - cron: 0 12 ? * 6
+  - cron: 0 4 ? * Fri
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
