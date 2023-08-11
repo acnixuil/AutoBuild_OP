@@ -42,8 +42,9 @@ on:
         options:
         - Release
         - Alpha
+
   schedule:
-  - cron: 0 0 * * 4
+  - cron: 0 12 ? * 6
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
