@@ -136,11 +136,6 @@ user_rules:
   - '||ocsp.apple.com^'
   - '||appldnld.apple.com^'
   - '||world-gen.g.aaplimg.com^'
-  - '#||cn-*.bilivideo.com'
-  - '||world-gen.g.aaplimg.com^'
-  - '||*pcdn*.biliapi.net^$important'
-  - '||mcdn.bilivideo.cn^$important'
-  - '||szbdyd.com^$important'
 dhcp:
   enabled: false
   interface_name: ""
