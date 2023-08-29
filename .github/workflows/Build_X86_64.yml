@@ -734,20 +734,19 @@ jobs:
           echo "Build_x86_64_54 status: ${{ steps.Build_x86_64_54.outputs.build_successful }}"
           echo "Build_x86_64_515 status: ${{ steps.Build_x86_64_515.outputs.build_successful }}"
           echo "Build_x86_64_61 status: ${{ steps.Build_x86_64_61.outputs.build_successful }}"
-        env:
-          BUILD_54: ${{ steps.Build_x86_64_54.outputs.build_successful }}
-          BUILD_515: ${{ steps.Build_x86_64_515.outputs.build_successful }}
-          BUILD_61: ${{ steps.Build_x86_64_61.outputs.build_successful }}
+          echo "BUILD_54=${{ steps.Build_x86_64_54.outputs.build_successful }}" >> $GITHUB_ENV
+          echo "BUILD_515=${{ steps.Build_x86_64_515.outputs.build_successful }}" >> $GITHUB_ENV
+          echo "BUILD_61=${{ steps.Build_x86_64_61.outputs.build_successful }}" >> $GITHUB_ENV
 
   Cleaning:
-    if: steps.Check_Build_Status.outputs.BUILD_54 == 'true' || steps.Check_Build_Status.outputs.BUILD_515 == 'true' || steps.Check_Build_Status.outputs.BUILD_61 == 'true'
+    if: ${{ env.BUILD_54 == 'true' || env.BUILD_515 == 'true' || env.BUILD_61 == 'true' }}
     needs: [Check_Build_Status]
     runs-on: ubuntu-latest
     steps:
       - name: Delete workflow runs
         uses: Jejz168/delete-workflow-runs@main
         with:
-          retain_days: 8
+          retain_days: 7
           max_concurrent_workflows: 10
 
       - name: Remove old Releases
