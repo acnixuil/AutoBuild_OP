@@ -52,15 +52,20 @@ env:
   CONFIG_ALPHA_FILE: x86/test.config
   DIY_P1_SH: x86/x86-part1.sh
   DIY_P2_SH: x86/x86-part2.sh
-  UPLOAD_BIN_DIR: false
-  UPLOAD_CONFIG: true
-  UPLOAD_FIRMWARE: false
   UPLOAD_RELEASE: true
   TZ: Asia/Shanghai
   FILE_NAME: x86_64
   PRODUCT_NAME: x86_64
 
-jobs:   
+jobs:
+  trigger_manually:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Manual Trigger
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          # 这里放置你想要执行的步骤
+          echo "Manually triggered workflow"
 # =================================================================================================
   Build_x86_64_54:
     if: github.event.inputs.checkupdates54 == 'true'
@@ -154,13 +159,6 @@ jobs:
         sed -i 's/KERNEL_PATCHVER:=*.*/KERNEL_PATCHVER:=5.4/g' target/linux/x86/Makefile
         sed -i 's/KERNEL_TESTING_PATCHVER:=*.*/KERNEL_TESTING_PATCHVER:=5.4/g' target/linux/x86/Makefile
 
-    - name: SSH connection to Actions
-      uses: P3TERX/ssh2actions@v1.0.0
-      if: (github.event.inputs.ssh54 == 'true' && github.event.inputs.ssh54 != 'false') || contains(github.event.action, 'ssh54')
-      env:
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-
     - name: Output compilation information
       run: |
         cd openwrt
@@ -229,20 +227,6 @@ jobs:
         cp -rf openwrt/.config ./artifact/buildinfo/x86.config
         cp -rf $(find openwrt/bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
 
-    - name: Upload bin directory
-      uses: actions/upload-artifact@main
-      if: env.UPLOAD_BIN_DIR == 'true' && steps.compile.outputs.status == 'success'
-      with:
-        name: OpenWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
-        path: openwrt/bin
-
-    - name: Upload config
-      uses: actions/upload-artifact@main
-      if: env.UPLOAD_CONFIG == 'true' && steps.compile.outputs.status == 'success'
-      with:
-        name: x86-515-config
-        path: ./artifact/buildinfo/
-
     - name: Delete files
       run: |
         cd openwrt
@@ -258,13 +242,6 @@ jobs:
         rm -rf packages
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
-
-    - name: Upload firmware directory
-      uses: actions/upload-artifact@main
-      if: env.UPLOAD_FIRMWARE == 'true' && steps.organize.outputs.status == 'success'
-      with:
-        name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
-        path: ${{ env.FIRMWARE }}
 
     - name: Create release
       id: release
@@ -401,13 +378,6 @@ jobs:
         sed -i 's/KERNEL_PATCHVER:=*.*/KERNEL_PATCHVER:=5.15/g' target/linux/x86/Makefile
         sed -i 's/KERNEL_TESTING_PATCHVER:=*.*/KERNEL_TESTING_PATCHVER:=5.15/g' target/linux/x86/Makefile
 
-    - name: SSH connection to Actions
-      uses: P3TERX/ssh2actions@v1.0.0
-      if: (github.event.inputs.ssh515 == 'true' && github.event.inputs.ssh515 != 'false') || contains(github.event.action, 'ssh515')
-      env:
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-
     - name: Output compilation information
       run: |
         cd openwrt
@@ -476,20 +446,6 @@ jobs:
         cp -rf openwrt/.config ./artifact/buildinfo/x86.config
         cp -rf $(find openwrt/bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
 
-    - name: Upload bin directory
-      uses: actions/upload-artifact@main
-      if: env.UPLOAD_BIN_DIR == 'true' && steps.compile.outputs.status == 'success'
-      with:
-        name: OpenWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
-        path: openwrt/bin
-
-    - name: Upload config
-      uses: actions/upload-artifact@main
-      if: env.UPLOAD_CONFIG == 'true' && steps.compile.outputs.status == 'success'
-      with:
-        name: x86-515-config
-        path: ./artifact/buildinfo/
-
     - name: Delete files
       run: |
         cd openwrt
@@ -505,13 +461,6 @@ jobs:
         rm -rf packages
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
-
-    - name: Upload firmware directory
-      uses: actions/upload-artifact@main
-      if: env.UPLOAD_FIRMWARE == 'true' && steps.organize.outputs.status == 'success'
-      with:
-        name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
-        path: ${{ env.FIRMWARE }}
 
     - name: Create release
       id: release
@@ -648,13 +597,6 @@ jobs:
         sed -i 's/KERNEL_PATCHVER:=*.*/KERNEL_PATCHVER:=6.1/g' target/linux/x86/Makefile        
         sed -i 's/KERNEL_TESTING_PATCHVER:=*.*/KERNEL_TESTING_PATCHVER:=6.1/g' target/linux/x86/Makefile
 
-    - name: SSH connection to Actions
-      uses: P3TERX/ssh2actions@v1.0.0
-      if: (github.event.inputs.ssh61 == 'true' && github.event.inputs.ssh61  != 'false') || contains(github.event.action, 'ssh61')
-      env:
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-
     - name: Output compilation information
       run: |
         cd openwrt
@@ -723,20 +665,6 @@ jobs:
         cp -rf openwrt/.config ./artifact/buildinfo/x86.config
         cp -rf $(find openwrt/bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
 
-    - name: Upload bin directory
-      uses: actions/upload-artifact@main
-      if: env.UPLOAD_BIN_DIR == 'true' && steps.compile.outputs.status == 'success'
-      with:
-        name: OpenWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
-        path: openwrt/bin
-
-    - name: Upload config
-      uses: actions/upload-artifact@main
-      if: env.UPLOAD_CONFIG == 'true' && steps.compile.outputs.status == 'success'
-      with:
-        name: x86-61-config
-        path: ./artifact/buildinfo/
-
     - name: Delete files
       run: |
         cd openwrt 
@@ -752,13 +680,6 @@ jobs:
         rm -rf packages
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
-
-    - name: Upload firmware directory
-      uses: actions/upload-artifact@main
-      if: env.UPLOAD_FIRMWARE == 'true' && steps.organize.outputs.status == 'success'
-      with:
-        name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
-        path: ${{ env.FIRMWARE }}
 
     - name: Create release
       id: release
@@ -803,23 +724,43 @@ jobs:
         curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
         
 # =================================================================================================
-  Cleaning:
-    if: ${{ always() }}
-    needs: [Build_x86_64_54,Build_x86_64_515,Build_x86_64_61]
+  Check_Build_Status:
     runs-on: ubuntu-latest
     steps:
-    - name: Delete workflow runs
-      uses: Jejz168/delete-workflow-runs@main
-      with:
-        retain_days: 8
-        keep_minimum_runs: 2
+      - name: Check Build Status
+        id: check_build_status
+        run: |
+          # Check the status of each build step
+          echo "Build_x86_64_54 status: ${{ steps.Build_x86_64_54.outputs.build_successful }}"
+          echo "Build_x86_64_515 status: ${{ steps.Build_x86_64_515.outputs.build_successful }}"
+          echo "Build_x86_64_61 status: ${{ steps.Build_x86_64_61.outputs.build_successful }}"
+        env:
+          BUILD_54: ${{ steps.Build_x86_64_54.outputs.build_successful }}
+          BUILD_515: ${{ steps.Build_x86_64_515.outputs.build_successful }}
+          BUILD_61: ${{ steps.Build_x86_64_61.outputs.build_successful }}
 
-    - name: Remove old Releases
-      uses: Jejz168/delete-older-releases@master
-      if: env.UPLOAD_RELEASE == 'true' 
-      with:
-        keep_latest: 36
-        delete_tags: true
-        delete_tag_pattern: _
-      env:
-        GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
+  Cleaning:
+    if: steps.Check_Build_Status.outputs.BUILD_54 == 'true' || steps.Check_Build_Status.outputs.BUILD_515 == 'true' || steps.Check_Build_Status.outputs.BUILD_61 == 'true'
+    needs: [Check_Build_Status]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete workflow runs
+        uses: Jejz168/delete-workflow-runs@main
+        with:
+          retain_days: 8
+          max_concurrent_workflows: 10
+
+      - name: Remove old Releases
+        uses: Jejz168/delete-older-releases@master
+        if: env.UPLOAD_RELEASE == 'true' 
+        with:
+          keep_latest: 36
+          delete_tags: true
+          delete_tag_pattern: _
+        env:
+          GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
+
+
+
+
+
