@@ -7,8 +7,6 @@
 name: Build_n1
 
 on:
-  schedule:
-    - cron: '6 6 ? * Fri'
   workflow_dispatch:
     inputs:
       checkupdates54:
@@ -63,8 +61,7 @@ env:
   FILE_NAME: n1
   PRODUCT_NAME: n1
 
-jobs:        
-# =================================================================================================
+jobs:             
   Build_x86_64_54:
     if: github.event.inputs.checkupdates54 == 'true'
     runs-on: ubuntu-22.04
