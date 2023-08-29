@@ -8,14 +8,12 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: Build ipq60xx
+name: Auto_ipq6000
 
 on:
   workflow_dispatch:
-
-#定时触发开始编译
-  #schedule:
-  #- cron: 0 17 * * 1
+  schedule:
+    - cron: '5 4 15 * *'
 
 env:
   REPO_URL: https://github.com/acnixuil/ipq6000
