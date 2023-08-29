@@ -724,23 +724,9 @@ jobs:
         curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
         
 # =================================================================================================
-  Check_Build_Status:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check Build Status
-        id: check_build_status
-        run: |
-          # Check the status of each build step
-          echo "Build_x86_64_54 status: ${{ steps.Build_x86_64_54.outputs.build_successful }}"
-          echo "Build_x86_64_515 status: ${{ steps.Build_x86_64_515.outputs.build_successful }}"
-          echo "Build_x86_64_61 status: ${{ steps.Build_x86_64_61.outputs.build_successful }}"
-          echo "BUILD_54=${{ steps.Build_x86_64_54.outputs.build_successful }}" >> $GITHUB_ENV
-          echo "BUILD_515=${{ steps.Build_x86_64_515.outputs.build_successful }}" >> $GITHUB_ENV
-          echo "BUILD_61=${{ steps.Build_x86_64_61.outputs.build_successful }}" >> $GITHUB_ENV
-
   Cleaning:
-    if: ${{ env.BUILD_54 == 'true' || env.BUILD_515 == 'true' || env.BUILD_61 == 'true' }}
-    needs: [Check_Build_Status]
+    if: ${{ always() }}
+    needs: [Build_x86_64_54,Build_x86_64_515,Build_x86_64_61]
     runs-on: ubuntu-latest
     steps:
       - name: Delete workflow runs
