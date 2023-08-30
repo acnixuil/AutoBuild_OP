@@ -18,14 +18,12 @@ on:
   #- cron: 0 17 * * 1
 
 env:
-  REPO_URL: https://github.com/acnixuil/ipq6000
+  REPO_URL: https://github.com/sdf8057/ipq6000
   REPO_BRANCH: main
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: ./zn-m2/m2.config
   DIY_P1_SH: ./zn-m2/zn-m2-part1.sh
   DIY_P2_SH: ./zn-m2/zn-m2-part2.sh
-  UPLOAD_BIN_DIR: false
-  UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -181,13 +179,6 @@ jobs:
         mv *sysupgrade.bin openwrt_ipq60xx_sysupgrade.bin
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
-
-    - name: 上传固件
-      uses: actions/upload-artifact@main
-      if: steps.organize.outputs.status == 'success' && !cancelled()
-      with:
-        name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
-        path: ${{ env.FIRMWARE }}
 
     - name: 生成标签
       id: release
