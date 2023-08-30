@@ -8,7 +8,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: Build armv8_p
+name: Auto_Armv8_p
 
 on:
   schedule:
