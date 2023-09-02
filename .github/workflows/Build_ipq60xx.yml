@@ -26,9 +26,9 @@ env:
   REPO_URL: https://github.com/sdf8057/ipq6000
   REPO_BRANCH: main
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: ./zn-m2/m2.config
-  DIY_P1_SH: ./zn-m2/zn-m2-part1.sh
-  DIY_P2_SH: ./zn-m2/zn-m2-part2.sh
+  CONFIG_FILE: ./ipq6000/ipq6000.config
+  DIY_P1_SH: ./ipq6000/diy-part1.sh
+  DIY_P2_SH: ./ipq6000/diy-part2.sh
   UPLOAD_RELEASE: true
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
