@@ -236,14 +236,14 @@ jobs:
       - name: Delete workflow runs
         uses: Jejz168/delete-workflow-runs@main
         with:
-          retain_days: 7
-          max_concurrent_workflows: 10
+          retain_days: 1
+          max_concurrent_workflows: 3
 
       - name: Remove old Releases
         uses: Jejz168/delete-older-releases@master
         if: env.UPLOAD_RELEASE == 'true' 
         with:
-          keep_latest: 20
+          keep_latest: 10
           delete_tags: true
           delete_tag_pattern: _
         env:
