@@ -29,8 +29,8 @@ env:
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: x86_21.02/x86.config
   CONFIG_ALPHA_FILE: x86_21.02/test.config
-  DIY_P1_SH: x86_21.02/x86-part1.sh
-  DIY_P2_SH: x86_21.02/x86-part2.sh
+  DIY_P1_SH: x86_21.02/diy-part1.sh
+  DIY_P2_SH: x86_21.02/diy-part2.sh
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
