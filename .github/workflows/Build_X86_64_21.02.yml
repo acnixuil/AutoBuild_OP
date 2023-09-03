@@ -11,13 +11,7 @@
 name: Build_x86_64_21.02
 
 on:
-  repository_dispatch:
   workflow_dispatch:
-    inputs:
-      ssh:
-        description: 'SSH connection to Actions'
-        required: false
-        default: 'false'
 
 #定时触发开始编译
   schedule:
@@ -187,8 +181,7 @@ jobs:
         rm -rf *rootfs*
         rm -rf profiles.json
         rm -rf *.buildinfo
-        rm -rf package
-        rm -rf *.itb
+        rm -rf *package*
         sleep 2
         ls
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
@@ -209,7 +202,7 @@ jobs:
         name: ${{ env.DATE }} 「 ${{ env.FILE_NAME }} 」固件
         allowUpdates: true
         tag: ${{ env.TAG }}_${{ env.PRODUCT_NAME }}
-        token: ${{ secrets.G_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}
         body: |
           - 🔖 此为 ${{ env.FILE_NAME }} 固件
           - 🔖 默认IP：192.168.3.1 默认密码：password
@@ -260,6 +253,6 @@ jobs:
       with:
         keep_latest: 10
         delete_tags: true
-        delete_tag_pattern: _ipq60xx
+        delete_tag_pattern: _
       env:
-        GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
