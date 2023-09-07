@@ -1,31 +1,35 @@
 #===============================================
-# Description: X86_64
+# Description: ARMv8-ROOTFS
 # Lisence: MIT
 # By：Jejz
 #===============================================
 
-name: Auto_X86_64_k54
+name: ARMv8-ROOTFS
 
 on:
-  schedule:
-    - cron: '0 22 * * 5'
   workflow_dispatch:
+  #schedule:
+    #- cron: 0 18 * * *
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: x86/x86.config
-  DIY_P1_SH: x86/diy-part1.sh
-  DIY_P2_SH: x86/diy-part2.sh
+  CONFIG_FILE: armv8/armv8.config
+  DIY_P1_SH: armv8/diy-part1.sh
+  DIY_P2_SH: armv8/diy-part2.sh
+  UPLOAD_CONFIG: true
   UPLOAD_RELEASE: true
   TZ: Asia/Shanghai
-  FILE_NAME: x86_64
-  PRODUCT_NAME: x86_64
+  FILE_NAME: ARMv8-ROOTFS
+  PRODUCT_NAME: ARMv8-ROOTFS
+  TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
 jobs:
-  Build_x86_64_54:
+  build:
     runs-on: ubuntu-22.04
+
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -34,8 +38,8 @@ jobs:
       run: |
         echo "警告⚠"
         echo "若分配的服务器性能不足，务必及时取消，重新运行！"
-        echo "已知编译成功CPU型号：8370C,8171M"
-        echo "已知性能不足CPU型号：8272CL"
+        echo "已知编译成功CPU型号：8370C,8272CL"
+        echo "已知性能不足CPU型号：8171M"
         echo -e "-------------- ------------CPU信息------------------------------------------\n"
         echo "CPU物理数量:$(cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l)"
         echo -e "CPU核心及版本信息：$(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c) \n"
@@ -46,18 +50,29 @@ jobs:
         echo "-----------------------------硬盘信息---------------------------------------------"
         echo -e  "硬盘数量：$(ls /dev/sd* | grep -v [1-9] | wc -l) \n"
         echo "硬盘详情："
-        echo " 系统空间       类型   总数  已用  可用  使用率"
+        echo " 系统空间       类型     总数   已用  可用  使用率"
         df -Th
 
     - name: Initialization environment
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
-        sudo bash -c 'bash <(curl -s https://build-scripts.immortalwrt.eu.org/init_build_environment.sh)'
+        sudo -E swapoff -a
+        sudo -E rm -f /swapfile
+        sudo -E docker image prune -a -f
+        sudo -E snap set system refresh.retain=2
+        sudo -E rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/apt/sources.list.d /usr/local/lib/android
+        sudo -E apt-get -y purge azure-cli* docker* ghc* zulu* llvm* firefox google* dotnet* powershell* openjdk* mysql* php* mongodb* dotnet* moby* snap* aspnetcore*
+        [ -n "$AGENT_TOOLSDIRECTORY" ] && sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+        sudo -E apt-get update
+        sudo -E apt-get -y install $(curl -fsSL https://is.gd/depends_ubuntu_2204)
+        sudo -E apt-get -y install libfuse-dev
+        sudo -E apt-get -y autoremove --purge
+        sudo -E apt-get clean
         sudo timedatectl set-timezone "$TZ"
         sudo mkdir -p /workdir
-        sudo chown $USER:$GROUPS /workdir     
+        sudo chown $USER:$GROUPS /workdir
+        df -Th
 
     - name: Clone source code
       working-directory: /workdir
@@ -66,16 +81,15 @@ jobs:
         git clone $REPO_URL -b $REPO_BRANCH openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
         cd openwrt
-        Author=$(git show -s --date=short --format="%an")
-        Date=$(git show -s --date=short --format="%ci")
-        Commit=$(git show -s --date=short --format="%s")
-        Hash=$(git show -s --date=short --format="%H")
+        Author=$(git show -s --date=short --format="Author: %an")
+        Date=$(git show -s --date=short --format="date: %ci")
+        Commit=$(git show -s --date=short --format="commit: %s")
+        Hash=$(git show -s --date=short --format="commit hash: %h")
         echo "author=$Author" >> $GITHUB_ENV
         echo "date=$Date" >> $GITHUB_ENV
         echo "commit=$Commit" >> $GITHUB_ENV
         echo "hash=$Hash" >> $GITHUB_ENV
         echo "DATE=$(date "+%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
-        echo "TAG=$(date "+%Y%m%d")" >> $GITHUB_ENV
         echo "start=$(date +%s)" >> $GITHUB_ENV
 
     - name: Load custom feeds
@@ -91,16 +105,12 @@ jobs:
     - name: Install feeds
       run: cd openwrt && ./scripts/feeds install -a
 
-    - name: 读取稳定版配置
-      run: |     
-        [ -e files ] && mv files openwrt/files
-        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config   
+    - name: Load custom configuration
+      run: |
+        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
-        $GITHUB_WORKSPACE/$DIY_P2_SH       
-        sed -i 's/CONFIG_LINUX.*/CONFIG_LINUX_5_4=y/g' .config       
-        sed -i 's/KERNEL_PATCHVER:=*.*/KERNEL_PATCHVER:=5.4/g' target/linux/x86/Makefile
-        sed -i 's/KERNEL_TESTING_PATCHVER:=*.*/KERNEL_TESTING_PATCHVER:=5.4/g' target/linux/x86/Makefile
+        $GITHUB_WORKSPACE/$DIY_P2_SH
 
     - name: Output compilation information
       run: |
@@ -145,7 +155,7 @@ jobs:
       run: |
         cd openwrt
         echo -e "$(nproc) thread compile"
-        make -j$(nproc) || make -j1 V=s || (curl -k --data chat_id="${{ env.TELEGRAM_CHAT_ID }}" --data "text=😅 ${{env.PRODUCT_NAME}}-OpenWrt 固件编译失败 😅" "https://api.telegram.org/bot${{ env.TELEGRAM_TOKEN }}/sendMessage";exit 1)
+        make -j$(nproc) || make -j1 V=s
         echo "status=success" >> $GITHUB_OUTPUT
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
@@ -167,22 +177,23 @@ jobs:
       id: organizer
       run: |
         mkdir -p ./artifact/buildinfo
-        cp -rf openwrt/.config ./artifact/buildinfo/x86.config
+        cp -rf openwrt/.config ./artifact/buildinfo/armv8.config
         cp -rf $(find openwrt/bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
 
-    - name: Delete files
-      run: |
-        cd openwrt
-        bash rename.sh
-        Kernel=`grep "_uefi.img.gz" wget/open_dev_md5 | cut -d - -f 2 | cut -d _ -f 2 `
-        echo "KERNEL=$Kernel" >> $GITHUB_ENV
+    - name: Upload config 
+      uses: actions/upload-artifact@main
+      if: env.UPLOAD_CONFIG == 'true' && steps.compile.outputs.status == 'success'
+      with:
+        name: armv8-config
+        path: ./artifact/buildinfo/
 
     - name: Organize files
       id: organize
       if: steps.compile.outputs.status == 'success'
       run: |
-        cd openwrt/bin/targets/*/*
+        cd $GITHUB_WORKSPACE/openwrt/bin/targets/*/*
         rm -rf packages
+        rm -rf config.buildinfo feeds.buildinfo openwrt-armvirt-64-default.manifest openwrt-armvirt-64-Image version.buildinfo
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
 
@@ -191,19 +202,16 @@ jobs:
       uses: ncipollo/release-action@v1
       if: env.UPLOAD_RELEASE == 'true' && steps.compile.outputs.status == 'success'
       with:
-        name: ${{ env.DATE }} 「 ${{ env.FILE_NAME }}_${{ env.KERNEL }} 」固件
+        name: ${{ env.DATE }} 🚫「 ${{ env.FILE_NAME }} 」
         allowUpdates: true
-        tag: ${{ env.TAG }}_${{ env.KERNEL }}
-        token: ${{ secrets.G_TOKEN }}
+        removeArtifacts: true
+        tag: ${{ env.FILE_NAME }}
+        token: ${{ secrets.GITHUB_TOKEN }}
         body: |
-          - 🔖 此为 ${{ env.FILE_NAME }}_${{ env.KERNEL }} 固件
-          - 🔖 默认IP：192.168.3.1 默认密码：无密码
-          - 🔖 感谢源码作者无私分享！
-          - 🔖 时间: ${{ env.date }}
-          - 🔖 hash: ${{ env.hash }}
+          - 此为 ARMv8 底包，非完整固件
         artifacts: ${{ env.FIRMWARE }}/*
 
-    - name: Completion time 
+    - name: Total time
       run: |
         echo "DATE1=$(date "+%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
         end=$(date +%s)
@@ -214,41 +222,9 @@ jobs:
         HMS=`echo ${hour}:${min}:${sec}`
         echo "time=$HMS" >> $GITHUB_ENV
 
-    - name: Telegram or Push notification
+    - name: Telegram notification
       run: |
         MSG="
-        😺 ${{ env.FILE_NAME }}_${{ env.KERNEL }} 编译完成
-        🔖 开始时间：${{ env.DATE }}
-        🔖 完成时间：${{ env.DATE1 }}
-        🔖 编译耗时：${{ env.time }}
-        ⏱ 时间: ${{ env.date }}
-        ⌛ hash: ${{ env.hash }}
-        🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/${{ env.TAG }}_${{ env.KERNEL }}
+        🌺${{ env.PRODUCT_NAME }}编译完成
         "
         curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
-
-  Cleaning:
-    if: ${{ always() }}
-    needs: [Build_x86_64_54]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Delete workflow runs
-        uses: Jejz168/delete-workflow-runs@main
-        with:
-          retain_days: 1
-          max_concurrent_workflows: 3
-
-      - name: Remove old Releases
-        uses: Jejz168/delete-older-releases@master
-        if: env.UPLOAD_RELEASE == 'true' 
-        with:
-          keep_latest: 10
-          delete_tags: true
-          delete_tag_pattern: _
-        env:
-          GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
-
-
-
-
-
