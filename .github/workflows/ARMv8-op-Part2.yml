@@ -152,3 +152,4 @@ jobs:
         token: ${{ secrets.TELEGRAM_TOKEN }}
         message: |
           🔖${{ env.PRODUCT_NAME }}打包完成
+          🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/$${{ env.PRODUCT_NAME }}
