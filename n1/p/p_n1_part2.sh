@@ -37,8 +37,12 @@ svn co https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic package/
 sed -i "s|ARMv8|ARMv8|g" package/luci-app-amlogic/root/etc/config/amlogic
 
 # mosdns
-#rm -rf feeds/packages/net/mosdns*
-#rm -rf feeds/luci/applications/luci-app-mosdns*
-#rm -rf feeds/packages/net/v2ray-geodata*
-#git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
-#git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
+rm -rf feeds/packages/net/mosdns*
+rm -rf feeds/luci/applications/luci-app-mosdns*
+rm -rf feeds/packages/net/v2ray-geodata*
+git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
+git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
+
+# turboacc 去dns
+rm -rf feeds/luci/applications/luci-app-turboacc
+svn co https://github.com/xiangfeidexiaohuo/openwrt-packages/trunk/patch/luci-app-turboacc package/luci-app-turboacc
