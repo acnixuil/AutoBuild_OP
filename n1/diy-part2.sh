@@ -36,9 +36,6 @@ git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-d
 svn co https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic package/luci-app-amlogic
 sed -i "s|ARMv8|ARMv8|g" package/luci-app-amlogic/root/etc/config/amlogic
 
-# 向导
-git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
-
 # mosdns
 rm -rf feeds/packages/net/mosdns*
 rm -rf feeds/luci/applications/luci-app-mosdns*
