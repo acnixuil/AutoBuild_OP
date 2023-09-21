@@ -195,7 +195,7 @@ jobs:
         tag: ${{ env.TAG }}_${{ env.PRODUCT_NAME }}
         token: ${{ secrets.GITHUB_TOKEN }}
         body: |
-          - 🔖 此为 ${{ env.FILE_NAME }} 固件
+          - 🔖 此为 ${{ env.FILE_NAME }} imm23.05 固件
           - 🔖 默认IP：192.168.3.1 默认密码：password
           - 🔖 感谢源码作者无私分享！
           - 🔖 时间: ${{ env.date }}
@@ -216,7 +216,7 @@ jobs:
     - name: Telegram or Push notification
       run: |
         MSG="
-        😺 ${{ env.FILE_NAME }} 编译完成
+        😺 ${{ env.FILE_NAME }} imm23.05 编译完成
         🔖 开始时间：${{ env.DATE }}
         🔖 完成时间：${{ env.DATE1 }}
         🔖 编译耗时：${{ env.time }}
