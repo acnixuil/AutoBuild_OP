@@ -36,7 +36,7 @@ jobs:
 
     steps:
     - name: 检查
-      uses: actions/checkout@main
+      uses: actions/checkout@v4
     
     - name: 检查服务器状态
       run: |

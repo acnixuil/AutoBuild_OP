@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Check server configuration
       run: |
@@ -194,7 +194,7 @@ jobs:
         name: ${{ env.DATE }} 「 ${{ env.FILE_NAME }}_${{ env.KERNEL }} 」固件
         allowUpdates: true
         tag: ${{ env.TAG }}_${{ env.KERNEL }}
-        token: ${{ secrets.G_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}
         body: |
           - 🔖 此为 ${{ env.FILE_NAME }}_${{ env.KERNEL }} 固件
           - 🔖 默认IP：192.168.3.1 默认密码：无密码
@@ -236,7 +236,7 @@ jobs:
         uses: Jejz168/delete-workflow-runs@main
         with:
           retain_days: 1
-          max_concurrent_workflows: 3
+          keep_minimum_runs: 3
 
       - name: Remove old Releases
         uses: Jejz168/delete-older-releases@master
@@ -246,7 +246,7 @@ jobs:
           delete_tags: true
           delete_tag_pattern: _
         env:
-          GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
 

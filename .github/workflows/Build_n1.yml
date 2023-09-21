@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Check server configuration
       run: |
@@ -299,7 +299,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Check server configuration
       run: |
@@ -532,7 +532,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Check server configuration
       run: |
@@ -767,14 +767,14 @@ jobs:
     - name: Delete workflow runs
       uses: Jejz168/delete-workflow-runs@main
       with:
-        retain_days: 8
+        retain_days: 1
         keep_minimum_runs: 2
 
     - name: Remove old Releases
       uses: Jejz168/delete-older-releases@master
       if: env.UPLOAD_RELEASE == 'true' 
       with:
-        keep_latest: 36
+        keep_latest: 10
         delete_tags: true
         delete_tag_pattern: _
       env:
