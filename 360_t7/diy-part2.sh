@@ -23,12 +23,9 @@ git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-d
 #git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
 
 # passwall
-#rm -rf feeds/luci/applications/luci-app-passwall
-#git clone https://github.com/xiaorouji/openwrt-passwall.git -b packages ./package/passwall_package
-#git clone https://github.com/xiaorouji/openwrt-passwall.git -b luci ./package/passwall
-
-# 向导
-#git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
+rm -rf feeds/luci/applications/luci-app-passwall
+git clone https://github.com/xiaorouji/openwrt-passwall.git -b packages ./package/passwall_package
+git clone https://github.com/xiaorouji/openwrt-passwall.git -b luci ./package/passwall
 
 # dnsfilter
 #git clone https://github.com/kiddin9/luci-app-dnsfilter.git package/dnsfilter
