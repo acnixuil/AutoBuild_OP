@@ -20,6 +20,7 @@ dns:
   blocking_ipv4: ""
   blocking_ipv6: ""
   blocked_response_ttl: 10
+  protection_disabled_until: null
   parental_block_host: family-block.dns.adguard.com
   safebrowsing_block_host: standard-block.dns.adguard.com
   ratelimit: 0
@@ -30,10 +31,11 @@ dns:
     - https://dns.pub/dns-query
     - tls://dns.alidns.com
     - https://dns.alidns.com/dns-query
+    - 114.114.114.114
   upstream_dns_file: ""
   bootstrap_dns:
-    - 223.5.5.5
     - 116.116.116.116
+    - 223.5.5.5
   all_servers: true
   fastest_addr: false
   fastest_timeout: 1s
@@ -49,24 +51,35 @@ dns:
   cache_size: 4194304
   cache_ttl_min: 600
   cache_ttl_max: 3600
-  cache_optimistic: true
+  cache_optimistic: false
   bogus_nxdomain: []
   aaaa_disabled: true
   enable_dnssec: true
-  edns_client_subnet: true
+  edns_client_subnet:
+    custom_ip: ""
+    enabled: true
+    use_custom: false
   max_goroutines: 300
   handle_ddr: true
   ipset: []
   ipset_file: ""
+  bootstrap_prefer_ipv6: false
   filtering_enabled: true
   filters_update_interval: 24
   parental_enabled: false
-  safesearch_enabled: false
   safebrowsing_enabled: false
   safebrowsing_cache_size: 1048576
   safesearch_cache_size: 1048576
   parental_cache_size: 1048576
   cache_time: 30
+  safe_search:
+    enabled: false
+    bing: true
+    duckduckgo: true
+    google: true
+    pixabay: true
+    yandex: true
+    youtube: true
   rewrites: []
   blocked_services: []
   upstream_timeout: 10s
@@ -93,27 +106,36 @@ tls:
   private_key_path: ""
   strict_sni_check: false
 querylog:
-  enabled: true
-  file_enabled: true
+  ignored: []
   interval: 24h
   size_memory: 1000
-  ignored: []
-statistics:
   enabled: true
-  interval: 1
+  file_enabled: true
+statistics:
   ignored: []
+  interval: 24h
+  enabled: true
 filters:
   - enabled: true
     url: https://cdn.jsdelivr.net/gh/o0HalfLife0o/list@master/ad.txt
     name: HalfLife
     id: 1676026291
-  - enabled: false
+  - enabled: true
     url: https://anti-ad.net/easylist.txt
     name: anti-ad
     id: 1678134955
+  - enabled: true
+    url: https://www.i-dont-care-about-cookies.eu/abp
+    name: i-dont-care-about-cookies
+    id: 1691504448
 whitelist_filters: []
 user_rules:
-  - ""
+  - '||xp.apple.com^'
+  - '||mesu.apple.com^'
+  - '||gdmf.apple.com^'
+  - '||ocsp.apple.com^'
+  - '||appldnld.apple.com^'
+  - '||world-gen.g.aaplimg.com^'
 dhcp:
   enabled: false
   interface_name: ""
@@ -150,4 +172,4 @@ os:
   group: ""
   user: ""
   rlimit_nofile: 0
-schema_version: 16
+schema_version: 20
