@@ -28,10 +28,9 @@ dns:
   refuse_any: true
   upstream_dns:
     - tls://dns.pub
-    - https://dns.pub/dns-query
+    - #https://dns.pub/dns-query
     - tls://dns.alidns.com
-    - https://dns.alidns.com/dns-query
-    - 114.114.114.114
+    - #https://dns.alidns.com/dns-query
   upstream_dns_file: ""
   bootstrap_dns:
     - 116.116.116.116
@@ -136,6 +135,7 @@ user_rules:
   - '||ocsp.apple.com^'
   - '||appldnld.apple.com^'
   - '||world-gen.g.aaplimg.com^'
+  - '@@||huya.com^'
 dhcp:
   enabled: false
   interface_name: ""

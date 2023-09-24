@@ -5,7 +5,7 @@
 
 # firewall custom
 #echo "iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE" >> package/network/config/firewall/files/firewall.user
-echo "iptables -t nat -I POSTROUTING -j FULLCONENAT" >> package/network/config/firewall/files/firewall.user
+#echo "iptables -t nat -I POSTROUTING -j FULLCONENAT" >> package/network/config/firewall/files/firewall.user
 
 # Modify default IP
 sed -i 's/192.168.1.1/192.168.2.254/g' package/base-files/files/bin/config_generate
@@ -30,7 +30,7 @@ rm -rf feeds/luci/applications/luci-app-design-config
 git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git package/luci-theme-argon
 git clone -b 18.06 https://github.com/jerrykuku/luci-app-argon-config.git package/luci-app-argon-config
 git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
-git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-confignn
+git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
 
 # 添加晶晨宝盒
 svn co https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic package/luci-app-amlogic

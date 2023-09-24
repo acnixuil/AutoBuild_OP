@@ -28,10 +28,9 @@ dns:
   refuse_any: true
   upstream_dns:
     - tls://dns.pub
-    - https://dns.pub/dns-query
+    - #https://dns.pub/dns-query
     - tls://dns.alidns.com
-    - https://dns.alidns.com/dns-query
-    - 114.114.114.114
+    - #https://dns.alidns.com/dns-query
   upstream_dns_file: ""
   bootstrap_dns:
     - 116.116.116.116
@@ -51,7 +50,7 @@ dns:
   cache_size: 4194304
   cache_ttl_min: 600
   cache_ttl_max: 3600
-  cache_optimistic: false
+  cache_optimistic: true
   bogus_nxdomain: []
   aaaa_disabled: true
   enable_dnssec: true
@@ -136,6 +135,7 @@ user_rules:
   - '||ocsp.apple.com^'
   - '||appldnld.apple.com^'
   - '||world-gen.g.aaplimg.com^'
+  - '@@||huya.com^'
 dhcp:
   enabled: false
   interface_name: ""

@@ -5,7 +5,7 @@
 
 # firewall custom
 #echo "iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE" >> package/network/config/firewall/files/firewall.user
-echo "iptables -t nat -I POSTROUTING -j FULLCONENAT" >> package/network/config/firewall/files/firewall.user
+#echo "iptables -t nat -I POSTROUTING -j FULLCONENAT" >> package/network/config/firewall/files/firewall.user
 
 # Modify default IP
 sed -i 's/192.168.1.1/192.168.2.254/g' package/base-files/files/bin/config_generate
@@ -30,15 +30,14 @@ rm -rf feeds/luci/applications/luci-app-design-config
 git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git package/luci-theme-argon
 git clone -b 18.06 https://github.com/jerrykuku/luci-app-argon-config.git package/luci-app-argon-config
 git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
-git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-confignn
+git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
 
 # 添加晶晨宝盒
 svn co https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic package/luci-app-amlogic
 sed -i "s|ARMv8|ARMv8|g" package/luci-app-amlogic/root/etc/config/amlogic
 
 # mosdns
-#rm -rf feeds/packages/net/mosdns*
-#rm -rf feeds/luci/applications/luci-app-mosdns*
-#rm -rf feeds/packages/net/v2ray-geodata*
-#git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
-#git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
+rm -rf feeds/packages/net/mosdns
+rm -rf feeds/luci/applications/luci-app-mosdns
+svn co https://github.com/sbwml/luci-app-mosdns/trunk/luci-app-mosdns package/luci-app-mosdns
+svn co https://github.com/sbwml/luci-app-mosdns/trunk/mosdns package/mosdns
