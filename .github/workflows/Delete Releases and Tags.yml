@@ -46,6 +46,8 @@ jobs:
             git push --delete origin $tag
           done
   clean:
+    if: ${{ always() }}
+    needs: [delete_releases_and_tags]
     runs-on: ubuntu-latest
     steps:
     - name: Delete workflow runs
