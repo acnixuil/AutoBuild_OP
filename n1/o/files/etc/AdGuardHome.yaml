@@ -28,12 +28,16 @@ dns:
   refuse_any: true
   upstream_dns:
     - tls://dns.pub
-    - #https://dns.pub/dns-query
     - tls://dns.alidns.com
+    - 180.76.76.76
+    - #123.125.81.6
+    - #https://dns.pub/dns-query
     - #https://dns.alidns.com/dns-query
   upstream_dns_file: ""
   bootstrap_dns:
-    - 116.116.116.116
+    - #116.116.116.116
+    - 211.136.196.2
+    - 120.196.165.24
     - 223.5.5.5
   all_servers: true
   fastest_addr: false
@@ -50,7 +54,7 @@ dns:
   cache_size: 4194304
   cache_ttl_min: 600
   cache_ttl_max: 3600
-  cache_optimistic: true
+  cache_optimistic: false
   bogus_nxdomain: []
   aaaa_disabled: true
   enable_dnssec: true
