@@ -1,0 +1,30 @@
+name: Delete Releases and Tags Manually
+
+on:
+  workflow_dispatch:  # 手动触发
+
+jobs:
+  delete_releases_and_tags:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Delete Releases
+        if: github.event.inputs.delete_releases == 'true'
+        run: |
+          # 删除所有 Release
+          releases=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/releases")
+          for release in $(echo "$releases" | jq -r '.[].id'); do
+            curl -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/releases/$release"
+          done
+
+      - name: Delete Tags
+        if: github.event.inputs.delete_tags == 'true'
+        run: |
+          # 删除所有 Tag
+          tags=$(git for-each-ref --format '%(refname:short)' refs/tags)
+          for tag in $tags; do
+            git push --delete origin $tag
+          done
