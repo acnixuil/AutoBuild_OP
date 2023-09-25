@@ -6,9 +6,19 @@ on:
       delete_releases:
         description: 'Delete Releases (true or false)'
         required: true
+        default: 'true'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
       delete_tags:
         description: 'Delete Tags (true or false)'
         required: true
+        default: 'true'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
 
 jobs:
   delete_releases_and_tags:
