@@ -16,7 +16,7 @@ sed -i 's/192.168.1.1/192.168.3.1/g' package/base-files/files/bin/config_generat
 sed -i '/$1$V4UetPzk$CYXluq4wUazHjmCDBCqXF./d' package/lean/default-settings/files/zzz-default-settings
 
 # 调整 x86 型号只显示 CPU 型号
-#sed -i 's/${g}.*/${a}${b}${c}${d}${e}${f}/g' package/lean/autocore/files/x86/autocore
+sed -i 's/${g}.*/${a}${b}${c}${d}${e}${f}/g' package/lean/autocore/files/x86/autocore
 
 # 添加adguardhome
 #git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/luci-app-adguardhome
