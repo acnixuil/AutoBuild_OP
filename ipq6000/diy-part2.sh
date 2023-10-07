@@ -37,8 +37,5 @@ git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-d
 # 向导
 #git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
 
-#./scripts/feeds update -a
-#./scripts/feeds install -a -f
-
 echo "========================="
 echo " DIY2 配置完成……"
