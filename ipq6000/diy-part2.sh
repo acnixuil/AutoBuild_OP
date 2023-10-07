@@ -31,14 +31,14 @@ git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-d
 #rm -rf feeds/packages/net/mosdns*
 #rm -rf feeds/luci/applications/luci-app-mosdns*
 #rm -rf feeds/packages/net/v2ray-geodata*
-git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
+#git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
 #git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
 
 # 向导
-git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
+#git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
 
-./scripts/feeds update -a
-./scripts/feeds install -a -f
+#./scripts/feeds update -a
+#./scripts/feeds install -a -f
 
 echo "========================="
 echo " DIY2 配置完成……"

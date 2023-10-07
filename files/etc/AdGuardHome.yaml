@@ -1,5 +1,9 @@
-bind_host: 0.0.0.0
-bind_port: 3000
+http:
+  pprof:
+    port: 5554
+    enabled: false
+  address: 0.0.0.0:3000
+  session_ttl: 720h
 users:
   - name: admin
     password: $2y$10$b0dQ9OumUmVdbYEKzHP0nuY.7LeBw7oP5LHpTpnwPd6Bj3SnN7N4G
@@ -8,37 +12,27 @@ block_auth_min: 15
 http_proxy: ""
 language: ""
 theme: auto
-debug_pprof: false
-web_session_ttl: 720
 dns:
   bind_hosts:
     - 0.0.0.0
   port: 5554
   anonymize_client_ip: false
-  protection_enabled: true
-  blocking_mode: default
-  blocking_ipv4: ""
-  blocking_ipv6: ""
-  blocked_response_ttl: 10
-  protection_disabled_until: null
-  parental_block_host: family-block.dns.adguard.com
-  safebrowsing_block_host: standard-block.dns.adguard.com
   ratelimit: 0
   ratelimit_whitelist: []
   refuse_any: true
   upstream_dns:
     - tls://dns.pub
     - tls://dns.alidns.com
+    - 2400:3200:baba::1
     - 180.76.76.76
-    - #123.125.81.6
-    - #https://dns.pub/dns-query
-    - #https://dns.alidns.com/dns-query
   upstream_dns_file: ""
   bootstrap_dns:
-    - #116.116.116.116
     - 211.136.196.2
     - 120.196.165.24
+    - 2409:8057:2000:2::8
+    - 2409:8057:2000:6::8
     - 223.5.5.5
+  fallback_dns: []
   all_servers: true
   fastest_addr: false
   fastest_timeout: 1s
@@ -54,9 +48,9 @@ dns:
   cache_size: 4194304
   cache_ttl_min: 600
   cache_ttl_max: 3600
-  cache_optimistic: false
+  cache_optimistic: true
   bogus_nxdomain: []
-  aaaa_disabled: true
+  aaaa_disabled: false
   enable_dnssec: true
   edns_client_subnet:
     custom_ip: ""
@@ -67,24 +61,6 @@ dns:
   ipset: []
   ipset_file: ""
   bootstrap_prefer_ipv6: false
-  filtering_enabled: true
-  filters_update_interval: 24
-  parental_enabled: false
-  safebrowsing_enabled: false
-  safebrowsing_cache_size: 1048576
-  safesearch_cache_size: 1048576
-  parental_cache_size: 1048576
-  cache_time: 30
-  safe_search:
-    enabled: false
-    bing: true
-    duckduckgo: true
-    google: true
-    pixabay: true
-    yandex: true
-    youtube: true
-  rewrites: []
-  blocked_services: []
   upstream_timeout: 10s
   private_networks: []
   use_private_ptr_resolvers: true
@@ -123,11 +99,11 @@ filters:
     url: https://cdn.jsdelivr.net/gh/o0HalfLife0o/list@master/ad.txt
     name: HalfLife
     id: 1676026291
-  - enabled: true
+  - enabled: false
     url: https://anti-ad.net/easylist.txt
     name: anti-ad
     id: 1678134955
-  - enabled: true
+  - enabled: false
     url: https://www.i-dont-care-about-cookies.eu/abp
     name: i-dont-care-about-cookies
     id: 1691504448
@@ -157,6 +133,36 @@ dhcp:
     lease_duration: 86400
     ra_slaac_only: false
     ra_allow_slaac: false
+filtering:
+  blocking_ipv4: ""
+  blocking_ipv6: ""
+  blocked_services:
+    schedule:
+      time_zone: UTC
+    ids: []
+  protection_disabled_until: null
+  safe_search:
+    enabled: false
+    bing: true
+    duckduckgo: true
+    google: true
+    pixabay: true
+    yandex: true
+    youtube: true
+  blocking_mode: default
+  parental_block_host: family-block.dns.adguard.com
+  safebrowsing_block_host: standard-block.dns.adguard.com
+  rewrites: []
+  safebrowsing_cache_size: 1048576
+  safesearch_cache_size: 1048576
+  parental_cache_size: 1048576
+  cache_time: 30
+  filters_update_interval: 24
+  blocked_response_ttl: 10
+  filtering_enabled: true
+  parental_enabled: false
+  safebrowsing_enabled: false
+  protection_enabled: true
 clients:
   runtime_sources:
     whois: true
@@ -165,15 +171,16 @@ clients:
     dhcp: true
     hosts: true
   persistent: []
-log_file: ""
-log_max_backups: 0
-log_max_size: 100
-log_max_age: 3
-log_compress: false
-log_localtime: false
-verbose: false
+log:
+  file: ""
+  max_backups: 0
+  max_size: 100
+  max_age: 3
+  compress: false
+  local_time: false
+  verbose: false
 os:
   group: ""
   user: ""
   rlimit_nofile: 0
-schema_version: 20
+schema_version: 27
