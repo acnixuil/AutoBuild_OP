@@ -168,7 +168,6 @@ jobs:
       run: |
         cd openwrt/bin/targets/*/*
         rm -rf *kernel*
-        rm -rf *.manifest
         rm -rf sha256sums
         rm -rf *rootfs*
         rm -rf profiles.json
