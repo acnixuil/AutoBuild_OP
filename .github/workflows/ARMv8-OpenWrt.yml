@@ -83,7 +83,6 @@ jobs:
     - name: 上传到Release
       id: release
       uses: ncipollo/release-action@v1
-      if: env.UPLOAD_RELEASE == 'true' && steps.organize.outputs.status == 'success'
       with:
         name: ${{ env.DATE }} 「 ${{ env.FILE_NAME }} 」固件
         allowUpdates: true
