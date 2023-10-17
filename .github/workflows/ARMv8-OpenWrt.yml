@@ -88,4 +88,4 @@ jobs:
         allowUpdates: true
         tag: ${{ env.TAG }}_${{ env.PRODUCT_NAME }}_p
         token: ${{ secrets.G_TOKEN }}
-        artifacts: ${{ env.FIRMWARE }}/*
+        artifacts: ${{ env.PACKAGED_OUTPUTPATH  }}/*
