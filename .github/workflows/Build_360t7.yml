@@ -20,9 +20,9 @@ on:
         default: 'PW'
         type: choice
         options:
-        - PW
-        - SSRP
-        - AP
+        - 'PW'
+        - 'Clash'
+        - 'AP'
 
 #定时触发开始编译
   #schedule:
@@ -34,7 +34,7 @@ env:
   FEEDS_CONF: feeds.conf.default
   CONFIG_PW_FILE: ./360_t7/pw.config
   CONFIG_AP_FILE: ./360_t7/ap.config
-  CONFIG_SSRP_FILE: ./360_t7/ssrp.config
+  CONFIG_Clash_FILE: ./360_t7/clash.config
   DIY_P1_SH: ./360_t7/diy-part1.sh
   DIY_P2_SH: ./360_t7/diy-part2.sh
   UPLOAD_BIN_DIR: false
@@ -132,11 +132,11 @@ jobs:
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH      
 
-    - name: 读取SSRP版配置文件
-      if: github.event.inputs.checkconfigfile == 'SSRP' 
+    - name: 读取Clash版配置文件
+      if: github.event.inputs.checkconfigfile == 'Clash' 
       run: |     
         [ -e files ] && mv files openwrt/files      
-        [ -e $CONFIG_SSRP_FILE ] && mv $CONFIG_SSRP_FILE openwrt/.config
+        [ -e $CONFIG_Clash_FILE ] && mv $CONFIG_Clash_FILE openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH

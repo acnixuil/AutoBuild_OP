@@ -23,7 +23,7 @@ sed -i 's/${g}.*/${a}${b}${c}${d}${e}${f}/g' package/lean/autocore/files/x86/aut
 git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
 #svn co https://github.com/kenzok8/openwrt-packages/trunk/luci-app-adguardhome package/luci-app-adguardhome
 
-# argon design主题
+# argon design
 rm -rf feeds/luci/themes/luci-theme-argon
 rm -rf feeds/luci/themes/luci-theme-design
 rm -rf feeds/luci/applications/luci-app-argon-config

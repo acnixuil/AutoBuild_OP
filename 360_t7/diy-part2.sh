@@ -5,37 +5,29 @@
 
 # Modify default IP
 sed -i 's/192.168.6.1/192.168.2.1/g' package/base-files/files/bin/config_generate
-sed -i "/CYXluq4wUazHjmCDBCqXF/d" package/base-files/files/etc/shadow
 
-# 添加adguardhome
-#git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/luci-app-adguardhome
+# adguardhome
 git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
 
-# 更换design为最新版本
+# openclash
+svn co https://github.com/vernesong/OpenClash/trunk/luci-app-openclash package/luci-app-openclash
+
+# argon design
+#rm -rf feeds/luci/themes/luci-theme-argon
 rm -rf feeds/luci/themes/luci-theme-design
+#rm -rf feeds/luci/applications/luci-app-argon-config
+rm -rf feeds/luci/applications/luci-app-design-config
+#git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git package/luci-theme-argon
+#git clone -b 18.06 https://github.com/jerrykuku/luci-app-argon-config.git package/luci-app-argon-config
 git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
 git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
 
-# 更换argon为最新版本
-#rm -rf feeds/luci/themes/luci-theme-argon*
-#rm -rf feeds/luci/applications/luci-app-argon-config
-#git clone https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
-#git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
-
-# passwall
-#rm -rf feeds/luci/applications/luci-app-passwall
-#git clone https://github.com/xiaorouji/openwrt-passwall-packages.git -b main ./package/passwall_package
-#git clone https://github.com/xiaorouji/openwrt-passwall.git -b main ./package/passwall
-
-# dnsfilter
-#git clone https://github.com/kiddin9/luci-app-dnsfilter.git package/dnsfilter
-
 # mosdns
-rm -f package/feeds/packages/mosdns
-rm -rf feeds/packages/net/mosdns
-git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
-git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
-cp -f package/v2ray-geodata/Makefile feeds/packages/net/v2ray-geodata/Makefile
+#rm -f package/feeds/packages/mosdns
+#rm -rf feeds/packages/net/mosdns
+#git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
+#git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
+#cp -f package/v2ray-geodata/Makefile feeds/packages/net/v2ray-geodata/Makefile
 
 #./scripts/feeds update -a
 #./scripts/feeds install -a
