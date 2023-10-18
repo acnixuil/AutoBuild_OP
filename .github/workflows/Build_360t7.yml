@@ -17,7 +17,7 @@ on:
       checkconfigfile:
         description: '选择配置文件'
         required: true
-        default: 'PW'
+        default: 'Clash'
         type: choice
         options:
         - 'PW'
@@ -29,7 +29,7 @@ on:
   #- cron: 0 17 * * 1
 
 env:
-  REPO_URL: https://github.com/acnixuil/immortalwrtARM
+  REPO_URL: https://github.com/padavanonly/immortalwrtARM
   REPO_BRANCH: mt7981
   FEEDS_CONF: feeds.conf.default
   CONFIG_PW_FILE: ./360_t7/pw.config
@@ -37,8 +37,6 @@ env:
   CONFIG_Clash_FILE: ./360_t7/clash.config
   DIY_P1_SH: ./360_t7/diy-part1.sh
   DIY_P2_SH: ./360_t7/diy-part2.sh
-  UPLOAD_BIN_DIR: false
-  UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -211,13 +209,6 @@ jobs:
         ls
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
-
-    - name: 上传固件
-      uses: actions/upload-artifact@main
-      if: steps.organize.outputs.status == 'success' && !cancelled()
-      with:
-        name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
-        path: ${{ env.FIRMWARE }}
 
     - name: 生成标签
       id: release
