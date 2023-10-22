@@ -193,7 +193,7 @@ jobs:
       with:
         name: ${{ env.DATE }} 「 ${{ env.FILE_NAME }} 」固件
         allowUpdates: true
-        tag: ${{ env.PRODUCT_NAME }}_o
+        tag: ${{ env.PRODUCT_NAME }}
         token: ${{ secrets.G_TOKEN }}
         body: |
           - 🔖 此为 ${{ env.FILE_NAME }} [OC] 固件
@@ -223,7 +223,7 @@ jobs:
         🔖 编译耗时：${{ env.time }}
         ⏱ 时间: ${{ env.date }}
         ⌛ hash: ${{ env.hash }}
-        🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/${{ env.PRODUCT_NAME }}_o
+        🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/${{ env.PRODUCT_NAME }}
         "
         curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
 
