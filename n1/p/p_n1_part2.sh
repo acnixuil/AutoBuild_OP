@@ -41,3 +41,6 @@ rm -rf feeds/packages/net/mosdns
 rm -rf feeds/luci/applications/luci-app-mosdns
 svn co https://github.com/sbwml/luci-app-mosdns/trunk/luci-app-mosdns package/luci-app-mosdns
 svn co https://github.com/sbwml/luci-app-mosdns/trunk/mosdns package/mosdns
+
+# Enable Cache
+echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config

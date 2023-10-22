@@ -29,6 +29,9 @@ git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
 git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
 cp -f package/v2ray-geodata/Makefile feeds/packages/net/v2ray-geodata/Makefile
 
+# Enable Cache
+echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config
+
 #./scripts/feeds update -a
 #./scripts/feeds install -a
 

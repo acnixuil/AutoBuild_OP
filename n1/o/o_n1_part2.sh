@@ -33,3 +33,6 @@ git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon package/luci-th
 
 # 添加晶晨宝盒
 svn co https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic package/luci-app-amlogic
+
+# Enable Cache
+echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config

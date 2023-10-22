@@ -38,6 +38,8 @@ jobs:
     steps:
     - name: 检查
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     
     - name: Apt Update
       env:

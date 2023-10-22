@@ -29,6 +29,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Check server configuration
       run: |
@@ -77,6 +79,12 @@ jobs:
         echo "DATE=$(date "+%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
         echo "TAG=$(date "+%Y%m%d")" >> $GITHUB_ENV
         echo "start=$(date +%s)" >> $GITHUB_ENV
+
+    - name: Cache
+      uses: stupidloud/cachewrtbuild@main
+      with:
+        ccache: 'true'
+        prefix: ${{ github.workspace }}/openwrt
     
     - name: Reset Folder to Specific Version
       run: |

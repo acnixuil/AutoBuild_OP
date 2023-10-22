@@ -9,15 +9,13 @@
 # File name: diy-part2.sh
 # Description: OpenWrt DIY script part 2 (After Update feeds)
 
-# 修改网关ip
+# Modify default IP
 sed -i 's/192.168.1.1/192.168.3.1/g' package/base-files/files/bin/config_generate
 
-# 添加adguardhome
-#git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/luci-app-adguardhome
+# adguardhome
 git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
-#svn co https://github.com/kenzok8/openwrt-packages/trunk/luci-app-adguardhome package/luci-app-adguardhome
 
-# argon design主题
+# argon design
 rm -rf feeds/luci/themes/luci-theme-argon
 rm -rf feeds/luci/themes/luci-theme-design
 rm -rf feeds/luci/applications/luci-app-argon-config
@@ -27,15 +25,8 @@ git clone -b 18.06 https://github.com/jerrykuku/luci-app-argon-config.git packag
 git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
 git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
 
-# mosdns
-#rm -rf feeds/packages/net/mosdns*
-#rm -rf feeds/luci/applications/luci-app-mosdns*
-#rm -rf feeds/packages/net/v2ray-geodata*
-#git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
-#git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
-
-# 向导
-#git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
+# Enable Cache
+echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config
 
 echo "========================="
 echo " DIY2 配置完成……"

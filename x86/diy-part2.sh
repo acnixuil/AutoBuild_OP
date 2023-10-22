@@ -47,6 +47,9 @@ svn co https://github.com/sbwml/luci-app-mosdns/trunk/mosdns package/mosdns
 # 向导
 git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
 
+# Enable Cache
+echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config
+
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
