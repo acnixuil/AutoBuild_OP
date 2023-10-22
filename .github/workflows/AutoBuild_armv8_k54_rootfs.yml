@@ -19,9 +19,9 @@ env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: ./n1/p/p_n1.config
-  DIY_P1_SH: ./n1/p/p_n1_part1.sh
-  DIY_P2_SH: ./n1/p/p_n1_part2.sh
+  CONFIG_FILE: ./n1/o.config
+  DIY_P1_SH: ./n1/part1_o.sh
+  DIY_P2_SH: ./n1/diy-part2.sh
   UPLOAD_RELEASE: true
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
