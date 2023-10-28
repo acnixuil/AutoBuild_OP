@@ -18,9 +18,8 @@ sed -i 's/192.168.1.1/192.168.2.254/g' package/base-files/files/bin/config_gener
 #git clone https://github.com/sbwml/luci-app-alist package/alist
 
 # 添加adguardhome
-#git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/luci-app-adguardhome
-git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
-#svn co https://github.com/kenzok8/openwrt-packages/trunk/luci-app-adguardhome package/luci-app-adguardhome
+#git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
+git clone https://github.com/acnixuil/luci-app-adguardhome.git package/luci-app-adguardhome
 
 # argon design主题
 rm -rf feeds/luci/themes/luci-theme-argon
