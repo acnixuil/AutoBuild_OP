@@ -117,6 +117,13 @@ jobs:
     - name: 更新软件源
       run: cd openwrt && ./scripts/feeds update -a       
 
+    - name: Modify feeds
+      run: |
+        set -x
+        cd openwrt
+        ./scripts/feeds install -a -f -p passwall_packages
+        ./scripts/feeds install -a -f -p passwall
+
     - name: 安装软件源
       run: cd openwrt && ./scripts/feeds install -a
 
