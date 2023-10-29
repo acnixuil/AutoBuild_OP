@@ -17,7 +17,7 @@ on:
       checkconfigfile:
         description: '选择配置文件'
         required: true
-        default: 'Clash'
+        default: 'PW'
         type: choice
         options:
         - 'PW'
@@ -153,35 +153,6 @@ jobs:
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
-
-    - name: 输出预编译信息
-      run: |
-        cd openwrt
-        echo " 系统空间       类型  总数  已用  可用  使用率"
-        df -hT $PWD
-        echo
-        echo "=========================================="
-        grep -i CONFIG_PACKAGE_luci-app .config | grep  -v \# > Plug-in
-        grep -i CONFIG_PACKAGE_luci-theme .config | grep  -v \# >> Plug-in
-        sed -i '/INCLUDE/d' Plug-in > /dev/null 2>&1
-        sed -i 's/CONFIG_PACKAGE_/、/g' Plug-in
-        sed -i '/Transparent_Proxy/d' Plug-in > /dev/null 2>&1
-        sed -i 's/=y/\ /g' Plug-in
-        awk '$0=NR$0' Plug-in > Plug-2
-        awk '{print "	" $0}' Plug-2 > Plug-in
-        echo
-        echo
-        echo "	      已选插件列表"
-        cat Plug-in
-        rm -rf {Plug-in,Plug-2}
-        echo
-        echo "=========================================="
-        echo
-        echo
-        echo "输出完整插件信息..."
-        echo
-        echo
-        cat .config
 
     - name: 下载包
       id: package
