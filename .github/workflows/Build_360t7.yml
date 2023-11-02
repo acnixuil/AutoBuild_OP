@@ -17,11 +17,11 @@ on:
       checkconfigfile:
         description: '选择配置文件'
         required: true
-        default: 'PW'
+        default: 'PW+'
         type: choice
         options:
         - 'PW'
-        - 'Clash'
+        - 'PW+'
         - 'AP'
 
 #定时触发开始编译
@@ -34,7 +34,7 @@ env:
   FEEDS_CONF: feeds.conf.default
   CONFIG_PW_FILE: ./360_t7/pw.config
   CONFIG_AP_FILE: ./360_t7/ap.config
-  CONFIG_Clash_FILE: ./360_t7/clash.config
+  CONFIG_PW+_FILE: ./360_t7/pw+.config
   DIY_P1_SH: ./360_t7/diy-part1.sh
   DIY_P2_SH: ./360_t7/diy-part2.sh
   UPLOAD_RELEASE: true
@@ -145,11 +145,11 @@ jobs:
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH      
 
-    - name: 读取Clash版配置文件
-      if: github.event.inputs.checkconfigfile == 'Clash' 
+    - name: 读取PW+版配置文件
+      if: github.event.inputs.checkconfigfile == 'PW+' 
       run: |     
         [ -e files ] && mv files openwrt/files      
-        [ -e $CONFIG_Clash_FILE ] && mv $CONFIG_Clash_FILE openwrt/.config
+        [ -e $CONFIG_PW+_FILE ] && mv $CONFIG_PW+_FILE openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH

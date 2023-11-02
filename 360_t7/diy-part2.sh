@@ -7,7 +7,7 @@
 sed -i 's/192.168.6.1/192.168.2.1/g' package/base-files/files/bin/config_generate
 
 # adguardhome
-git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
+git clone https://github.com/acnixuil/luci-app-adguardhome.git package/luci-app-adguardhome
 
 # openclash
 #svn co https://github.com/vernesong/OpenClash/trunk/luci-app-openclash package/luci-app-openclash
@@ -28,6 +28,9 @@ git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app
 #git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
 #git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
 #cp -f package/v2ray-geodata/Makefile feeds/packages/net/v2ray-geodata/Makefile
+rm -rf feeds/packages/net/v2ray-geodata*
+git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
+git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
 
 # Enable Cache
 echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config
