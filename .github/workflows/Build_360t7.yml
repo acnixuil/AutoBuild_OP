@@ -34,7 +34,7 @@ env:
   FEEDS_CONF: feeds.conf.default
   CONFIG_PW_FILE: ./360_t7/pw.config
   CONFIG_AP_FILE: ./360_t7/ap.config
-  CONFIG_PW+_FILE: ./360_t7/pw+.config
+  CONFIG_PW1_FILE: ./360_t7/pw1.config
   DIY_P1_SH: ./360_t7/diy-part1.sh
   DIY_P2_SH: ./360_t7/diy-part2.sh
   UPLOAD_RELEASE: true
@@ -149,7 +149,7 @@ jobs:
       if: github.event.inputs.checkconfigfile == 'PW+' 
       run: |     
         [ -e files ] && mv files openwrt/files      
-        [ -e $CONFIG_PW+_FILE ] && mv $CONFIG_PW+_FILE openwrt/.config
+        [ -e $CONFIG_PW1_FILE ] && mv $CONFIG_PW1_FILE openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
