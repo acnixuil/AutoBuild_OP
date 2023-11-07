@@ -31,7 +31,7 @@ kernel_file="include/kernel-\$str1"
 # 提取内核版本号
 Kernel=\$(grep -o "LINUX_VERSION-\$str1 = .*" "\$kernel_file" | cut -d ' ' -f 3)
 echo "内核版本为${Kernel}"
-echo "KERNEL=\$Kernel" >> \$GITHUB_ENV
+echo "KERNEL=$Kernel" >> \$GITHUB_ENV
 
 # 检查文件是否存在，然后重命名
 if [ -f bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz ]; then
