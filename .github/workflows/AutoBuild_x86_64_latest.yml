@@ -4,11 +4,11 @@
 # By：Jejz
 #===============================================
 
-name: AutoBuild_x86_64_k515
+name: Build_x86_64_latest
 
 on:
-  schedule:
-    - cron: '0 22 * * 5'
+  #schedule:
+  #  - cron: '0 22 * * 5'
   workflow_dispatch:
 
 env:
@@ -24,7 +24,7 @@ env:
   PRODUCT_NAME: x86_64
 
 jobs:
-  Build_x86_64_515:
+  Build:
     runs-on: ubuntu-22.04
     steps:
     - name: Checkout
@@ -73,14 +73,13 @@ jobs:
     - name: Install feeds
       run: cd openwrt && ./scripts/feeds install -a
 
-    - name: 读取稳定版配置
+    - name: 读取配置
       run: |     
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config   
         chmod +x $DIY_P2_SH
         cd openwrt
-        $GITHUB_WORKSPACE/$DIY_P2_SH           
-        sed -i 's/KERNEL_PATCHVER:=*.*/KERNEL_PATCHVER:=5.15/g' target/linux/x86/Makefile
+        $GITHUB_WORKSPACE/$DIY_P2_SH       
 
     - name: Download package
       id: package
@@ -165,7 +164,7 @@ jobs:
 
   Cleaning:
     if: ${{ always() }}
-    needs: [Build_x86_64_515]
+    needs: [Build]
     runs-on: ubuntu-latest
     steps:
       - name: Delete workflow runs
