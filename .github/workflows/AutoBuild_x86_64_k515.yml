@@ -4,7 +4,7 @@
 # By：Jejz
 #===============================================
 
-name: AutoBuild_x86_64_k15
+name: AutoBuild_x86_64_k515
 
 on:
   schedule:
