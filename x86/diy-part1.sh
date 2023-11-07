@@ -35,14 +35,14 @@ echo "KERNEL=$Kernel" >> \$GITHUB_ENV
 
 # 检查文件是否存在，然后重命名
 if [ -f bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz ]; then
-    mv bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz "bin/targets/x86/64/openwrt_x86-64_\$Kernel_uefi.img.gz"
+    mv bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz "bin/targets/x86/64/openwrt_x86-64_${Kernel}_uefi.img.gz"
 fi
 
 if [ -f bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz ]; then
-    mv bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz "bin/targets/x86/64/openwrt_x86-64_\$Kernel_bios.img.gz"
+    mv bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz "bin/targets/x86/64/openwrt_x86-64_${Kernel}_bios.img.gz"
 fi
 
 if [ -f bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.vmdk ]; then
-    mv bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.vmdk "bin/targets/x86/64/openwrt_x86-64_\$Kernel_uefi.vmdk"
+    mv bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.vmdk "bin/targets/x86/64/openwrt_x86-64_${Kernel}_uefi.vmdk"
 fi
 EOL
