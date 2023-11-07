@@ -7,52 +7,46 @@ echo "src-git passwall https://github.com/xiaorouji/openwrt-passwall.git;main" >
 
 mkdir wget
 
+cat>del.sh<<-\EOF
+#!/bin/bash
+rm -rf packages
+rm -rf bin/targets/x86/64/config.buildinfo
+rm -rf bin/targets/x86/64/feeds.buildinfo
+rm -rf bin/targets/x86/64/openwrt-x86-64-generic.manifest
+rm -rf bin/targets/x86/64/openwrt-x86-64-generic-kernel.bin
+#rm -rf bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.vmdk
+rm -rf bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.vmdk
+rm -rf bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz
+rm -rf bin/targets/x86/64/openwrt-x86-64-generic-squashfs-rootfs.img.gz
+rm -rf bin/targets/x86/64/profiles.json
+rm -rf bin/targets/x86/64/sha256sums
+rm -rf bin/targets/x86/64/version.buildinfo
+sleep 2
+# 提取默认内核版本号
+str1=$(grep "KERNEL_PATCHVER:=" target/linux/x86/Makefile | cut -d = -f 2)
+
+# 构建目标文件的路径
+kernel_file="include/kernel-${str1}"
+
+# 提取内核版本号
+kernel=$(grep -o "LINUX_VERSION-${str1} = .*" "$kernel_file" | cut -d ' ' -f 3)
+echo "kernel=$KERNEL" >> $GITHUB_ENV
+exit 0
+EOF
+
 cat>rename.sh<<-\EOF
 #!/bin/bash
-rm -rf  bin/targets/x86/64/config.buildinfo
-rm -rf  bin/targets/x86/64/feeds.buildinfo
-rm -rf  bin/targets/x86/64/openwrt-x86-64-generic-kernel.bin
-#rm -rf  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.vmdk
-rm -rf  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.vmdk
-rm -rf  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-rootfs.img.gz
-rm -rf  bin/targets/x86/64/openwrt-x86-64-generic.manifest
-rm -rf bin/targets/x86/64/sha256sums
-rm -rf  bin/targets/x86/64/version.buildinfo
-rm -rf  bin/targets/x86/64/profiles.json
-sleep 2
-str1=`grep "KERNEL_PATCHVER:="  target/linux/x86/Makefile | cut -d = -f 2` #判断当前默认内核版本号如5.10
-ver54=`grep "LINUX_VERSION-5.4 ="  include/kernel-5.4 | cut -d . -f 3`
-ver510=`grep "LINUX_VERSION-5.10 ="  include/kernel-5.10 | cut -d . -f 3`
-ver515=`grep "LINUX_VERSION-5.15 ="  include/kernel-5.15 | cut -d . -f 3`
-ver61=`grep "LINUX_VERSION-6.1 ="  include/kernel-6.1 | cut -d . -f 3`
-if [ "$str1" = "5.4" ];then
-   mv  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz       bin/targets/x86/64/openwrt_x86-64_${str1}.${ver54}_bios.img.gz
-   mv  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz   bin/targets/x86/64/openwrt_x86-64_${str1}.${ver54}_uefi.img.gz
-elif [ "$str1" = "5.10" ];then
-   mv  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz       bin/targets/x86/64/openwrt_x86-64_${str1}.${ver510}_bios.img.gz
-   mv  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz   bin/targets/x86/64/openwrt_x86-64_${str1}.${ver510}_uefi.img.gz
-elif [ "$str1" = "5.15" ];then
-   mv  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz       bin/targets/x86/64/openwrt_x86-64_${str1}.${ver515}_bios.img.gz
-   mv  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz   bin/targets/x86/64/openwrt_x86-64_${str1}.${ver515}_uefi.img.gz
-   mv  bin/targets/x86/64/*efi.vmdk   bin/targets/x86/64/openwrt_x86-64_${str1}.${ver515}_efi.vmdk 
-elif [ "$str1" = "6.1" ];then
-   if [ ! $ver61 ]; then
-   mv  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz       bin/targets/x86/64/openwrt_x86-64_${str1}.${ver61}0_bios.img.gz
-   mv  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz   bin/targets/x86/64/openwrt_x86-64_${str1}.${ver61}0_uefi.img.gz
-   mv  bin/targets/x86/64/*efi.vmdk   bin/targets/x86/64/openwrt_x86-64_${str1}.${ver61}_efi.vmdk 
-  else
-   mv  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz       bin/targets/x86/64/openwrt_x86-64_${str1}.${ver61}_bios.img.gz
-   mv  bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz   bin/targets/x86/64/openwrt_x86-64_${str1}.${ver61}_uefi.img.gz
-   mv  bin/targets/x86/64/*efi.vmdk   bin/targets/x86/64/openwrt_x86-64_${str1}.${ver61}_efi.vmdk 
-   fi
+# 检查文件是否存在，然后重命名
+if [ -f openwrt-x86-64-generic-squashfs-combined-efi.img.gz ]; then
+    mv bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz "openwrt_x86-64_${{ env.KERNEL }}_uefi.img.gz"
 fi
-#md5
-ls -l  "bin/targets/x86/64" | awk -F " " '{print $9}' > wget/open_dev_md5
-dev_version=`grep "_uefi.img.gz" wget/open_dev_md5 | cut -d - -f 2 | cut -d _ -f 2 `
-openwrt_dev=openwrt_x86-64_${dev_version}_bios.img.gz
-openwrt_dev_uefi=openwrt_x86-64_${dev_version}_uefi.img.gz
-cd bin/targets/x86/64
-# md5sum $openwrt_dev > openwrt_bios.md5
-# md5sum $openwrt_dev_uefi > openwrt_uefi.md5
+
+if [ -f openwrt-x86-64-generic-squashfs-combined.img.gz ]; then
+    mv openwrt-x86-64-generic-squashfs-combined.img.gz "openwrt_x86-64_${{ env.KERNEL }}_bios.img.gz"
+fi
+
+if [ -f openwrt-x86-64-generic-squashfs-combined-efi.vmdk ]; then
+    mv openwrt-x86-64-generic-squashfs-combined-efi.vmdk "openwrt_x86-64_${{ env.KERNEL }}_uefi.vmdk"
+fi
 exit 0
 EOF
