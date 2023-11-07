@@ -62,6 +62,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Check server configuration
       run: |
@@ -110,6 +112,17 @@ jobs:
         echo "DATE=$(date "+%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
         echo "TAG=$(date "+%Y%m%d")" >> $GITHUB_ENV
         echo "start=$(date +%s)" >> $GITHUB_ENV
+
+    - name: Cache
+      uses: stupidloud/cachewrtbuild@main
+      with:
+        ccache: 'true'
+        prefix: ${{ github.workspace }}/openwrt
+
+    - name: Reset Folder to Specific Version
+      run: |
+        cd openwrt/package/libs/openssl
+        git reset --hard 4fd8d7b7f8b7752ba8bb06e0d43808d0c5fddde0
 
     - name: Load custom feeds
       run: |
@@ -281,6 +294,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Check server configuration
       run: |
@@ -329,6 +344,17 @@ jobs:
         echo "DATE=$(date "+%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
         echo "TAG=$(date "+%Y%m%d")" >> $GITHUB_ENV
         echo "start=$(date +%s)" >> $GITHUB_ENV
+
+    - name: Cache
+      uses: stupidloud/cachewrtbuild@main
+      with:
+        ccache: 'true'
+        prefix: ${{ github.workspace }}/openwrt
+
+    - name: Reset Folder to Specific Version
+      run: |
+        cd openwrt/package/libs/openssl
+        git reset --hard 4fd8d7b7f8b7752ba8bb06e0d43808d0c5fddde0
 
     - name: Load custom feeds
       run: |
@@ -502,7 +528,9 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-
+      with:
+        fetch-depth: 0
+        
     - name: Check server configuration
       run: |
         echo "警告⚠"
@@ -550,6 +578,17 @@ jobs:
         echo "DATE=$(date "+%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
         echo "TAG=$(date "+%Y%m%d")" >> $GITHUB_ENV
         echo "start=$(date +%s)" >> $GITHUB_ENV
+
+    - name: Cache
+      uses: stupidloud/cachewrtbuild@main
+      with:
+        ccache: 'true'
+        prefix: ${{ github.workspace }}/openwrt
+
+    - name: Reset Folder to Specific Version
+      run: |
+        cd openwrt/package/libs/openssl
+        git reset --hard 4fd8d7b7f8b7752ba8bb06e0d43808d0c5fddde0
 
     - name: Load custom feeds
       run: |
