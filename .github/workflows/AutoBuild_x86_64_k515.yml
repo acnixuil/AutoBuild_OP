@@ -107,7 +107,10 @@ jobs:
     - name: Delete files
       run: |
         cd openwrt
+        chmod +x del.sh
         bash del.sh
+        export KERNEL="$kernel"
+        echo "KERNEL=$kernel" >> $GITHUB_ENV
 
     - name: Organize files
       id: organize
