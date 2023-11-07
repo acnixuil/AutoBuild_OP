@@ -107,7 +107,7 @@ jobs:
       run: |
         cd openwrt
         bash del.sh
-
+        
     - name: Organize files
       id: organize
       if: steps.compile.outputs.status == 'success'
