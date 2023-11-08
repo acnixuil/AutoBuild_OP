@@ -1,13 +1,5 @@
-# Add a feed source
-#sed -i '$a src-git helloworld https://github.com/fw876/helloworld' feeds.conf.default
-
-# passwall
-echo "src-git passwall_packages https://github.com/xiaorouji/openwrt-passwall-packages.git;main" >> "feeds.conf.default"
-echo "src-git passwall https://github.com/xiaorouji/openwrt-passwall.git;main" >> "feeds.conf.default"
-
-# 裁剪多余文件并重命名输出文件
-cat <<EOL > del.sh
 #!/bin/bash
+
 rm -rf bin/targets/x86/64/packages
 rm -rf bin/targets/x86/64/config.buildinfo
 rm -rf bin/targets/x86/64/feeds.buildinfo
@@ -43,4 +35,3 @@ fi
 if [ -f bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.vmdk ]; then
     mv bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.vmdk "bin/targets/x86/64/openwrt_x86-64_${kernel}_uefi.vmdk"
 fi
-EOL

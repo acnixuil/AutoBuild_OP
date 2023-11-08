@@ -25,6 +25,7 @@ env:
   CONFIG_ALPHA_FILE: x86_imm/test.config
   DIY_P1_SH: x86_imm/diy-part1.sh
   DIY_P2_SH: x86_imm/diy-part2.sh
+  DIY_P3_SH: x86_imm/rename.sh
   UPLOAD_RELEASE: true
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -161,9 +162,9 @@ jobs:
 
     - name: Delete files
       run: |
+        chmod +x $DIY_P3_SH
         cd openwrt
-        chmod +x del.sh
-        bash del.sh
+        $GITHUB_WORKSPACE/$DIY_P3_SH
         export KERNEL="$kernel"
         echo "KERNEL=$kernel" >> $GITHUB_ENV
 

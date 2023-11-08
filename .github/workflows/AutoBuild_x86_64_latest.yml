@@ -105,9 +105,9 @@ jobs:
 
     - name: Delete files
       run: |
+        chmod +x $DIY_P3_SH
         cd openwrt
-        chmod +x del.sh
-        bash del.sh
+        $GITHUB_WORKSPACE/$DIY_P3_SH
         export KERNEL="$kernel"
         echo "KERNEL=$kernel" >> $GITHUB_ENV
         
