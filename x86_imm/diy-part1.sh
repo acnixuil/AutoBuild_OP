@@ -49,4 +49,5 @@ elif [ "$str1" = "6.1" ];then
    mv  bin/targets/x86/64/immortalwrt-x86-64-generic-squashfs-combined-efi.vmdk     bin/targets/x86/64/immortalwrt_x86-64_${str1}.${ver61}_uefi.vmdk
    fi
 fi
+ls -l  "bin/targets/x86/64" | awk -F " " '{print $9}' > wget/open_dev_md5
 EOL
