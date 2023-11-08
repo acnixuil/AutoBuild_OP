@@ -104,6 +104,22 @@ jobs:
         du -h --max-depth=1 openwrt/build_dir
         du -h --max-depth=1 openwrt/bin
 
+    - name: 组织文件
+      id: organize
+      if: steps.compile.outputs.status == 'success' && !cancelled()
+      run: |
+        cd openwrt/bin/targets/*/*
+        ls
+        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+        echo "status=success" >> $GITHUB_OUTPUT
+
+    - name: 上传固件
+      uses: actions/upload-artifact@main
+      if: steps.organize.outputs.status == 'success' && !cancelled()
+      with:
+        name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+        path: ${{ env.FIRMWARE }}
+
     - name: Delete files
       run: |
         chmod +x $DIY_P3_SH
@@ -111,15 +127,9 @@ jobs:
         KERNEL=$($GITHUB_WORKSPACE/$DIY_P3_SH | grep "KERNEL=" | cut -d = -f 2)
         export KERNEL
         echo "KERNEL=$KERNEL" >> $GITHUB_ENV
-      shell: bash
-        
-    - name: Organize files
-      id: organize
-      if: steps.compile.outputs.status == 'success'
-      run: |
         cd openwrt/bin/targets/*/*
-        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
-        echo "status=success" >> $GITHUB_OUTPUT
+        ls
+      shell: bash
 
     - name: Create release
       id: release

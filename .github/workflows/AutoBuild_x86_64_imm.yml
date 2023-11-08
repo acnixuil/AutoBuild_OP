@@ -165,6 +165,7 @@ jobs:
       if: steps.compile.outputs.status == 'success' && !cancelled()
       run: |
         cd openwrt/bin/targets/*/*
+        ls
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
 
@@ -182,6 +183,8 @@ jobs:
         KERNEL=$($GITHUB_WORKSPACE/$DIY_P3_SH | grep "KERNEL=" | cut -d = -f 2)
         export KERNEL
         echo "KERNEL=$KERNEL" >> $GITHUB_ENV
+        cd openwrt/bin/targets/*/*
+        ls
       shell: bash
 
     - name: 生成标签

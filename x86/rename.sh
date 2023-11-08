@@ -8,7 +8,7 @@ rm -rf bin/targets/x86/64/openwrt-x86-64-generic-kernel.bin
 #rm -rf bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.vmdk
 rm -rf bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.vmdk
 rm -rf bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz
-rm -rf bin/targets/x86/64/openwrt-x86-64-generic-rootfs.*
+rm -rf bin/targets/x86/64/openwrt-x86-64-generic-squashfs-rootfs.img.gz
 rm -rf bin/targets/x86/64/profiles.json
 rm -rf bin/targets/x86/64/sha256sums
 rm -rf bin/targets/x86/64/version.buildinfo
@@ -23,15 +23,29 @@ kernel_version=$(grep -o "LINUX_VERSION-${str1} = .*" "$kernel_file" | cut -d ' 
 kernel="${str1}${kernel_version}"
 # 打印kernel变量的值
 echo "KERNEL=$kernel"
-# 检查文件是否存在，然后重命名
-if [ -f bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz ]; then
-    mv bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz "bin/targets/x86/64/openwrt_x86-64_${kernel}_uefi.img.gz"
-fi
+valid_version_regex="^[0-9]+\.[0-9]+\.[0-9]+$"
+# 打印kernel变量的值
+echo "KERNEL=$kernel"
+sleep 2
 
-if [ -f bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz ]; then
-    mv bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz "bin/targets/x86/64/openwrt_x86-64_${kernel}_bios.img.gz"
-fi
+if [[ $kernel =~ $valid_version_regex ]]; then
+  echo "版本号格式合法：$kernel"
 
-if [ -f bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.vmdk ]; then
-    mv bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.vmdk "bin/targets/x86/64/openwrt_x86-64_${kernel}_uefi.vmdk"
+  # 直接重命名文件
+  if [ -f "bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz" ]; then
+    mv "bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz" "bin/targets/x86/64/openwrt_x86-64_${kernel}_bios.img.gz"
+    echo "openwrt-x86-64-generic-squashfs-combined.img.gz>>openwrt_x86-64_${kernel}_bios.img.gz"
+  fi
+
+  if [ -f "bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz" ]; then
+    mv "bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz" "bin/targets/x86/64/openwrt_x86-64_${kernel}_uefi.img.gz"
+    echo "openwrt-x86-64-generic-squashfs-combined-efi.img.gz>>openwrt_x86-64_${kernel}_uefi.img.gz"
+  fi
+
+  if [ -f "bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.vmdk" ]; then
+    mv "bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.vmdk" "bin/targets/x86/64/openwrt_x86-64_${kernel}_uefi.vmdk"
+    echo "openwrt-x86-64-generic-squashfs-combined-efi.vmdk>>openwrt_x86-64_${kernel}_uefi.vmdk"
+  fi
+else
+  echo "版本号格式不合法：$kernel"
 fi
