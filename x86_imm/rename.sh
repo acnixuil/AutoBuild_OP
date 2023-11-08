@@ -8,7 +8,7 @@ rm -rf bin/targets/x86/64/*.manifest
 rm -rf bin/targets/x86/64/*-kernel.bin
 #rm -rf bin/targets/x86/64/immortalwrt-x86-64-generic-squashfs-combined-efi.img.gz
 #rm -rf bin/targets/x86/64/immortalwrt-x86-64-generic-squashfs-combined-efi.vmdk
-rm -rf bin/targets/x86/64/immortalwrt-x86-64-generic-squashfs-combined.img.gz
+#rm -rf bin/targets/x86/64/immortalwrt-x86-64-generic-squashfs-combined.img.gz
 rm -rf bin/targets/x86/64/immortalwrt-x86-64-generic-squashfs-combined.vmdk
 rm -rf bin/targets/x86/64/immortalwrt-x86-64-generic-rootfs.tar.gz
 rm -rf bin/targets/x86/64/profiles.json
