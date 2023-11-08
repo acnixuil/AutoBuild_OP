@@ -121,10 +121,13 @@ jobs:
         path: ${{ env.FIRMWARE }}
 
     - name: Delete files
+      id: delete_files
       run: |
         cd openwrt
         bash rename.sh
         Kernel=`grep "_uefi.img.gz" wget/open_dev_md5 | cut -d - -f 2 | cut -d _ -f 2 `
+        cd openwrt/bin/targets/*/*
+        ls 
         echo "KERNEL=$Kernel" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
 
@@ -135,6 +138,7 @@ jobs:
       with:
         name: ${{ env.DATE }} "immortalwrt_${{ env.FILE_NAME }}_${{ env.KERNEL }}" Firmware
         allowUpdates: true
+        removeArtifacts: true
         tag: ${{ env.TAG }}_${{ env.KERNEL }}
         token: ${{ secrets.GITHUB_TOKEN }}
         body: |
