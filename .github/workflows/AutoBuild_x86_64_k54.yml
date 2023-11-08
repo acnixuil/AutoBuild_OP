@@ -117,9 +117,10 @@ jobs:
       run: |
         chmod +x $DIY_P3_SH
         cd openwrt
-        $GITHUB_WORKSPACE/$DIY_P3_SH
-        export KERNEL="$kernel"
-        echo "KERNEL=$kernel" >> $GITHUB_ENV
+        KERNEL=$($GITHUB_WORKSPACE/$DIY_P3_SH | grep "KERNEL=" | cut -d = -f 2)
+        export KERNEL
+        echo "KERNEL=$KERNEL" >> $GITHUB_ENV
+      shell: bash
 
     - name: Organize files
       id: organize

@@ -8,7 +8,7 @@ rm -rf bin/targets/x86/64/openwrt-x86-64-generic-kernel.bin
 #rm -rf bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.vmdk
 rm -rf bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.vmdk
 rm -rf bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined.img.gz
-rm -rf bin/targets/x86/64/*-rootfs.*
+rm -rf bin/targets/x86/64/openwrt-x86-64-generic-rootfs.*
 rm -rf bin/targets/x86/64/profiles.json
 rm -rf bin/targets/x86/64/sha256sums
 rm -rf bin/targets/x86/64/version.buildinfo
@@ -22,7 +22,7 @@ kernel_version=$(grep -o "LINUX_VERSION-${str1} = .*" "$kernel_file" | cut -d ' 
 # 拼接str1和kernel_version以获得完整的kernel
 kernel="${str1}${kernel_version}"
 # 打印kernel变量的值
-echo "Kernel version: $kernel"
+echo "KERNEL=$kernel"
 # 检查文件是否存在，然后重命名
 if [ -f bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz ]; then
     mv bin/targets/x86/64/openwrt-x86-64-generic-squashfs-combined-efi.img.gz "bin/targets/x86/64/openwrt_x86-64_${kernel}_uefi.img.gz"
