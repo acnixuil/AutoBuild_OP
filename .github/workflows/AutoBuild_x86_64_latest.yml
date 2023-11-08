@@ -18,6 +18,7 @@ env:
   CONFIG_FILE: x86/x86.config
   DIY_P1_SH: x86/diy-part1.sh
   DIY_P2_SH: x86/diy-part2.sh
+  DIY_P3_SH: x86/rename.sh
   UPLOAD_RELEASE: true
   TZ: Asia/Shanghai
   FILE_NAME: x86_64
