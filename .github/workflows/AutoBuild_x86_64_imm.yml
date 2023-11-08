@@ -160,15 +160,6 @@ jobs:
       if: (!cancelled())
       run: df -hT
 
-    - name: Delete files
-      run: |
-        chmod +x $DIY_P3_SH
-        cd openwrt
-        KERNEL=$($GITHUB_WORKSPACE/$DIY_P3_SH | grep "KERNEL=" | cut -d = -f 2)
-        export KERNEL
-        echo "KERNEL=$KERNEL" >> $GITHUB_ENV
-      shell: bash
-
     - name: 组织文件
       id: organize
       if: steps.compile.outputs.status == 'success' && !cancelled()
@@ -183,6 +174,15 @@ jobs:
       with:
         name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
         path: ${{ env.FIRMWARE }}
+
+    - name: Delete files
+      run: |
+        chmod +x $DIY_P3_SH
+        cd openwrt
+        KERNEL=$($GITHUB_WORKSPACE/$DIY_P3_SH | grep "KERNEL=" | cut -d = -f 2)
+        export KERNEL
+        echo "KERNEL=$KERNEL" >> $GITHUB_ENV
+      shell: bash
 
     - name: 生成标签
       id: release
