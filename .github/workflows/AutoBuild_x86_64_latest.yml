@@ -18,7 +18,7 @@ env:
   CONFIG_FILE: x86/x86.config
   DIY_P1_SH: x86/diy-part1.sh
   DIY_P2_SH: x86/diy-part2.sh
-  DIY_P3_SH: x86/rename.sh
+  UPDATE_FIRMWARE: false
   UPLOAD_RELEASE: true
   TZ: Asia/Shanghai
   FILE_NAME: x86_64
@@ -115,35 +115,32 @@ jobs:
 
     - name: 上传固件
       uses: actions/upload-artifact@main
-      if: steps.organize.outputs.status == 'success' && !cancelled()
+      if: steps.organize.outputs.status == 'success' && env.UPDATE_FIRMWARE == 'true' && !cancelled()
       with:
         name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
         path: ${{ env.FIRMWARE }}
 
     - name: Delete files
       run: |
-        chmod +x $DIY_P3_SH
         cd openwrt
-        KERNEL=$($GITHUB_WORKSPACE/$DIY_P3_SH | grep "KERNEL=" | cut -d = -f 2)
-        export KERNEL
-        echo "KERNEL=$KERNEL" >> $GITHUB_ENV
-        cd openwrt/bin/targets/*/*
-        ls
-      shell: bash
+        bash rename.sh
+        Kernel=`grep "_uefi.img.gz" wget/open_dev_md5 | cut -d - -f 2 | cut -d _ -f 2 `
+        echo "KERNEL=$Kernel" >> $GITHUB_ENV
+        echo "status=success" >> $GITHUB_OUTPUT
 
     - name: Create release
       id: release
       uses: ncipollo/release-action@v1
-      if: env.UPLOAD_RELEASE == 'true' && steps.compile.outputs.status == 'success'
+      if: env.UPLOAD_RELEASE == 'true' && steps.delete_files.outputs.status == 'success'
       with:
-        name: ${{ env.DATE }} 「 ${{ env.FILE_NAME }}_${{ env.KERNEL }} 」固件
+        name: ${{ env.DATE }} "immortalwrt_${{ env.FILE_NAME }}_${{ env.KERNEL }}" Firmware
         allowUpdates: true
         tag: ${{ env.TAG }}_${{ env.KERNEL }}
         token: ${{ secrets.GITHUB_TOKEN }}
         body: |
-          - 🔖 此为 ${{ env.FILE_NAME }}_${{ env.KERNEL }} 固件
-          - 🔖 默认IP：192.168.3.1 默认密码：无密码
-          - 🔖 时间: ${{ env.date }}
+          - 🔖 immortalwrt_${{ env.FILE_NAME }}_${{ env.KERNEL }} Firmware
+          - 🔖 Default IP: 192.168.3.1 Default Password: None
+          - 🔖 Time: ${{ env.date }}
         artifacts: ${{ env.FIRMWARE }}/*
 
     - name: Completion time 
@@ -189,8 +186,3 @@ jobs:
           delete_tag_pattern: _
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-
-
-
