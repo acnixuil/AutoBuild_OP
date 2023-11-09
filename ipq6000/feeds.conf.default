@@ -1,5 +1,5 @@
 src-git packages https://github.com/openwrt-fork/ipq6000-packages.git;1806
-src-git luci https://github.com/sdf8057/luci.git;1806
+src-git luci https://github.com/openwrt-fork/ipq6000-luci.git;master
 src-git routing https://github.com/openwrt/routing.git;openwrt-21.02
 src-git telephony https://github.com/openwrt/telephony.git;openwrt-21.02
 src-git passwall_packages https://github.com/xiaorouji/openwrt-passwall-packages.git;main

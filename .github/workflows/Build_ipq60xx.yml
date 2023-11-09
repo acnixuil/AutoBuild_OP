@@ -18,7 +18,7 @@ on:
   #- cron: 0 17 * * 1
 
 env:
-  REPO_URL: https://github.com/acnixuil/ipq6000
+  REPO_URL: https://github.com/openwrt-fork/ipq6000.git
   REPO_BRANCH: main
   FEEDS_CONF: ipq6000/feeds.conf.default
   CONFIG_FILE: ipq6000/ipq6000.config
