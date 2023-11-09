@@ -126,8 +126,6 @@ jobs:
         cd openwrt
         bash rename.sh
         Kernel=`grep "_uefi.img.gz" wget/open_dev_md5 | cut -d - -f 2 | cut -d _ -f 2 `
-        cd openwrt/bin/targets/*/*
-        ls 
         echo "KERNEL=$Kernel" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
 
