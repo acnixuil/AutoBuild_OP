@@ -192,9 +192,19 @@ jobs:
         cd /opt/openwrt_packit/output
         rm -rf *rootfs*
         rm -rf sha256sums
+        rm -rf openwrt-armvirt-64-generic-rootfs.tar.gz
+        rm -rf openwrt-armvirt-64-generic-rootfs.tar.gz.sha
+        rm -rf openwrt_s905d_n1_R23.10.24_k5.15.137-flippy-86+o.img.gz.sha 
         sleep 2
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
+
+    - name: Upload Firmware
+      uses: actions/upload-artifact@main
+      if: steps.organize.outputs.status == 'success' && !cancelled()
+      with:
+        name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+        path: ${{ env.FIRMWARE }}
 
     - name: 上传到Release
       id: release
