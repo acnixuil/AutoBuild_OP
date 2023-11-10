@@ -244,8 +244,8 @@ jobs:
 
     - name: Install Feeds
       run: |
-        cd $OPENWRT_PATH
         chmod +x $DIY_SCRIPT0
+        cd $OPENWRT_PATH
         $GITHUB_WORKSPACE/DIY_SCRIPT0
         ./scripts/feeds update -a
         ./scripts/feeds install -a
