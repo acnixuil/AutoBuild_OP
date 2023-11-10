@@ -314,7 +314,6 @@ jobs:
         cd $OPENWRT_PATH
         bash rename.sh
         cd $OPENWRT_PATH/bin/targets/*/*
-        cat sha256sums
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
 
     - name: Upload Firmware To Artifact
