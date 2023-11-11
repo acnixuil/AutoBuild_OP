@@ -245,7 +245,7 @@ jobs:
 
     - name: Install Feeds
       run: |
-        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF $OPENWRT_PATH/feeds.conf.default
         ./scripts/feeds update -a
         chmod +x $DIY_SCRIPT1
         cd $OPENWRT_PATH
