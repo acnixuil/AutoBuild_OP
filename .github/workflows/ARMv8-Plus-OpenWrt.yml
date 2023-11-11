@@ -246,7 +246,7 @@ jobs:
 
     - name: Reset Folder to Specific Version
       run: |
-        cd openwrt/package/libs/openssl
+        cd $OPENWRT_PATH/package/libs/openssl
         git reset --hard 4fd8d7b7f8b7752ba8bb06e0d43808d0c5fddde0
 
     - name: Install Feeds
