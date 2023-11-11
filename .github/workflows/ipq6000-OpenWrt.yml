@@ -246,9 +246,9 @@ jobs:
     - name: Install Feeds
       run: |
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF $OPENWRT_PATH/feeds.conf.default
-        ./scripts/feeds update -a
         chmod +x $DIY_SCRIPT1
         cd $OPENWRT_PATH
+        ./scripts/feeds update -a
         $GITHUB_WORKSPACE/$DIY_SCRIPT1
         ./scripts/feeds install -a
 
