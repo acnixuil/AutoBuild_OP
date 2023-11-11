@@ -10,7 +10,7 @@
 # Description: OpenWrt DIY script part 2 (After Update feeds)
 
 # Modify default IP
-sed -i 's/192.168.1.1/192.168.3.1/g' package/base-files/files/bin/config_generate
+sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
 
 # adguardhome
 git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
@@ -26,7 +26,7 @@ git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-desi
 git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
 
 # Enable Cache
-echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config
+#echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config
 
 echo "========================="
 echo " DIY2 配置完成……"
