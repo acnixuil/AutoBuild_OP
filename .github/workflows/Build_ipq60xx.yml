@@ -24,13 +24,13 @@ env:
   CONFIG_FILE: ipq6000/ipq6000.config
   DIY_P1_SH: ipq6000/diy-part1.sh
   DIY_P2_SH: ipq6000/diy-part2.sh
-  DIY_P105_SH: ipq6000/diy-part105.sh
   UPLOAD_RELEASE: true
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
   TZ: Asia/Shanghai
-  FILE_NAME: ipq60xx
-  PRODUCT_NAME: ipq60xx
+  CLASH_KERNEL: arm64
+  FILE_NAME: ipq6000
+  PRODUCT_NAME: ipq6000
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -97,9 +97,6 @@ jobs:
       run: |
         set -x
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
-        chmod +x $DIY_P1_SH
-        cd openwrt
-        $GITHUB_WORKSPACE/$DIY_P1_SH
 
     - name: 更新软件源
       run: cd openwrt && ./scripts/feeds update -a
@@ -107,9 +104,9 @@ jobs:
     - name: Modify feeds
       run: |
         set -x
-        chmod +x $DIY_P105_SH
+        chmod +x $DIY_P1_SH
         cd openwrt
-        $GITHUB_WORKSPACE/$DIY_P105_SH
+        $GITHUB_WORKSPACE/$DIY_P1_SH
 
     - name: 安装软件源
       run: cd openwrt && ./scripts/feeds install -a
@@ -119,9 +116,11 @@ jobs:
         set -x
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
+        chmod +x $GITHUB_WORKSPACE/scripts/*.sh
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
+        $GITHUB_WORKSPACE/scripts/preset-adguard-core.sh $CLASH_KERNEL
 
     - name: 输出预编译信息
       run: |
@@ -184,8 +183,6 @@ jobs:
         rm -rf *.itb
         sleep 2
         ls
-        mv *.ubi openwrt_ipq60xx_factory.ubi
-        mv *sysupgrade.bin openwrt_ipq60xx_sysupgrade.bin
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
 
@@ -194,9 +191,9 @@ jobs:
       uses: ncipollo/release-action@v1
       if: env.UPLOAD_RELEASE == 'true' && steps.organize.outputs.status == 'success'
       with:
-        name: ${{ env.DATE }} 「 ${{ env.FILE_NAME }} 」固件
+        name: R${{ env.DATE }} for ${{ env.PRODUCT_NAME }}
         allowUpdates: true
-        tag: ${{ env.TAG }}_${{ env.PRODUCT_NAME }}
+        tag: ${{ env.PRODUCT_NAME }}
         token: ${{ secrets.GITHUB_TOKEN }}
         body: |
           - 🔖 此为 ${{ env.FILE_NAME }} 固件
@@ -217,18 +214,18 @@ jobs:
         HMS=`echo ${hour}:${min}:${sec}`
         echo "time=$HMS" >> $GITHUB_ENV
 
-    - name: Telegram or Push notification
-      run: |
-        MSG="
-        😺 ${{ env.FILE_NAME }} 编译完成
-        🔖 开始时间：${{ env.DATE }}
-        🔖 完成时间：${{ env.DATE1 }}
-        🔖 编译耗时：${{ env.time }}
-        ⏱ 时间: ${{ env.date }}
-        ⌛ hash: ${{ env.hash }}
-        🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/${{ env.TAG }}_${{ env.PRODUCT_NAME }}
-        "
-        curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
+    #- name: Telegram or Push notification
+    #  run: |
+    #    MSG="
+    #    😺 ${{ env.FILE_NAME }} 编译完成
+    #    🔖 开始时间：${{ env.DATE }}
+    #    🔖 完成时间：${{ env.DATE1 }}
+    #    🔖 编译耗时：${{ env.time }}
+    #    ⏱ 时间: ${{ env.date }}
+    #    ⌛ hash: ${{ env.hash }}
+    #    🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/${{ env.TAG }}_${{ env.PRODUCT_NAME }}
+    #    "
+    #    curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
 
 # ==============================================
   Cleaning:

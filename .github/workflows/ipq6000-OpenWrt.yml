@@ -2,8 +2,8 @@ name: ipq6000 OpenWrt
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 22 * * 5'
+  #schedule:
+  #  - cron: '0 22 * * 5'
 
 env:
   SOURCE_URL: https://github.com/acnixuil/ipq6000
