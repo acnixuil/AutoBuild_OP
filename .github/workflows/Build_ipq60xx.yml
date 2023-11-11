@@ -38,8 +38,6 @@ jobs:
     steps:
     - name: 检查
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
     
     - name: Apt Update
       env:
@@ -86,12 +84,6 @@ jobs:
         echo "DATE=$(date "+%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
         echo "TAG=$(date "+%Y%m%d")" >> $GITHUB_ENV
         echo "start=$(date +%s)" >> $GITHUB_ENV
-    
-    - name: Cache
-      uses: stupidloud/cachewrtbuild@main
-      with:
-        ccache: 'true'
-        prefix: ${{ github.workspace }}/openwrt
 
     - name: 加载软件源
       run: |
