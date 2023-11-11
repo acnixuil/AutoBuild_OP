@@ -43,4 +43,4 @@ svn co https://github.com/sbwml/luci-app-mosdns/trunk/luci-app-mosdns package/lu
 svn co https://github.com/sbwml/luci-app-mosdns/trunk/mosdns package/mosdns
 
 # Enable Cache
-echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config
+#echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config
