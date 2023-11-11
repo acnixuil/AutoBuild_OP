@@ -6,7 +6,7 @@ on:
     - cron: '0 22 * * 5'
 
 env:
-  SOURCE_URL: https://github.com/openwrt-fork/ipq6000.git
+  SOURCE_URL: https://github.com/acnixuil/ipq6000
   SOURCE_BRANCH: main
   FEEDS_CONF: ipq6000/feeds.conf.default
   CONFIG_FILE: ipq6000/ipq6000.config
