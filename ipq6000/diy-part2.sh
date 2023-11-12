@@ -25,6 +25,13 @@ git clone -b 18.06 https://github.com/jerrykuku/luci-app-argon-config.git packag
 git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
 git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
 
+find ./ | grep Makefile | grep v2ray-geodata | xargs rm -f
+find ./ | grep Makefile | grep mosdns | xargs rm -f
+git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
+git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
+
+git clone --depth=1 -b main https://github.com/fw876/helloworld package/luci-app-ssr-plus
+
 # Enable Cache
 #echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config
 
