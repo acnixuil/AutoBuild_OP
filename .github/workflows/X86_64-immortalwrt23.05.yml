@@ -336,4 +336,4 @@ jobs:
         body: |
           **This is OpenWrt Firmware for ${{ env.FIRMWARE_TAG }}**
           * 这是 ${{ env.FIRMWARE_TAG }} 平台使用的 OpenWrt 固件
-          默认 IP：192.168.3.1 | 默认密码：
+          默认 IP：192.168.3.1 默认密码：
