@@ -6,7 +6,7 @@ on:
   #  - cron: '0 22 * * 5'
 
 env:
-  SOURCE_URL: https://github.com/acnixuil/ipq6000
+  SOURCE_URL: https://github.com/acnixuil/ipq6000sdf
   SOURCE_BRANCH: main
   FEEDS_CONF: ipq6000/feeds.conf.default
   CONFIG_FILE: ipq6000/ipq6000.config
@@ -321,6 +321,7 @@ jobs:
         rm -rf *.buildinfo
         rm -rf *package*
         rm -rf *.itb
+        rm -rf *.manifest
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
 
     - name: Upload Firmware To Artifact

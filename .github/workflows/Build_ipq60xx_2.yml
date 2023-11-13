@@ -18,7 +18,7 @@ on:
   #- cron: 0 17 * * 1
 
 env:
-  REPO_URL: https://github.com/acnixuil/ipq6000
+  REPO_URL: https://github.com/acnixuil/ipq6000sdf
   REPO_BRANCH: main
   FEEDS_CONF: ipq6000/feeds.conf.default
   CONFIG_FILE: ipq6000/ssr.config
@@ -139,6 +139,7 @@ jobs:
         rm -rf *.buildinfo
         rm -rf *package*
         rm -rf *.itb
+        rm -rf *.manifest
         sleep 2
         ls
         mv *.ubi ${{ env.PRODUCT_NAME }}-mini.ubi
