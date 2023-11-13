@@ -342,19 +342,8 @@ jobs:
         # 获取当前北京时间
         CURRENT_DATE_TIME=$(TZ='Asia/Shanghai' date +'%Y/%m/%d %r')
 
-        # 计算 GitHub Action 运行时间
-        START_TIME=$(date -u -d "${{ github.event.created_at }}" '+%s')
-        END_TIME=$(date -u -d "${{ github.run_at }}" '+%s')
-        DURATION_SECONDS=$((END_TIME - START_TIME))
-        DURATION_HOURS=$((DURATION_SECONDS / 3600))
-        DURATION_MINUTES=$((DURATION_SECONDS % 3600 / 60))
-            
-        # 格式化运行时间为 HH:MM
-        DURATION_FORMATTED="$(printf "%02d:%02d" $DURATION_HOURS $DURATION_MINUTES)"
-
         # 构建消息
         MESSAGE="${{ env.FIRMWARE_TAG }} 固件编译完成
-        耗时：$DURATION_FORMATTED
         发布时间：$CURRENT_DATE_TIME
         发布页面：https://github.com/acnixuil/AutoBuild_OP/releases/tag/${{ env.FIRMWARE_TAG }}"
 
