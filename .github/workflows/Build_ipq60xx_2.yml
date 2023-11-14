@@ -20,7 +20,7 @@ on:
 env:
   REPO_URL: https://github.com/openwrt-fork/ipq6000.git
   REPO_BRANCH: main
-  FEEDS_CONF: ipq6000/feeds.conf.default
+  FEEDS_CONF: ipq6000/feeds
   CONFIG_FILE: ipq6000/ssr.config
   DIY_P1_SH: ipq6000/diy-part1.sh
   DIY_P2_SH: ipq6000/diy-part2.sh
@@ -84,10 +84,10 @@ jobs:
         echo "TAG=$(date "+%Y%m%d")" >> $GITHUB_ENV
         echo "start=$(date +%s)" >> $GITHUB_ENV
 
-    #- name: 加载软件源
-    #  run: |
-    #    set -x
-    #    [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
+    - name: 加载软件源
+      run: |
+        set -x
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
 
     - name: 更新软件源
       run: |
