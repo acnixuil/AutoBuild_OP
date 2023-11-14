@@ -103,8 +103,11 @@ jobs:
     - name: Install Feeds
       if: steps.hash.outputs.REBUILD_TOOLCHAIN == 'true'
       run: |
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF $OPENWRT_PATH/feeds.conf.default
+        chmod +x $DIY_SCRIPT1
         cd $OPENWRT_PATH
         ./scripts/feeds update -a
+        $GITHUB_WORKSPACE/$DIY_SCRIPT1
         ./scripts/feeds install -a
 
     - name: Compile Tools
@@ -322,6 +325,8 @@ jobs:
         rm -rf *package*
         rm -rf *.itb
         rm -rf *.manifest
+        mv *.ubi openwrt-${{ env.FIRMWARE_TAG }}-full.ubi
+        mv *.bin openwrt-${{ env.FIRMWARE_TAG }}-full.bin
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
 
     - name: Upload Firmware To Artifact

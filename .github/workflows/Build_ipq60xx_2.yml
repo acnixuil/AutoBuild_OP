@@ -28,8 +28,7 @@ env:
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
   TZ: Asia/Shanghai
-  FILE_NAME: ipq6000
-  PRODUCT_NAME: ipq6000
+  FIRMWARE_TAG: ipq6000
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -117,7 +116,7 @@ jobs:
       run: |
         cd openwrt
         echo -e "$(nproc) thread compile"
-        make -j$(nproc) || make -j1 || make -j1 V=s || (curl -k --data chat_id="${{ env.TELEGRAM_CHAT_ID }}" --data "text=😅 ${{env.PRODUCT_NAME}}-OpenWrt 固件编译失败 😅" "https://api.telegram.org/bot${{ env.TELEGRAM_TOKEN }}/sendMessage";exit 1)
+        make -j$(nproc) || make -j1 || make -j1 V=s || (curl -k --data chat_id="${{ env.TELEGRAM_CHAT_ID }}" --data "text=😅 ${{env.FIRMWARE_TAG}}-OpenWrt 固件编译失败 😅" "https://api.telegram.org/bot${{ env.TELEGRAM_TOKEN }}/sendMessage";exit 1)
         echo "status=success" >> $GITHUB_OUTPUT
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
@@ -142,8 +141,8 @@ jobs:
         rm -rf *.manifest
         sleep 2
         ls
-        mv *.ubi ${{ env.PRODUCT_NAME }}-mini.ubi
-        mv *.bin ${{ env.PRODUCT_NAME }}-mini.bin
+        mv *.ubi openwrt-${{ env.FIRMWARE_TAG }}-mini.ubi
+        mv *.bin openwrt-${{ env.FIRMWARE_TAG }}-mini.bin
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
 
@@ -152,12 +151,12 @@ jobs:
       uses: ncipollo/release-action@v1
       if: env.UPLOAD_RELEASE == 'true' && steps.organize.outputs.status == 'success'
       with:
-        name: R${{ env.DATE }} for ${{ env.PRODUCT_NAME }}
+        name: R${{ env.DATE }} for ${{ env.FIRMWARE_TAG }}
         allowUpdates: true
-        tag: ${{ env.PRODUCT_NAME }}
+        tag: ${{ env.FIRMWARE_TAG }}
         token: ${{ secrets.GITHUB_TOKEN }}
         body: |
-          - 🔖 此为 ${{ env.FILE_NAME }}_s 固件
+          - 🔖 此为 ${{ env.FIRMWARE_TAG }}_s 固件
           - 🔖 默认IP：192.168.2.1 默认密码：password
           - 🔖 时间: ${{ env.date }}
         artifacts: ${{ env.FIRMWARE }}/*
