@@ -27,25 +27,16 @@ git clone https://github.com/acnixuil/luci-app-adguardhome.git package/luci-app-
 git clone https://github.com/acnixuil/luci-app-netwizard.git package/luci-app-wizard
 
 # argon design
-rm -rf feeds/luci/themes/luci-theme-argon
-rm -rf feeds/luci/themes/luci-theme-design
-rm -rf feeds/luci/applications/luci-app-argon-config
-rm -rf feeds/luci/applications/luci-app-design-config
+rm -rf feeds/luci/themes/luci-theme-argon*
+rm -rf feeds/luci/themes/luci-theme-design*
+rm -rf feeds/luci/applications/luci-app-argon-config*
+rm -rf feeds/luci/applications/luci-app-design-config*
 git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git package/luci-theme-argon
 git clone -b 18.06 https://github.com/jerrykuku/luci-app-argon-config.git package/luci-app-argon-config
 git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
 git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
 
 # mosdns
-#rm -rf feeds/packages/net/mosdns*
-#rm -rf feeds/luci/applications/luci-app-mosdns*
-#rm -rf feeds/packages/net/v2ray-geodata*
-#git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
-#git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
-#rm -rf feeds/packages/net/mosdns
-#rm -rf feeds/luci/applications/luci-app-mosdns
-#svn co https://github.com/sbwml/luci-app-mosdns/trunk/luci-app-mosdns package/luci-app-mosdns
-#svn co https://github.com/sbwml/luci-app-mosdns/trunk/mosdns package/mosdns
 find ./ | grep Makefile | grep v2ray-geodata | xargs rm -f
 find ./ | grep Makefile | grep mosdns | xargs rm -f
 git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns

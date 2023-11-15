@@ -24,6 +24,7 @@ git clone https://github.com/acnixuil/luci-app-netwizard.git package/luci-app-wi
 
 # 更换argon为最新版本
 rm -rf feeds/luci/themes/luci-theme-argon*
+rm -rf feeds/luci/applications/luci-app-argon-config*
 git clone https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
 git clone https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
 
