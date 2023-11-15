@@ -8,7 +8,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: Build ipq60xx
+name: Build ipq60xx_ss
 
 on:
   workflow_dispatch:
