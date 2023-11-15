@@ -12,7 +12,7 @@
 # Modify default IP
 sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
 
-git clone --depth=1 -b main https://github.com/fw876/helloworld package/luci-app-ssr-plus
+git clone -b main https://github.com/fw876/helloworld package/luci-app-ssr-plus
 
 # Enable Cache
 #echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config

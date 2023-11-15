@@ -102,7 +102,7 @@ jobs:
     - name: 加载自定义配置
       run: |
         set -x
-        [ -e files ] && mv files $OPENWRT_PATH/files
+        [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $GITHUB_WORKSPACE/scripts/*.sh
         chmod +x $DIY_P2_SH

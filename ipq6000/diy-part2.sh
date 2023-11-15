@@ -30,7 +30,7 @@ find ./ | grep Makefile | grep mosdns | xargs rm -f
 git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
 git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
 
-git clone --depth=1 -b main https://github.com/fw876/helloworld package/luci-app-ssr-plus
+git clone -b main https://github.com/fw876/helloworld package/luci-app-ssr-plus
 
 # Enable Cache
 #echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config
