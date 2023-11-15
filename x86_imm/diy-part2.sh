@@ -11,7 +11,7 @@ sed -i 's/192.168.1.1/192.168.3.1/g' package/base-files/files/bin/config_generat
 
 # 添加adguardhome
 #git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
-git clone https://github.com/acnixuil/luci-app-adguardhome.git package/luci-app-adguardhome
+git clone --depth=1 -b master https://github.com/acnixuil/luci-app-adguardhome.git package/luci-app-adguardhome
 
 # 向导
 #git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
