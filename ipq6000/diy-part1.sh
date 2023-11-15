@@ -8,5 +8,5 @@
 # https://github.com/P3TERX/Actions-OpenWrt
 # File name: diy-part2.sh
 # Description: OpenWrt DIY script part 2 (After Update feeds)
-./scripts/feeds install -a -f -p passwall_packages
-./scripts/feeds install -a -f -p passwall_luci
+#./scripts/feeds install -a -f -p passwall_packages
+#./scripts/feeds install -a -f -p passwall_luci
