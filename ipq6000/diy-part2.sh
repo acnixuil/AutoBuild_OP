@@ -20,6 +20,7 @@ rm -rf feeds/luci/themes/luci-theme-argon*
 rm -rf feeds/luci/themes/luci-theme-design*
 rm -rf feeds/luci/applications/luci-app-argon-config*
 rm -rf feeds/luci/applications/luci-app-design-config*
+rm -rf feeds/luci/applications/luci-app-ssr-plus
 
 # adguardhome
 git clone --depth=1 -b master https://github.com/acnixuil/luci-app-adguardhome.git package/luci-app-adguardhome
