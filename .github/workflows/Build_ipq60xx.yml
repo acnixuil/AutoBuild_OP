@@ -164,7 +164,7 @@ jobs:
         tag: ${{ env.FIRMWARE_TAG }}
         token: ${{ secrets.GITHUB_TOKEN }}
         body: |
-          - 🔖 此为 ${{ env.FIRMWARE_TAG }}_s 固件
+          - 🔖 此为 ${{ env.FIRMWARE_TAG }} 固件
           - 🔖 默认IP：192.168.2.1 默认密码：password
           - 🔖 时间: ${{ env.date }}
         artifacts: ${{ env.FIRMWARE }}/*
