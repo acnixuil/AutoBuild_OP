@@ -13,9 +13,9 @@
 sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
 
 # 移除要替换的包
-find ./ -name '*mosdns*' -print0 | xargs -0 rm -rf
+#find ./ -name '*mosdns*' -print0 | xargs -0 rm -rf
 find ./ | grep Makefile | grep v2ray-geodata | xargs rm -f
-#find ./ | grep Makefile | grep mosdns | xargs rm -f
+find ./ | grep Makefile | grep mosdns | xargs rm -f
 rm -rf feeds/luci/themes/luci-theme-argon*
 rm -rf feeds/luci/themes/luci-theme-design*
 rm -rf feeds/luci/applications/luci-app-argon-config*
@@ -33,7 +33,7 @@ git clone --depth=1 -b main https://github.com/gngpp/luci-theme-design.git packa
 git clone --depth=1 -b master https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
 
 # mosdns
-git clone --depth=1 -b v5 https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
+git clone --depth=1 -b v5 https://github.com/sbwml/luci-app-mosdns package/mosdns
 git clone --depth=1 -b master https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
 
 # ssrp
