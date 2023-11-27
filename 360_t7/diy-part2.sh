@@ -11,6 +11,7 @@ sed -i 's/192.168.6.1/192.168.2.1/g' package/base-files/files/bin/config_generat
 rm -f package/feeds/packages/mosdns
 rm -rf feeds/packages/net/mosdns
 rm -rf feeds/packages/net/v2ray-geodata*
+rm -rf feeds/packages/net/xray-core*
 rm -rf feeds/luci/themes/luci-theme-argon*
 rm -rf feeds/luci/themes/luci-theme-design*
 rm -rf feeds/luci/applications/luci-app-argon-config*
