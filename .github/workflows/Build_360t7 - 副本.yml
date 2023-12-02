@@ -1,0 +1,209 @@
+#
+# Copyright (c) 2019-2020 P3TERX <https://p3terx.com>
+#
+# This is free software, licensed under the MIT License.
+# See /LICENSE for more information.
+#
+# https://github.com/P3TERX/Actions-OpenWrt
+# Description: Build OpenWrt using GitHub Actions
+#
+
+name: Build_360t7_h
+
+on:
+  workflow_dispatch:
+
+#定时触发开始编译
+  #schedule:
+  #- cron: 0 17 * * 1
+
+env:
+  REPO_URL: https://github.com/hanwckf/immortalwrt-mt798x
+  REPO_BRANCH: openwrt-21.02
+  FEEDS_CONF: feeds.conf.default
+  CONFIG_PW_FILE: ./360_t7/h_t7.config
+  CONFIG_AP_FILE: ./360_t7/ap.config
+  CONFIG_PW1_FILE: ./360_t7/pw1.config
+  DIY_P1_SH: ./360_t7/diy-part1.sh
+  DIY_P2_SH: ./360_t7/diy-part2.sh
+  UPLOAD_RELEASE: true
+  TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+  TZ: Asia/Shanghai
+  CLASH_KERNEL: arm64
+  FIRMWARE_TAG: 360_t7
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: 检查
+      uses: actions/checkout@v4
+      #with:
+      #  fetch-depth: 0
+    
+    - name: 检查服务器状态
+      run: |
+        echo "警告⚠"
+        echo "若分配的服务器性能不足，务必及时取消，重新运行！"
+        echo "已知编译成功CPU型号：8370C,8171M"
+        echo "已知性能不足CPU型号：8272CL"
+        echo -e "-------------- ------------CPU信息------------------------------------------\n"
+        echo "CPU物理数量:$(cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l)"
+        echo -e "CPU核心及版本信息：$(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c) \n"
+        echo "-------------------------------内存信息-------------------------------------------"
+        echo "已安装内存详细信息："
+        sudo lshw -short -C memory | grep GiB
+        echo -e "\n"
+        echo "-----------------------------硬盘信息---------------------------------------------"
+        echo -e  "硬盘数量：$(ls /dev/sd* | grep -v [1-9] | wc -l) \n"
+        echo "硬盘详情："
+        echo " 系统空间       类型   总数  已用  可用  使用率"
+        df -Th
+    
+    - name: 安装编译环境
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
+        sudo bash -c 'bash <(curl -s https://build-scripts.immortalwrt.eu.org/init_build_environment.sh)'
+        sudo timedatectl set-timezone "$TZ"
+        sudo mkdir -p /workdir
+        sudo chown $USER:$GROUPS /workdir      
+    
+    - name: 下载源码
+      working-directory: /workdir
+      run: |
+        df -hT $PWD
+        git clone $REPO_URL -b $REPO_BRANCH openwrt
+        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+        cd openwrt
+        Author=$(git show -s --date=short --format="%an")
+        Date=$(git show -s --date=short --format="%ci")
+        Commit=$(git show -s --date=short --format="%s")
+        Hash=$(git show -s --date=short --format="%H")
+        echo "author=$Author" >> $GITHUB_ENV
+        echo "date=$Date" >> $GITHUB_ENV
+        echo "commit=$Commit" >> $GITHUB_ENV
+        echo "hash=$Hash" >> $GITHUB_ENV
+        echo "DATE=$(date "+%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
+        echo "TAG=$(date "+%Y%m%d")" >> $GITHUB_ENV
+        echo "start=$(date +%s)" >> $GITHUB_ENV
+
+    #- name: Cache
+    #  uses: stupidloud/cachewrtbuild@main
+    #  with:
+    #    ccache: 'true'
+    #    prefix: ${{ github.workspace }}/openwrt
+
+    - name: 加载软件源
+      run: |
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
+        chmod +x $DIY_P1_SH
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P1_SH
+
+    - name: 更新软件源
+      run: cd openwrt && ./scripts/feeds update -a       
+
+    #- name: Modify feeds
+    #  run: |
+    #    set -x
+    #    cd openwrt
+    #    ./scripts/feeds install -a -f -p passwall_packages
+    #    ./scripts/feeds install -a -f -p passwall
+
+    - name: 安装软件源
+      run: cd openwrt && ./scripts/feeds install -a
+
+    - name: 读取PW版配置文件
+      if: github.event.inputs.checkconfigfile == 'PW' 
+      run: |     
+        [ -e files ] && mv files openwrt/files
+        [ -e $CONFIG_PW_FILE ] && mv $CONFIG_PW_FILE openwrt/.config   
+        chmod +x $DIY_P2_SH
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P2_SH
+
+    - name: 下载包
+      id: package
+      run: |
+        cd openwrt
+        make defconfig
+        make download -j8
+        find dl -size -1024c -exec ls -l {} \;
+        find dl -size -1024c -exec rm -f {} \;
+
+    - name: 整合固件
+      id: compile
+      run: |
+        cd openwrt
+        echo -e "$(nproc) thread compile"
+        make -j$(nproc) || make -j1 || make -j1 V=s || (curl -k --data chat_id="${{ env.TELEGRAM_CHAT_ID }}" --data "text=😅 ${{env.FIRMWARE_TAG}}-OpenWrt 固件编译失败 😅" "https://api.telegram.org/bot${{ env.TELEGRAM_TOKEN }}/sendMessage";exit 1)
+        echo "status=success" >> $GITHUB_OUTPUT
+        grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+        [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
+        echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+
+    - name: 检查可用容量
+      if: (!cancelled())
+      run: df -hT
+
+    - name: 组织文件
+      id: organize
+      if: steps.compile.outputs.status == 'success' && !cancelled()
+      run: |
+        cd openwrt/bin/targets/*/*
+        rm -rf *kernel*
+        rm -rf sha256sums
+        rm -rf *rootfs*
+        rm -rf profiles.json
+        rm -rf *.buildinfo
+        rm -rf *.itb
+        rm -rf *.bz2
+        rm -rf package*
+        sleep 2
+        ls
+        mv *.ubi immortalwrt-${{ env.FIRMWARE_TAG }}.ubi
+        mv *.bin immortalwrt-${{ env.FIRMWARE_TAG }}.bin
+        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+        echo "status=success" >> $GITHUB_OUTPUT
+
+    - name: 生成标签
+      id: release
+      uses: ncipollo/release-action@v1
+      if: env.UPLOAD_RELEASE == 'true' && steps.organize.outputs.status == 'success'
+      with:
+        name: R${{ env.DATE }} for ${{ env.FIRMWARE_TAG }}
+        allowUpdates: true
+        tag: ${{ env.FIRMWARE_TAG }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        body: |
+          **This is OpenWrt Firmware for ${{ env.FIRMWARE_TAG }}**
+          * 这是 ${{ env.FIRMWARE_TAG }} 平台使用的 OpenWrt 固件
+          默认 IP：192.168.2.1 默认密码：
+        artifacts: ${{ env.FIRMWARE }}/*
+        
+    - name: Completion time 
+      run: |
+        echo "DATE1=$(date "+%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
+        end=$(date +%s)
+        seconds=$(( end - start ))
+        hour=$(( $seconds/3600 ))
+        min=$(( ($seconds-${hour}*3600)/60 ))
+        sec=$(( $seconds-${hour}*3600-${min}*60 ))
+        HMS=`echo ${hour}:${min}:${sec}`
+        echo "time=$HMS" >> $GITHUB_ENV
+
+    - name: Telegram or Push notification
+      run: |
+        MSG="
+        😺 ${{ env.FIRMWARE_TAG }}_${{ github.event.inputs.checkconfigfile }} 编译完成
+        🔖 开始时间：${{ env.DATE }}
+        🔖 完成时间：${{ env.DATE1 }}
+        🔖 编译耗时：${{ env.time }}
+        ⏱ 时间: ${{ env.date }}
+        ⌛ hash: ${{ env.hash }}
+        🎁: https://github.com/acnixuil/Snapshot-Lede/releases/tag/${{ env.FIRMWARE_TAG }}
+        "
+        curl "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MSG}"
