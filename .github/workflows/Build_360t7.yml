@@ -50,8 +50,8 @@ jobs:
     steps:
     - name: 检查
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      #with:
+      #  fetch-depth: 0
     
     - name: 检查服务器状态
       run: |
@@ -101,11 +101,11 @@ jobs:
         echo "TAG=$(date "+%Y%m%d")" >> $GITHUB_ENV
         echo "start=$(date +%s)" >> $GITHUB_ENV
 
-    - name: Cache
-      uses: stupidloud/cachewrtbuild@main
-      with:
-        ccache: 'true'
-        prefix: ${{ github.workspace }}/openwrt
+    #- name: Cache
+    #  uses: stupidloud/cachewrtbuild@main
+    #  with:
+    #    ccache: 'true'
+    #    prefix: ${{ github.workspace }}/openwrt
 
     - name: 加载软件源
       run: |
@@ -125,7 +125,12 @@ jobs:
         ./scripts/feeds install -a -f -p passwall
 
     - name: 安装软件源
-      run: cd openwrt && ./scripts/feeds install -a
+      run: |
+        cd openwrt 
+        ./scripts/feeds install -a
+        pushd feeds/packages/lang
+        rm -rf golang && svn co https://github.com/openwrt/packages/branches/openwrt-23.05/lang/golang
+        popd
 
     - name: 读取PW版配置文件
       if: github.event.inputs.checkconfigfile == 'PW' 
