@@ -117,7 +117,6 @@ jobs:
       run: cd openwrt && ./scripts/feeds install -a
 
     - name: 读取PW版配置文件
-      if: github.event.inputs.checkconfigfile == 'PW' 
       run: |     
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_PW_FILE ] && mv $CONFIG_PW_FILE openwrt/.config   
@@ -164,8 +163,6 @@ jobs:
         rm -rf package*
         sleep 2
         ls
-        mv *.ubi immortalwrt-${{ env.FIRMWARE_TAG }}.ubi
-        mv *.bin immortalwrt-${{ env.FIRMWARE_TAG }}.bin
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
 
