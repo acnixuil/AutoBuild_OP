@@ -200,8 +200,6 @@ jobs:
         rm -rf package*
         sleep 2
         ls
-        mv *.ubi immortalwrt-${{ env.FIRMWARE_TAG }}.ubi
-        mv *.bin immortalwrt-${{ env.FIRMWARE_TAG }}.bin
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
 

@@ -106,15 +106,20 @@ jobs:
     - name: 更新软件源
       run: cd openwrt && ./scripts/feeds update -a       
 
-    #- name: Modify feeds
-    #  run: |
-    #    set -x
-    #    cd openwrt
-    #    ./scripts/feeds install -a -f -p passwall_packages
-    #    ./scripts/feeds install -a -f -p passwall
+    - name: Modify feeds
+      run: |
+        set -x
+        cd openwrt
+        ./scripts/feeds install -a -f -p passwall_packages
+        ./scripts/feeds install -a -f -p passwall
 
     - name: 安装软件源
-      run: cd openwrt && ./scripts/feeds install -a
+      run: |
+        cd openwrt 
+        ./scripts/feeds install -a
+        pushd feeds/packages/lang
+        rm -rf golang && svn co https://github.com/openwrt/packages/branches/openwrt-23.05/lang/golang
+        popd
 
     - name: 读取PW版配置文件
       run: |     
