@@ -18,13 +18,18 @@ dns:
   port: 5554
   anonymize_client_ip: false
   ratelimit: 0
+  ratelimit_subnet_len_ipv4: 24
+  ratelimit_subnet_len_ipv6: 56
   ratelimit_whitelist: []
   refuse_any: true
   upstream_dns:
-    - tls://dns.pub
+    - https://dns.alidns.com/dns-query
     - tls://dns.alidns.com
-    - 2400:3200:baba::1
-    - 180.76.76.76
+    - tls://dns.ipv6dns.com
+    - https://dns.ipv6dns.com/dns-query
+    - '2402:4e00::'
+    - 2001:da8:202:10::36
+    - 2001:da8:202:10::37
   upstream_dns_file: ""
   bootstrap_dns:
     - 211.136.196.2
@@ -69,6 +74,7 @@ dns:
   dns64_prefixes: []
   serve_http3: false
   use_http3_upstreams: false
+  serve_plain_dns: true
 tls:
   enabled: false
   server_name: ""
@@ -92,7 +98,7 @@ querylog:
   file_enabled: true
 statistics:
   ignored: []
-  interval: 6h
+  interval: 168h
   enabled: true
 filters:
   - enabled: true
