@@ -28,6 +28,9 @@ rm -rf feeds/luci/applications/luci-app-argon-config*
 git clone --depth=1 -b 18.06 https://github.com/yhl452493373/luci-theme-argon.git package/luci-theme-argon
 git clone https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
 
+# 更改 Argon 主题背景
+cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
+
 # mosdns
 find ./ | grep Makefile | grep v2ray-geodata | xargs rm -f
 find ./ | grep Makefile | grep mosdns | xargs rm -f

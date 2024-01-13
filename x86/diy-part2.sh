@@ -42,6 +42,9 @@ git clone --depth=1 -b 18.06 https://github.com/jerrykuku/luci-app-argon-config.
 git clone --depth=1 -b main https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
 git clone --depth=1 -b master https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
 
+# 更改 Argon 主题背景
+cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
+
 # Enable Cache
 #echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config
 
