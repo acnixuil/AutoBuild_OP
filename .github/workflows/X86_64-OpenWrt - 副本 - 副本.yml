@@ -169,11 +169,11 @@ jobs:
     - name: Organize Files
       if: steps.compile.outputs.status == 'success'
       run: |
-        cd $OPENWRT_PATH
-        bash rename.sh
         cd $OPENWRT_PATH/bin/targets/*/*
         echo "KERNEL=$(cat *.manifest | grep ^kernel | cut -d- -f2 | tr -d ' ')" >> $GITHUB_ENV
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
+        cd $OPENWRT_PATH
+        bash rename.sh
 
     - name: Upload Firmware To Release
       if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
