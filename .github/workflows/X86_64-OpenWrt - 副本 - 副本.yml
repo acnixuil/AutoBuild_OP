@@ -6,8 +6,8 @@ on:
   #  - cron: 0 19 * * *
 
 env:
-  SOURCE_URL: https://github.com/immortalwrt/immortalwrt
-  SOURCE_BRANCH: openwrt-23.05
+  REPO_URL: https://github.com/immortalwrt/immortalwrt
+  REPO_BRANCH: openwrt-23.05
   CONFIG_FILE: x86_imm/x86.config
   DIY_SCRIPT1: x86_imm/diy-part1.sh
   DIY_SCRIPT2: x86_imm/diy-part2.sh
