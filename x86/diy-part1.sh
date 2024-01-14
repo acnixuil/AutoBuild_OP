@@ -10,7 +10,7 @@ mkdir wget
 # 裁剪多余文件并重命名输出文件
 cat>rename.sh<<-\EOF
 #!/bin/bash
-rm -rf bin/targets/x86/64/packages
+#rm -rf bin/targets/x86/64/packages
 rm -rf bin/targets/x86/64/config.buildinfo
 rm -rf bin/targets/x86/64/feeds.buildinfo
 rm -rf bin/targets/x86/64/openwrt-x86-64-generic.manifest

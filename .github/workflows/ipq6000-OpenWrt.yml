@@ -9,7 +9,7 @@ env:
   SOURCE_URL: https://github.com/openwrt-fork/ipq6000.git
   SOURCE_BRANCH: main
   FEEDS_CONF: ipq6000/feeds.conf.default
-  CONFIG_FILE: ipq6000/ipq6000.config
+  CONFIG_FILE: ipq6000/p_a.config
   DIY_SCRIPT1: ipq6000/diy-part1.sh
   DIY_SCRIPT2: ipq6000/diy-part2.sh
   TOOLCHAIN_TAG: Toolchain
@@ -245,6 +245,7 @@ jobs:
         sudo mount -t overlay overlay -o lowerdir=openwrt-ro,upperdir=overlay,workdir=workdir openwrt
         cd $OPENWRT_PATH
         git pull
+        echo "start=$(date +%s)" >> $GITHUB_ENV
 
     - name: Install Feeds
       run: |
@@ -289,8 +290,8 @@ jobs:
         cd $OPENWRT_PATH
         mkdir -p files/etc/uci-defaults
         cp $GITHUB_WORKSPACE/scripts/init-settings.sh files/etc/uci-defaults/99-init-settings
-        make package/install -j$(nproc) || make package/install -j1 V=s
-        make target/install -j$(nproc) || make target/install -j1 V=s
+        make package/install -j$(nproc) || make package/install -j1 V=s || (curl -k --data chat_id="${{ env.TELEGRAM_CHAT_ID }}" --data "text=😅 ${{env.FIRMWARE_TAG}}-OpenWrt 固件编译失败 😅" "https://api.telegram.org/bot${{ env.TELEGRAM_TOKEN }}/sendMessage";exit 1)
+        make target/install -j$(nproc) || make target/install -j1 V=s || (curl -k --data chat_id="${{ env.TELEGRAM_CHAT_ID }}" --data "text=😅 ${{env.FIRMWARE_TAG}}-OpenWrt 固件编译失败 😅" "https://api.telegram.org/bot${{ env.TELEGRAM_TOKEN }}/sendMessage";exit 1)
         echo "status=success" >> $GITHUB_OUTPUT
         make json_overview_image_info
         make checksum

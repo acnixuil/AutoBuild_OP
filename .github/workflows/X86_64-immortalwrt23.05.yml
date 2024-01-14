@@ -314,6 +314,9 @@ jobs:
         cd $OPENWRT_PATH
         chmod +x rename.sh
         bash rename.sh
+        mv -f $OPENWRT_PATH/bin/packages/*/*/*.ipk packages
+        tar -zcf Packages.tar.gz packages
+        rm -rf packages
         cd $OPENWRT_PATH/bin/targets/*/*
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
 
@@ -335,8 +338,12 @@ jobs:
         artifacts: ${{ env.FIRMWARE_PATH }}/*
         body: |
           **This is OpenWrt Firmware for ${{ env.FIRMWARE_TAG }}**
-          * 这是 ${{ env.FIRMWARE_TAG }} 平台使用的 OpenWrt 固件
-          默认 IP：192.168.3.1 默认密码：
+          ### 📒 固件信息
+          - 💻 平台架构: ${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
+          - ⚽ 固件源码: ${{ env.REPO_URL }}
+          - 💝 源码分支: ${{ env.REPO_BRANCH }}
+          - 🌐 默认地址: 192.168.3.1
+          - 🔑 默认密码: 无
 
     - name: Send Telegram Message
       run: |
