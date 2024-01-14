@@ -45,11 +45,13 @@ git clone --depth=1 -b master https://github.com/gngpp/luci-app-design-config.gi
 # 更改 Argon 主题背景
 cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
 
-# Enable Cache
-#echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config
+# lucky 大吉
+git clone https://github.com/gdy666/luci-app-lucky.git package/lucky
 
-./scripts/feeds update -a
-./scripts/feeds install -a
+# msd_lite
+rm -rf feeds/packages/net/msd_lite
+git clone --depth=1 https://github.com/ximiTech/luci-app-msd_lite package/luci-app-msd_lite
+git clone --depth=1 https://github.com/ximiTech/msd_lite package/msd_lite
 
 echo "========================="
 echo " DIY2 配置完成……"

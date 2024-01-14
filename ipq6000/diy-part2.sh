@@ -24,16 +24,6 @@ rm -rf feeds/luci/applications/luci-app-design-config*
 rm -rf feeds/luci/applications/luci-app-ssr-plus
 rm -rf feeds/luci/applications/luci-app-passwall
 
-# Git稀疏克隆，只克隆指定目录到本地
-function git_sparse_clone() {
-  branch="$1" repourl="$2" && shift 2
-  git clone --depth=1 -b $branch --single-branch --filter=blob:none --sparse $repourl
-  repodir=$(echo $repourl | awk -F '/' '{print $(NF)}')
-  cd $repodir && git sparse-checkout set $@
-  mv -f $@ ../package
-  cd .. && rm -rf $repodir
-}
-
 # lucky 大吉
 git clone https://github.com/gdy666/luci-app-lucky.git package/lucky
 
@@ -56,8 +46,10 @@ git clone --depth=1 -b master https://github.com/fw876/helloworld package/luci-a
 # 更改 Argon 主题背景
 cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
 
-# Enable Cache
-#echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config
+# msd_lite
+rm -rf feeds/packages/net/msd_lite
+git clone --depth=1 https://github.com/ximiTech/luci-app-msd_lite package/luci-app-msd_lite
+git clone --depth=1 https://github.com/ximiTech/msd_lite package/msd_lite
 
 echo "========================="
 echo " DIY2 配置完成……"

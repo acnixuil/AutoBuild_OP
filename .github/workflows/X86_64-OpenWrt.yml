@@ -310,6 +310,7 @@ jobs:
 
     - name: Prepare artifact
       run: |
+        cd $OPENWRT_PATH
         mkdir -p ./artifact/package
         mkdir -p ./artifact/buildinfo
         rm -rf $(find ./bin/targets/ -type d -name "packages")
@@ -320,13 +321,13 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: OpenWrt_buildinfo
-        path: ./artifact/buildinfo/
+        path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
 
     - name: Upload package
       uses: actions/upload-artifact@v3
       with:
         name: OpenWrt_package
-        path: ./artifact/package/
+        path: ${{ env.OPENWRT_PATH }}/artifact/package/
 
     - name: Organize Files
       if: steps.generate.outputs.status == 'success'

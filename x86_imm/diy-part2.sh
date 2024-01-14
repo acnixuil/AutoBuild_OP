@@ -25,8 +25,8 @@ git clone https://github.com/acnixuil/luci-app-netwizard.git package/luci-app-wi
 # 更换argon为最新版本
 rm -rf feeds/luci/themes/luci-theme-argon*
 rm -rf feeds/luci/applications/luci-app-argon-config*
-git clone --depth=1 -b 18.06 https://github.com/yhl452493373/luci-theme-argon.git package/luci-theme-argon
-git clone https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
+git clone --depth=1 -b master https://github.com/yhl452493373/luci-theme-argon.git package/luci-theme-argon
+git clone --depth=1 -b master https://github.com/jerrykuku/luci-app-argon-config.git package/luci-app-argon-config
 
 # 更改 Argon 主题背景
 cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
@@ -37,8 +37,13 @@ find ./ | grep Makefile | grep mosdns | xargs rm -f
 git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
 git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
 
-# Enable Cache
-#echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config
+# lucky 大吉
+git clone https://github.com/gdy666/luci-app-lucky.git package/lucky
+
+# msd_lite
+rm -rf feeds/packages/net/msd_lite
+git clone --depth=1 https://github.com/ximiTech/luci-app-msd_lite package/luci-app-msd_lite
+git clone --depth=1 https://github.com/ximiTech/msd_lite package/msd_lite
 
 echo "========================="
 echo " DIY2 配置完成……"
