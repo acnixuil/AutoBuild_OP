@@ -1,4 +1,4 @@
-name: X86_64 OpenWrt
+name: X86_64 Immortalwrt
 
 on:
   workflow_dispatch:
@@ -6,11 +6,11 @@ on:
   #  - cron: 0 19 * * *
 
 env:
-  REPO_URL: https://github.com/coolsnowwolf/lede
-  REPO_BRANCH: master
-  CONFIG_FILE: x86/x86.config
-  DIY_SCRIPT0: x86/diy-part1.sh
-  DIY_SCRIPT: x86/diy-part2.sh
+  SOURCE_URL: https://github.com/immortalwrt/immortalwrt
+  SOURCE_BRANCH: openwrt-23.05
+  CONFIG_FILE: x86_imm/x86.config
+  DIY_SCRIPT1: x86_imm/diy-part1.sh
+  DIY_SCRIPT2: x86_imm/diy-part2.sh
   CLASH_KERNEL: amd64
   CACHE_TOOLCHAIN: true
   UPLOAD_BIN_DIR: false
@@ -99,9 +99,9 @@ jobs:
 
     - name: Install Feeds
       run: |
-        chmod +x $DIY_SCRIPT0
+        chmod +x $DIY_SCRIPT1
         cd $OPENWRT_PATH
-        $GITHUB_WORKSPACE/$DIY_SCRIPT0
+        $GITHUB_WORKSPACE/$DIY_SCRIPT1
         ./scripts/feeds update -a
         ./scripts/feeds install -a
 
@@ -110,9 +110,9 @@ jobs:
         [ -e files ] && mv files $OPENWRT_PATH/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE $OPENWRT_PATH/.config
         chmod +x $GITHUB_WORKSPACE/scripts/*.sh
-        chmod +x $DIY_SCRIPT
+        chmod +x $DIY_SCRIPT2
         cd $OPENWRT_PATH
-        $GITHUB_WORKSPACE/$DIY_SCRIPT
+        $GITHUB_WORKSPACE/$DIY_SCRIPT2
         $GITHUB_WORKSPACE/scripts/preset-adguard-core.sh $CLASH_KERNEL
 
     - name: Download DL Package
@@ -181,7 +181,7 @@ jobs:
       with:
         name: R${{ env.DATE }} for ${{ env.FIRMWARE_TAG }}
         allowUpdates: true
-        tag: ${{ env.FIRMWARE_TAG }}
+        tag: Immortalwrt_${{ env.FIRMWARE_TAG }}
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: ${{ env.FIRMWARE_PATH }}/*
         body: |
@@ -202,7 +202,7 @@ jobs:
         # 构建消息
         MESSAGE="${{ env.FIRMWARE_TAG }} 固件编译完成
         发布时间：$CURRENT_DATE_TIME
-        发布页面：https://github.com/acnixuil/AutoBuild_OP/releases/tag/${{ env.FIRMWARE_TAG }}"
+        发布页面：https://github.com/acnixuil/AutoBuild_OP/releases/tag/Immortalwrt_${{ env.FIRMWARE_TAG }}
 
         # 发送消息到 Telegram
         curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
