@@ -312,6 +312,7 @@ jobs:
       if: steps.generate.outputs.status == 'success'
       run: |
         cd $OPENWRT_PATH
+        ls $OPENWRT_PATH/bin/targets/*/*
         bash rename.sh
         rm -rf $(find ./bin/targets/ -type d -name "packages")
         mv -f $(find ./bin/packages/ -type f -name "*.ipk") packages
