@@ -40,10 +40,5 @@ git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
 # lucky 大吉
 git clone https://github.com/gdy666/luci-app-lucky.git package/lucky
 
-# msd_lite
-rm -rf feeds/packages/net/msd_lite
-git clone --depth=1 https://github.com/ximiTech/luci-app-msd_lite package/luci-app-msd_lite
-git clone --depth=1 https://github.com/ximiTech/msd_lite package/msd_lite
-
 echo "========================="
 echo " DIY2 配置完成……"
