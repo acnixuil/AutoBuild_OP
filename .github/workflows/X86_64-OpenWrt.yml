@@ -313,7 +313,8 @@ jobs:
       run: |
         cd $OPENWRT_PATH
         bash rename.sh
-        mv -f $OPENWRT_PATH/bin/packages/*/*/*.ipk packages
+        rm -rf $(find ./bin/targets/ -type d -name "packages")
+        mv -f $(find ./bin/packages/ -type f -name "*.ipk") packages
         tar -zcf Packages.tar.gz packages
         rm -rf packages
         cd $OPENWRT_PATH/bin/targets/*/*
