@@ -1,4 +1,4 @@
-name: MT7981b
+name: MT7981b_1806
 
 on:
   workflow_dispatch:
