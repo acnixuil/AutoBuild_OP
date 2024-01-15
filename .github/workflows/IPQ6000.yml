@@ -3,10 +3,10 @@ name: IPQ6000
 on:
   workflow_dispatch:
   #schedule:
-  #  - cron: 0 19 * * *
+  #  - cron: '0 22 * * 5'
 
 env:
-  REPO_URL: https://github.com/sdf8057/ipq6000.git
+  REPO_URL: https://github.com/acnixuil/ipq6000.git
   REPO_BRANCH: master
   FEEDS_CONF: ipq6000/feeds.conf.default
   CONFIG_FILE: ipq6000/p_a.config
