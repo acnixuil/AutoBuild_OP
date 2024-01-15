@@ -33,6 +33,3 @@ cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-stat
 # mosdns
 git clone --depth=1 -b v5 https://github.com/sbwml/luci-app-mosdns package/mosdns
 git clone --depth=1 -b master https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
-
-# ssrp
-git clone --depth=1 -b master https://github.com/fw876/helloworld package/luci-app-ssr-plus
