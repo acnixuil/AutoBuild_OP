@@ -152,6 +152,7 @@ jobs:
 
     - name: Prepare artifact
       run: |
+        cd $OPENWRT_PATH
         mkdir -p ./artifact/package
         mkdir -p ./artifact/buildinfo
         rm -rf $(find ./bin/targets/ -type d -name "packages")
@@ -162,13 +163,13 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: OpenWrt_buildinfo
-        path: ./artifact/buildinfo/
+        path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
 
     - name: Upload package
       uses: actions/upload-artifact@v3
       with:
         name: OpenWrt_package
-        path: ./artifact/package/
+        path: ${{ env.OPENWRT_PATH }}/artifact/package/
 
     - name: Organize Files
       if: steps.compile.outputs.status == 'success'
@@ -206,17 +207,17 @@ jobs:
           - 🌐 默认地址: 192.168.2.1
           - 🔑 默认密码: password
           
-    - name: Send Telegram Message
-      run: |
-        # 获取当前北京时间
-        CURRENT_DATE_TIME=$(TZ='Asia/Shanghai' date +'%Y/%m/%d %r')
-
-        # 构建消息
-        MESSAGE="${{ env.FIRMWARE_TAG }} 固件编译完成
-        发布时间：$CURRENT_DATE_TIME
-        发布页面：https://github.com/acnixuil/AutoBuild_OP/releases/tag/${{ env.FIRMWARE_TAG }}
-
-        # 发送消息到 Telegram
-        curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
-          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-          -d text="$MESSAGE"
+    #- name: Send Telegram Message
+    #  run: |
+    #    # 获取当前北京时间
+    #    CURRENT_DATE_TIME=$(TZ='Asia/Shanghai' date +'%Y/%m/%d %r')
+    #
+    #    # 构建消息
+    #    MESSAGE="${{ env.FIRMWARE_TAG }} 固件编译完成
+    #    发布时间：$CURRENT_DATE_TIME
+    #    发布页面：https://github.com/acnixuil/AutoBuild_OP/releases/tag/${{ env.FIRMWARE_TAG }}
+    #
+    #    # 发送消息到 Telegram
+    #    curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+    #      -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+    #      -d text="$MESSAGE"
