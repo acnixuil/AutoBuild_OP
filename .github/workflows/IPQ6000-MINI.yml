@@ -9,7 +9,7 @@ env:
   REPO_URL: https://github.com/acnixuil/ipq6000.git
   REPO_BRANCH: master
   FEEDS_CONF: ipq6000/feeds.conf.default
-  CONFIG_FILE: ipq6000/p_a.config
+  CONFIG_FILE: ipq6000/ssr.config
   DIY_SCRIPT1: ipq6000/diy-part1.sh
   DIY_SCRIPT2: ipq6000/diy-part2.sh
   CLASH_KERNEL: arm64
@@ -150,26 +150,26 @@ jobs:
         name: ${{ env.SOURCE_REPO }}-bin-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-${{ env.FILE_DATE }}
         path: ${{ env.OPENWRT_PATH }}/bin
 
-    - name: Prepare artifact
-      run: |
-        cd $OPENWRT_PATH
-        mkdir -p ./artifact/package
-        mkdir -p ./artifact/buildinfo
-        rm -rf $(find ./bin/targets/ -type d -name "packages")
-        cp -rf $(find ./bin/packages/ -type f -name "*.ipk") ./artifact/package/
-        cp -rf $(find ./bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
-
-    - name: Upload buildinfo
-      uses: actions/upload-artifact@v3
-      with:
-        name: OpenWrt_buildinfo
-        path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
-
-    - name: Upload package
-      uses: actions/upload-artifact@v3
-      with:
-        name: OpenWrt_package
-        path: ${{ env.OPENWRT_PATH }}/artifact/package/
+    #- name: Prepare artifact
+    #  run: |
+    #    cd $OPENWRT_PATH
+    #    mkdir -p ./artifact/package
+    #    mkdir -p ./artifact/buildinfo
+    #    rm -rf $(find ./bin/targets/ -type d -name "packages")
+    #    cp -rf $(find ./bin/packages/ -type f -name "*.ipk") ./artifact/package/
+    #    cp -rf $(find ./bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
+    #
+    #- name: Upload buildinfo
+    #  uses: actions/upload-artifact@v3
+    #  with:
+    #    name: OpenWrt_buildinfo
+    #    path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
+    #
+    #- name: Upload package
+    #  uses: actions/upload-artifact@v3
+    #  with:
+    #    name: OpenWrt_package
+    #    path: ${{ env.OPENWRT_PATH }}/artifact/package/
 
     - name: Organize Files
       if: steps.compile.outputs.status == 'success'
@@ -185,7 +185,7 @@ jobs:
         rm -rf *package*
         rm -rf *.itb
         rm -rf *.manifest
-        rename 's/^/full-/' *
+        rename 's/^/mini-/' *
 
     - name: Upload Firmware To Release
       if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
