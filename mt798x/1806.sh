@@ -33,11 +33,6 @@ cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-stat
 # mosdns
 git clone --depth=1 -b v5 https://github.com/sbwml/luci-app-mosdns package/mosdns
 git clone --depth=1 -b master https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
-cp -f package/v2ray-geodata/Makefile feeds/packages/net/v2ray-geodata/Makefile
 
 # ssrp
-#git clone --depth=1 -b master https://github.com/fw876/helloworld package/luci-app-ssr-plus
-
-#Enable Cache
-#echo -e 'CONFIG_DEVEL=y\nCONFIG_CCACHE=y' >> .config
-
+git clone --depth=1 -b master https://github.com/fw876/helloworld package/luci-app-ssr-plus
