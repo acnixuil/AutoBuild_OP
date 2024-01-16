@@ -91,7 +91,7 @@ jobs:
         pushd feeds/luci/applications
         rm -rf luci-app-zerotier
         git clone --depth 1 --branch master https://github.com/immortalwrt/luci.git zerotier  
-        cp -r zerotier/applications/luci-app-zerotier
+        cp -r zerotier/applications/luci-app-zerotier .
         rm -rf zerotier  # 清理golang-repo目录
         popd
         ./scripts/feeds install -a
