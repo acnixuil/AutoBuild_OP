@@ -86,6 +86,14 @@ jobs:
         cd openwrt 
         sed -i '/src-git kenzo https:\/\/github.com\/kenzok8\/openwrt-packages/s/^/# /' feeds.conf.default
         ./scripts/feeds update -a
+        ./scripts/feeds install -a -f -p passwall_packages
+        ./scripts/feeds install -a -f -p passwall
+        pushd feeds/luci/applications
+        rm -rf luci-app-zerotier
+        git clone --depth 1 --branch master https://github.com/immortalwrt/luci.git zerotier  
+        cp -r zerotier/applications/luci-app-zerotier
+        rm -rf zerotier  # 清理golang-repo目录
+        popd
         ./scripts/feeds install -a
   
     - name: 加载自定义配置
