@@ -7,11 +7,7 @@ echo "开始 DIY2 配置……"
 echo "========================="
 
 # 修改网关ip
-sed -i 's/192.168.1.1/192.168.3.1/g' package/base-files/files/bin/config_generate
-
-# 向导
-#git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
-git clone https://github.com/acnixuil/luci-app-netwizard.git package/luci-app-wizard
+sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
 
 # 更改 Argon 主题背景
 cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
