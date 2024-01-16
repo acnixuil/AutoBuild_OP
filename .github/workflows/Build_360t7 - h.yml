@@ -21,11 +21,9 @@ env:
   REPO_URL: https://github.com/hanwckf/immortalwrt-mt798x
   REPO_BRANCH: openwrt-21.02
   FEEDS_CONF: feeds.conf.default
-  CONFIG_PW_FILE: ./360_t7/h_t7.config
-  CONFIG_AP_FILE: ./360_t7/ap.config
-  CONFIG_PW1_FILE: ./360_t7/pw1.config
-  DIY_P1_SH: ./360_t7/diy-part1.sh
-  DIY_P2_SH: ./360_t7/diy-part2-2.sh
+  CONFIG_PW_FILE: mt798x/hanwckf.config
+  DIY_P1_SH: mt798x/feeds.sh
+  DIY_P2_SH: mt798x/2102.sh
   UPLOAD_RELEASE: true
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -112,14 +110,17 @@ jobs:
         cd openwrt
         ./scripts/feeds install -a -f -p passwall_packages
         ./scripts/feeds install -a -f -p passwall
+        pushd feeds/packages/lang
+        rm -rf golang
+        git clone --depth 1 --branch openwrt-23.05 https://github.com/openwrt/packages.git golang-repo  # 指定分支和深度
+        cp -r golang-repo/lang/golang .  # 复制golang文件夹到工作目录
+        rm -rf golang-repo  # 清理golang-repo目录
+        popd
 
     - name: 安装软件源
       run: |
         cd openwrt 
         ./scripts/feeds install -a
-        pushd feeds/packages/lang
-        rm -rf golang && svn co https://github.com/openwrt/packages/branches/openwrt-23.05/lang/golang
-        popd
 
     - name: 读取PW版配置文件
       run: |     

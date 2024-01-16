@@ -34,9 +34,9 @@ env:
   FEEDS_CONF: feeds.conf.default
   CONFIG_PW_FILE: ./360_t7/pw.config
   CONFIG_AP_FILE: ./360_t7/ap.config
-  CONFIG_PW1_FILE: ./360_t7/pw1.config
-  DIY_P1_SH: ./360_t7/diy-part1.sh
-  DIY_P2_SH: ./360_t7/diy-part2.sh
+  CONFIG_PW1_FILE: mt798x/padavanonly.config
+  DIY_P1_SH: mt798x/feeds.sh
+  DIY_P2_SH: mt798x/1806.sh
   UPLOAD_RELEASE: true
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
