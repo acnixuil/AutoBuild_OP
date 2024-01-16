@@ -8,7 +8,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: Build_360t7
+name: MT7981b_1806
 
 on:
   workflow_dispatch:
