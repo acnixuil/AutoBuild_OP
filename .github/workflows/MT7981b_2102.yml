@@ -77,6 +77,7 @@ jobs:
         git clone $REPO_URL -b $REPO_BRANCH openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
         cd openwrt
+        echo "OPENWRT_PATH=$PWD" >> $GITHUB_ENV
         Author=$(git show -s --date=short --format="%an")
         Date=$(git show -s --date=short --format="%ci")
         Commit=$(git show -s --date=short --format="%s")
