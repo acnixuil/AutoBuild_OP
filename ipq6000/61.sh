@@ -9,9 +9,6 @@ echo "========================="
 # 修改网关ip
 sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
 
-# 更改 Argon 主题背景
-cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
-
 # 添加adguardhome
 #git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
 git clone --depth=1 -b master https://github.com/acnixuil/luci-app-adguardhome.git package/luci-app-adguardhome
@@ -21,6 +18,9 @@ rm -rf feeds/luci/themes/luci-theme-argon*
 rm -rf feeds/luci/applications/luci-app-argon-config*
 git clone --depth=1 -b master https://github.com/yhl452493373/luci-theme-argon.git package/luci-theme-argon
 git clone --depth=1 -b master https://github.com/jerrykuku/luci-app-argon-config.git package/luci-app-argon-config
+
+# 更改 Argon 主题背景
+cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
 
 # mosdns
 find ./ | grep Makefile | grep v2ray-geodata | xargs rm -f

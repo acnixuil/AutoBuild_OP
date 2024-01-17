@@ -13,9 +13,6 @@ sed -i 's/192.168.1.1/192.168.3.1/g' package/base-files/files/bin/config_generat
 #git clone https://github.com/sirpdboy/luci-app-wizard package/luci-app-wizard
 git clone https://github.com/acnixuil/luci-app-netwizard.git package/luci-app-wizard
 
-# 更改 Argon 主题背景
-cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
-
 # 添加adguardhome
 #git clone https://github.com/kongfl888/luci-app-adguardhome.git package/luci-app-adguardhome
 git clone --depth=1 -b master https://github.com/acnixuil/luci-app-adguardhome.git package/luci-app-adguardhome
@@ -34,6 +31,9 @@ git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
 
 # lucky 大吉
 git clone https://github.com/gdy666/luci-app-lucky.git package/lucky
+
+# 更改 Argon 主题背景
+cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
 
 echo "========================="
 echo " DIY2 配置完成……"
