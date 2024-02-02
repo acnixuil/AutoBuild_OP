@@ -16,7 +16,7 @@ on:
       wireless:
         description: '是否编译无线驱动'
         required: true
-        default: "Y"
+        default: "N"
         type: choice
         options:
           - 'Y'
