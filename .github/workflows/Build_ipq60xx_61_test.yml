@@ -16,11 +16,11 @@ on:
       wireless:
         description: '是否编译无线驱动'
         required: true
-        default: "N"
+        default: "No"
         type: choice
         options:
-          - 'Y'
-          - 'N'
+          - 'Yes'
+          - 'No'
           
 env:
   REPO_URL: https://github.com/breeze303/ipq60xx-6.1.git
@@ -36,7 +36,7 @@ env:
   
 jobs:
   build_nowifi:
-    if: ${{ github.event.inputs.wifiless == 'N'}}
+    if: ${{ github.event.inputs.wifiless == 'No'}}
     runs-on: ubuntu-latest
 
     steps:
@@ -168,7 +168,7 @@ jobs:
         artifacts: ${{ env.FIRMWARE }}/*
 
   build_wifi:
-    if: ${{ github.event.inputs.wifiless == 'Y'}}
+    if: ${{ github.event.inputs.wifiless == 'Yes'}}
     runs-on: ubuntu-latest
 
     steps:
