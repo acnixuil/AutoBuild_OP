@@ -20,7 +20,7 @@ on:
 env:
   REPO_URL: https://github.com/breeze303/ipq60xx-6.1.git
   REPO_BRANCH: ipq60xx-nss
-  CONFIG_FILE: ipq6000/61.config
+  CONFIG_FILE: ipq6000/61_nowifi.config
   DIY_P2_SH: ipq6000/61.sh
   UPLOAD_RELEASE: true
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
@@ -88,13 +88,6 @@ jobs:
         ./scripts/feeds update -a
         ./scripts/feeds install -a -f -p passwall_packages
         ./scripts/feeds install -a -f -p passwall
-        pushd feeds/luci/applications
-        rm -rf luci-app-zerotier
-        git clone --depth 1 --branch master https://github.com/immortalwrt/luci.git zerotier  
-        cp -r zerotier/applications/luci-app-zerotier .
-        rm -rf zerotier
-        sed -i 's/include ..\/..\/luci.mk/include $(TOPDIR)\/feeds\/luci\/luci.mk/g' luci-app-zerotier/Makefile
-        popd
         ./scripts/feeds install -a
   
     - name: 加载自定义配置
