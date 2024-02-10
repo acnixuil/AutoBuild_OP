@@ -104,10 +104,15 @@ jobs:
         chmod +x $DIY_SCRIPT1
         cd $OPENWRT_PATH
         $GITHUB_WORKSPACE/$DIY_SCRIPT1
-        ./scripts/feeds update -a
-        
+        ./scripts/feeds update -a       
         ./scripts/feeds install -a -f -p passwall_packages
         ./scripts/feeds install -a -f -p passwall
+        pushd feeds/packages/net
+        rm -rf zerotier
+        git clone --depth 1 --branch master https://github.com/coolsnowwolf/packages.git zerotier_new  
+        cp -r zerotier_new/net/zerotier .
+        rm -rf zerotier_new
+        popd
         ./scripts/feeds install -a
 
     - name: Load Custom Configuration
