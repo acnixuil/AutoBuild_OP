@@ -47,9 +47,9 @@ git clone --depth=1 -b master https://github.com/fw876/helloworld package/luci-a
 cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
 
 # msd_lite
-rm -rf feeds/packages/net/msd_lite
-git clone --depth=1 https://github.com/ximiTech/luci-app-msd_lite package/luci-app-msd_lite
-git clone --depth=1 https://github.com/ximiTech/msd_lite package/msd_lite
+#rm -rf feeds/packages/net/msd_lite
+#git clone --depth=1 https://github.com/ximiTech/luci-app-msd_lite package/luci-app-msd_lite
+#git clone --depth=1 https://github.com/ximiTech/msd_lite package/msd_lite
 
 echo "========================="
 echo " DIY2 配置完成……"
