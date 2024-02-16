@@ -22,6 +22,7 @@ env:
   REPO_BRANCH: ipq60xx-nss
   CONFIG_FILE: ipq6000/61_nowifi.config
   DIY_P2_SH: ipq6000/61.sh
+  FEEDS_CONF: ipq6000/61_feeds.conf.default
   UPLOAD_RELEASE: true
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -83,6 +84,7 @@ jobs:
 
     - name: 更新软件源
       run: |
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
         cd openwrt 
         sed -i '/src-git kenzo https:\/\/github.com\/kenzok8\/openwrt-packages/s/^/# /' feeds.conf.default
         ./scripts/feeds update -a
