@@ -113,6 +113,12 @@ jobs:
         cp -r golang-repo/lang/golang .  # 复制golang文件夹到工作目录
         rm -rf golang-repo  # 清理golang-repo目录
         popd
+        pushd feeds/packages/net
+        rm -rf tailscale
+        git clone --depth 1 --branch master https://github.com/coolsnowwolf/packages.git tailscale_new  
+        cp -r tailscale_new/net/tailscale .
+        rm -rf tailscale_new
+        popd
         ./scripts/feeds install -a
 
     - name: Load Custom Configuration

@@ -1,4 +1,4 @@
-name: IPQ6000 -
+name: IPQ6000-
 
 on:
   workflow_dispatch:
@@ -118,6 +118,12 @@ jobs:
         git clone --depth 1 --branch master https://github.com/coolsnowwolf/packages.git tailscale_new  
         cp -r tailscale_new/net/tailscale .
         rm -rf tailscale_new
+        popd
+        pushd feeds/packages/net
+        rm -rf zerotier
+        git clone --depth 1 --branch master https://github.com/immortalwrt/packages.git zerotier_new  
+        cp -r zerotier_new/net/zerotier .
+        rm -rf zerotier_new
         popd
         ./scripts/feeds install -a
 
