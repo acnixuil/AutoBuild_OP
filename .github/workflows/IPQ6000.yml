@@ -105,18 +105,9 @@ jobs:
         cd $OPENWRT_PATH
         $GITHUB_WORKSPACE/$DIY_SCRIPT1
         ./scripts/feeds update -a
-        git submodule update --init --recursive
-        git submodule foreach git fetch origin
-        cd ./feeds/passwall_packages
-        # 尝试回退到指定 commit
-        git reset --hard b7e1852da82d72cdd1c11de44d21476259fc86b5
-        # 如果上一步出错，输出一些信息以便调试
-        if [ $? -ne 0 ]; then
-            echo "回退到指定 commit 失败，尝试查找问题..."
-            git log  # 输出当前 commit 历史以供调试
-            exit 1   # 退出并显示错误
-        fi
         ./scripts/feeds install -a -f -p passwall_packages
+        cd ./feeds/passwall_packages
+        git reset --hard b7e1852da82d72cdd1c11de44d21476259fc86b5
         ./scripts/feeds install -a -f -p passwall
         pushd feeds/packages/lang
         rm -rf golang
