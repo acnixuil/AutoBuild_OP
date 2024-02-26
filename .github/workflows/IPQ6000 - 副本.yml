@@ -1,4 +1,4 @@
-name: IPQ6000-
+name: IPQ6000
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ env:
   REPO_URL: https://github.com/acnixuil/ipq6000.git
   REPO_BRANCH: master
   FEEDS_CONF: ipq6000/feeds.conf.default
-  CONFIG_FILE: ipq6000/p_a2.config
+  CONFIG_FILE: ipq6000/p_a.config
   DIY_SCRIPT1: ipq6000/diy-part1.sh
   DIY_SCRIPT2: ipq6000/diy-part2.sh
   CLASH_KERNEL: arm64
@@ -204,6 +204,7 @@ jobs:
         rm -rf *package*
         rm -rf *.itb
         rm -rf *.manifest
+        rename 's/^/full-/' *
 
     - name: Upload Firmware To Release
       if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
