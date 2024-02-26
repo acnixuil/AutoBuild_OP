@@ -104,7 +104,9 @@ jobs:
         chmod +x $DIY_SCRIPT1
         cd $OPENWRT_PATH
         $GITHUB_WORKSPACE/$DIY_SCRIPT1
-        ./scripts/feeds update -a       
+        ./scripts/feeds update -a
+        cd feeds/passwall_package
+        git reset --hard b7e1852da82d72cdd1c11de44d21476259fc86b5
         ./scripts/feeds install -a -f -p passwall_packages
         ./scripts/feeds install -a -f -p passwall
         pushd feeds/packages/lang
