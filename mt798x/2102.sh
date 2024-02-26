@@ -36,3 +36,7 @@ git clone --depth=1 -b master https://github.com/jerrykuku/luci-app-argon-config
 # 更改 Argon 主题背景
 cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
 
+#修改默认WIFI名
+WIFI_FILE="./package/mtk/applications/mtwifi-cfg/files/mtwifi.sh"
+sed -i "/htbsscoex=\"1\"/{n; s/ssid=\".*\"/ssid=\"罗技鼠标接收器_2.4G\"/}" $WIFI_FILE
+sed -i "/htbsscoex=\"0\"/{n; s/ssid=\".*\"/ssid=\"罗技鼠标接收器\"/}" $WIFI_FILE
