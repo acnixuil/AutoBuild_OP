@@ -107,12 +107,8 @@ jobs:
         ./scripts/feeds update -a
         ./scripts/feeds install -a -f -p passwall_packages
         ./scripts/feeds install -a -f -p passwall
-        pushd feeds/packages/lang
-        rm -rf golang
-        git clone --depth 1 --branch master https://github.com/coolsnowwolf/packages.git golang-repo  # 指定分支和深度
-        cp -r golang-repo/lang/golang .  # 复制golang文件夹到工作目录
-        rm -rf golang-repo  # 清理golang-repo目录
-        popd
+        rm -rf feeds/packages/lang/golang
+        git clone https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang
         pushd feeds/packages/net
         rm -rf tailscale
         git clone --depth 1 --branch master https://github.com/coolsnowwolf/packages.git tailscale_new  
