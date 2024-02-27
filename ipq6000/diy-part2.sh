@@ -14,15 +14,13 @@ sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generat
 
 # 移除要替换的包
 #find ./ -name '*mosdns*' -print0 | xargs -0 rm -rf
-rm -f package/feeds/packages/mosdns
-rm -rf feeds/packages/net/mosdns
-rm -rf feeds/packages/net/v2ray-geodata*
+#rm -f package/feeds/packages/mosdns
+#rm -rf feeds/packages/net/mosdns
+#rm -rf feeds/packages/net/v2ray-geodata*
 rm -rf feeds/luci/themes/luci-theme-argon*
 rm -rf feeds/luci/themes/luci-theme-design*
 rm -rf feeds/luci/applications/luci-app-argon-config*
 rm -rf feeds/luci/applications/luci-app-design-config*
-rm -rf feeds/luci/applications/luci-app-ssr-plus
-rm -rf feeds/luci/applications/luci-app-passwall
 
 # lucky 大吉
 git clone https://github.com/gdy666/luci-app-lucky.git package/lucky
@@ -37,11 +35,10 @@ git clone --depth=1 -b main https://github.com/gngpp/luci-theme-design.git packa
 git clone --depth=1 -b master https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
 
 # mosdns
+find ./ | grep Makefile | grep v2ray-geodata | xargs rm -f
+find ./ | grep Makefile | grep mosdns | xargs rm -f
 git clone --depth=1 -b v5 https://github.com/sbwml/luci-app-mosdns package/mosdns
 git clone --depth=1 -b master https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
-
-# ssrp
-#git clone --depth=1 -b master https://github.com/fw876/helloworld package/luci-app-ssr-plus
 
 # 更改 Argon 主题背景
 cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
@@ -50,6 +47,14 @@ cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-stat
 #rm -rf feeds/packages/net/msd_lite
 #git clone --depth=1 https://github.com/ximiTech/luci-app-msd_lite package/luci-app-msd_lite
 #git clone --depth=1 https://github.com/ximiTech/msd_lite package/msd_lite
+
+# 移除 openwrt feeds 自带的核心包
+rm -rf feeds/packages/net/{xray-core,v2ray-core,v2ray-geodata,sing-box}
+git clone https://github.com/sbwml/openwrt_helloworld package/helloworld
+
+# 更新 golang 1.22 版本
+rm -rf feeds/packages/lang/golang
+git clone https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang
 
 echo "========================="
 echo " DIY2 配置完成……"
