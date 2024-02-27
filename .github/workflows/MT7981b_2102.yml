@@ -111,19 +111,12 @@ jobs:
         set -x
         cd openwrt
         
-        rm -rf feeds/packages/net/{xray-core,v2ray-core,v2ray-geodata,sing-box}
-        rm -rf feeds/packages/lang/golang
-        git clone https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang
-        
-        pushd feeds/passwall_packages
-        rm -rf sing-box
-        git clone --depth 1 --branch v5 https://github.com/sbwml/openwrt_helloworld.git sing-box_new  
-        cp -r sing-box_new/sing-box .
-        rm -rf sing-box_new
-        popd      
-        
-        ./scripts/feeds install -a -f -p passwall_packages
-        ./scripts/feeds install -a -f -p passwall
+        pushd feeds/packages/net
+        rm -rf tailscale
+        git clone --depth 1 --branch master https://github.com/openwrt/packages.git tailscale_new
+        cp -r tailscale_new/net/tailscale .
+        rm -rf tailscale_new
+        popd        
 
     - name: 安装软件源
       run: |
