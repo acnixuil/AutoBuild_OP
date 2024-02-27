@@ -95,6 +95,14 @@ jobs:
         cd openwrt 
         sed -i '/src-git kenzo https:\/\/github.com\/kenzok8\/openwrt-packages/s/^/# /' feeds.conf.default
         ./scripts/feeds update -a
+        
+        pushd feeds/passwall_packages
+        rm -rf sing-box
+        git clone --depth 1 --branch v5 https://github.com/sbwml/openwrt_helloworld.git sing-box_new  
+        cp -r sing-box_new/sing-box .
+        rm -rf sing-box_new
+        popd           
+        
         ./scripts/feeds install -a -f -p passwall_packages
         ./scripts/feeds install -a -f -p passwall
         
