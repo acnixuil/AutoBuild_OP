@@ -107,14 +107,18 @@ jobs:
         ./scripts/feeds update -a
         ./scripts/feeds install -a -f -p passwall_packages
         ./scripts/feeds install -a -f -p passwall
+        
         rm -rf feeds/packages/lang/golang
         git clone https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang
+        
         pushd feeds/packages/net
         rm -rf tailscale
-        git clone --depth 1 --branch master https://github.com/coolsnowwolf/packages.git tailscale_new  
+        git clone --depth 1 --branch master https://github.com/openwrt/packages.git tailscale_new  
         cp -r tailscale_new/net/tailscale .
         rm -rf tailscale_new
+        sed -i 's/option fw_mode 'nftables'/option fw_mode 'iptables'/' tailscale/files/tailscale.conf
         popd
+        
         pushd feeds/packages/net
         rm -rf zerotier
         git clone --depth 1 --branch master https://github.com/immortalwrt/packages.git zerotier_new  
