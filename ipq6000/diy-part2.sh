@@ -41,7 +41,7 @@ git clone --depth=1 -b v5 https://github.com/sbwml/luci-app-mosdns package/mosdn
 git clone --depth=1 -b master https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
 
 # ssrp
-git clone --depth=1 -b master https://github.com/fw876/helloworld package/luci-app-ssr-plus
+#git clone --depth=1 -b master https://github.com/fw876/helloworld package/luci-app-ssr-plus
 
 # 更改 Argon 主题背景
 cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
