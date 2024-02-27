@@ -105,8 +105,12 @@ jobs:
         chmod +x $GITHUB_WORKSPACE/scripts/*.sh
         cd $OPENWRT_PATH
         $GITHUB_WORKSPACE/$DIY_SCRIPT1
-        ./scripts/feeds update -a       
-        $GITHUB_WORKSPACE/scripts/replace_packages.sh        
+        ./scripts/feeds update -a     
+        rm -rf feeds/packages/lang/golang
+        git clone https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang  
+        $GITHUB_WORKSPACE/scripts/replace_packages.sh     
+        ./scripts/feeds install -a -f -p passwall_packages
+        ./scripts/feeds install -a -f -p passwall_luci   
         ./scripts/feeds install -a
 
     - name: Load Custom Configuration

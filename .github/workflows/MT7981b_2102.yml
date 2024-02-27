@@ -110,13 +110,16 @@ jobs:
       run: |
         set -x
         cd openwrt
-        
+        rm -rf feeds/packages/lang/golang
+        git clone https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang         
         pushd feeds/packages/net
         rm -rf tailscale
         git clone --depth 1 --branch master https://github.com/openwrt/packages.git tailscale_new
         cp -r tailscale_new/net/tailscale .
         rm -rf tailscale_new
-        popd        
+        popd
+        ./scripts/feeds install -a -f -p passwall_packages
+        ./scripts/feeds install -a -f -p passwall        
 
     - name: 安装软件源
       run: |
