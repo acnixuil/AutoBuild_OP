@@ -102,25 +102,11 @@ jobs:
       run: |
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
         chmod +x $DIY_SCRIPT1
+        chmod +x $GITHUB_WORKSPACE/scripts/*.sh
         cd $OPENWRT_PATH
         $GITHUB_WORKSPACE/$DIY_SCRIPT1
         ./scripts/feeds update -a       
-        pushd feeds/packages/net
-        rm -rf tailscale
-        git clone --depth 1 --branch master https://github.com/openwrt/packages.git tailscale_new  
-        cp -r tailscale_new/net/tailscale .
-        rm -rf tailscale_new
-        sed -i 's/option fw_mode 'nftables'/option fw_mode 'iptables'/' tailscale/files/tailscale.conf
-        sed -i 's/fw_mode nftables/fw_mode iptables/' tailscale/files/tailscale.init
-        popd
-        
-        pushd feeds/packages/net
-        rm -rf zerotier
-        git clone --depth 1 --branch master https://github.com/immortalwrt/packages.git zerotier_new  
-        cp -r zerotier_new/net/zerotier .
-        rm -rf zerotier_new
-        popd
-        
+        $GITHUB_WORKSPACE/scripts/replace_packages.sh        
         ./scripts/feeds install -a
 
     - name: Load Custom Configuration
