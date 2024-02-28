@@ -111,7 +111,7 @@ jobs:
         
         pushd feeds/packages/net
         rm -rf tailscale
-        git clone --depth 1 --branch master https://github.com/coolsnowwolf/packages.git tailscale_new  
+        git clone --depth 1 --branch master https://github.com/immortalwrt/packages.git tailscale_new  
         cp -r tailscale_new/net/tailscale .
         rm -rf tailscale_new
         popd
