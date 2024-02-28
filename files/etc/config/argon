@@ -6,7 +6,7 @@ config global
 	option blur_dark '10'
 	option transparency '0.5'
 	option transparency_dark '0.5'
-	option bing_background '0'
 	option save '保存更改'
 	option mode 'dark'
+	option online_wallpaper 'none'
 

@@ -23,11 +23,20 @@ dns:
   ratelimit_whitelist: []
   refuse_any: true
   upstream_dns:
-    - 223.5.5.5
-  upstream_dns_file: /etc/FAK-DNS.txt
+    - https://dns.alidns.com/dns-query
+    - tls://dns.alidns.com
+    - tls://dns.ipv6dns.com
+    - https://dns.ipv6dns.com/dns-query
+    - '2402:4e00::'
+    - 2001:da8:202:10::36
+    - 2001:da8:202:10::37
+  upstream_dns_file: ""
   bootstrap_dns:
+    - 211.136.196.2
+    - 120.196.165.24
+    - 2409:8057:2000:2::8
+    - 2409:8057:2000:6::8
     - 223.5.5.5
-    - 119.29.29.29
   fallback_dns: []
   all_servers: true
   fastest_addr: false
@@ -100,6 +109,10 @@ filters:
     url: https://anti-ad.net/easylist.txt
     name: anti-ad
     id: 1678134955
+  - enabled: false
+    url: https://www.i-dont-care-about-cookies.eu/abp
+    name: i-dont-care-about-cookies
+    id: 1691504448
 whitelist_filters: []
 user_rules:
   - '||xp.apple.com^'
@@ -113,6 +126,7 @@ user_rules:
   - '||mcdn.bilivideo.cn^$important'
   - '||szbdyd.com^$important'
   - '#||cn-*.bilivideo.com'
+  - ""
 dhcp:
   enabled: false
   interface_name: ""

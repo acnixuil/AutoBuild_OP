@@ -24,6 +24,7 @@ git clone --depth=1 -b 18.06 https://github.com/jerrykuku/luci-app-argon-config.
 
 # 更改 Argon 主题背景
 cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
+sed -i '/<footer class="mobile-hide">/,/<\/footer>/ s|<div>.*<\/div>| |' package/luci-theme-argon/luasrc/view/themes/argon/footer.htm
 
 # mosdns
 find ./ | grep Makefile | grep v2ray-geodata | xargs rm -f
