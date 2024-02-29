@@ -1,4 +1,4 @@
-name: IPQ6000 MINI
+name: IPQ6000-Mini
 
 on:
   workflow_dispatch:

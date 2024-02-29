@@ -8,7 +8,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: Build ipq60xx_61_test
+name: IPQ6000_k61
 
 on:
   workflow_dispatch:
@@ -19,12 +19,13 @@ on:
         default: "No"
         type: choice
         options:
-          - 'Yes'
           - 'No'
-          
+          - 'Yes'
+       
 env:
   REPO_URL: https://github.com/breeze303/ipq60xx-6.1.git
-  REPO_BRANCH: ipq60xx-nss
+  REPO_BRANCH1: ipq60xx-nss
+  REPO_BRANCH2: ipq60xx-wifi
   CONFIG_FILE1: ipq6000/61_nowifi.config
   CONFIG_FILE2: ipq6000/61_wifi.config
   DIY_P2_SH: ipq6000/61.sh
@@ -75,7 +76,7 @@ jobs:
       working-directory: /workdir
       run: |
         df -hT $PWD
-        git clone $REPO_URL -b $REPO_BRANCH openwrt
+        git clone $REPO_URL -b $REPO_BRANCH1 openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
         cd openwrt
         Author=$(git show -s --date=short --format="%an")
@@ -129,6 +130,16 @@ jobs:
       run: |
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE1 ] && mv $CONFIG_FILE1 openwrt/.config   
+        chmod +x $GITHUB_WORKSPACE/scripts/*.sh
+        chmod +x $DIY_P2_SH
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P2_SH
+        $GITHUB_WORKSPACE/scripts/preset-adguard-core.sh $CLASH_KERNEL
+
+    - name: 加载自定义配置
+      run: |
+        [ -e files ] && mv files openwrt/files
+        [ -e $CONFIG_FILE2 ] && mv $CONFIG_FILE2 openwrt/.config   
         chmod +x $GITHUB_WORKSPACE/scripts/*.sh
         chmod +x $DIY_P2_SH
         cd openwrt
@@ -230,10 +241,11 @@ jobs:
         sudo chown $USER:$GROUPS /workdir      
     
     - name: 下载源码
+    
       working-directory: /workdir
       run: |
         df -hT $PWD
-        git clone $REPO_URL -b $REPO_BRANCH openwrt
+        git clone $REPO_URL -b $REPO_BRANCH2 openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
         cd openwrt
         Author=$(git show -s --date=short --format="%an")
@@ -253,6 +265,8 @@ jobs:
         cd openwrt 
         sed -i '/src-git kenzo https:\/\/github.com\/kenzok8\/openwrt-packages/s/^/# /' feeds.conf.default
         ./scripts/feeds update -a
+        rm -rf feeds/packages/lang/golang
+        git clone https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang
         ./scripts/feeds install -a -f -p passwall_packages
         ./scripts/feeds install -a -f -p passwall
         ./scripts/feeds install -a
