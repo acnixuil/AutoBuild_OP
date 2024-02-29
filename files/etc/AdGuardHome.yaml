@@ -30,7 +30,7 @@ dns:
     - '2402:4e00::'
     - 2001:da8:202:10::36
     - 2001:da8:202:10::37
-  upstream_dns_file: ""
+  upstream_dns_file: /etc/FAK-DNS.txt
   bootstrap_dns:
     - 211.136.196.2
     - 120.196.165.24
