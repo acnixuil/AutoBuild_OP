@@ -136,16 +136,6 @@ jobs:
         $GITHUB_WORKSPACE/$DIY_P2_SH
         $GITHUB_WORKSPACE/scripts/preset-adguard-core.sh $CLASH_KERNEL
 
-    - name: 加载自定义配置
-      run: |
-        [ -e files ] && mv files openwrt/files
-        [ -e $CONFIG_FILE2 ] && mv $CONFIG_FILE2 openwrt/.config   
-        chmod +x $GITHUB_WORKSPACE/scripts/*.sh
-        chmod +x $DIY_P2_SH
-        cd openwrt
-        $GITHUB_WORKSPACE/$DIY_P2_SH
-        $GITHUB_WORKSPACE/scripts/preset-adguard-core.sh $CLASH_KERNEL
-
     - name: 下载包
       id: package
       run: |
