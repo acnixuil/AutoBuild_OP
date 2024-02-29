@@ -351,7 +351,6 @@ CONFIG_FEED_packages=y
 CONFIG_FEED_luci=y
 CONFIG_FEED_routing=y
 CONFIG_FEED_telephony=y
-CONFIG_FEED_helloworld=y
 CONFIG_FEED_passwall_packages=y
 CONFIG_FEED_passwall=y
 
@@ -2469,7 +2468,7 @@ CONFIG_PACKAGE_lua=y
 # CONFIG_PACKAGE_lua-md5 is not set
 # CONFIG_PACKAGE_lua-mobdebug is not set
 # CONFIG_PACKAGE_lua-mosquitto is not set
-CONFIG_PACKAGE_lua-neturl=y
+# CONFIG_PACKAGE_lua-neturl is not set
 # CONFIG_PACKAGE_lua-openssl is not set
 # CONFIG_PACKAGE_lua-penlight is not set
 # CONFIG_PACKAGE_lua-rings is not set
@@ -3814,9 +3813,9 @@ CONFIG_PACKAGE_libjson-c=y
 # CONFIG_PACKAGE_libkmod is not set
 # CONFIG_PACKAGE_libksba is not set
 # CONFIG_PACKAGE_libldns is not set
-# CONFIG_PACKAGE_libltdl is not set
+CONFIG_PACKAGE_libltdl=y
 CONFIG_PACKAGE_liblua=y
-# CONFIG_PACKAGE_liblua5.3 is not set
+CONFIG_PACKAGE_liblua5.3=y
 # CONFIG_PACKAGE_liblucihttp is not set
 # CONFIG_PACKAGE_liblucihttp-lua is not set
 # CONFIG_PACKAGE_liblzo is not set
@@ -3911,7 +3910,7 @@ CONFIG_PACKAGE_libpcre=y
 # CONFIG_PACKAGE_libqrtr-glib is not set
 # CONFIG_PACKAGE_libquickjs is not set
 # CONFIG_PACKAGE_libradcli is not set
-# CONFIG_PACKAGE_libreadline is not set
+CONFIG_PACKAGE_libreadline=y
 # CONFIG_PACKAGE_libredblack is not set
 # CONFIG_PACKAGE_librouteros is not set
 # CONFIG_PACKAGE_libroxml is not set
@@ -4242,7 +4241,8 @@ CONFIG_PACKAGE_luci-app-passwall=y
 #
 CONFIG_PACKAGE_luci-app-passwall_Iptables_Transparent_Proxy=y
 # CONFIG_PACKAGE_luci-app-passwall_Nftables_Transparent_Proxy is not set
-# CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Haproxy is not set
+# CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Brook is not set
+CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Haproxy=y
 # CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Hysteria is not set
 # CONFIG_PACKAGE_luci-app-passwall_INCLUDE_NaiveProxy is not set
 CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Shadowsocks_Libev_Client=y
@@ -4253,32 +4253,13 @@ CONFIG_PACKAGE_luci-app-passwall_INCLUDE_ShadowsocksR_Libev_Client=y
 # CONFIG_PACKAGE_luci-app-passwall_INCLUDE_ShadowsocksR_Libev_Server is not set
 CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Simple_Obfs=y
 CONFIG_PACKAGE_luci-app-passwall_INCLUDE_SingBox=y
+# CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Trojan_GO is not set
 CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Trojan_Plus=y
 # CONFIG_PACKAGE_luci-app-passwall_INCLUDE_tuic_client is not set
 # CONFIG_PACKAGE_luci-app-passwall_INCLUDE_V2ray_Geodata is not set
-# CONFIG_PACKAGE_luci-app-passwall_INCLUDE_V2ray_Plugin is not set
+CONFIG_PACKAGE_luci-app-passwall_INCLUDE_V2ray_Plugin=y
 CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Xray=y
 # CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Xray_Plugin is not set
-# CONFIG_PACKAGE_luci-app-passwall2 is not set
-
-#
-# Configuration
-#
-# CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Brook is not set
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Haproxy=y
-# CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Hysteria is not set
-# CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_IPv6_Nat is not set
-# CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_NaiveProxy is not set
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Shadowsocks_Libev_Client=y
-# CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Shadowsocks_Libev_Server is not set
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Shadowsocks_Rust_Client=y
-# CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Shadowsocks_Rust_Server is not set
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_ShadowsocksR_Libev_Client=y
-# CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_ShadowsocksR_Libev_Server is not set
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_Simple_Obfs=y
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_SingBox=y
-# CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_tuic_client is not set
-CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_V2ray_Plugin=y
 # CONFIG_PACKAGE_luci-app-polipo is not set
 # CONFIG_PACKAGE_luci-app-pppoe-relay is not set
 # CONFIG_PACKAGE_luci-app-pppoe-server is not set
@@ -4314,28 +4295,28 @@ CONFIG_PACKAGE_luci-app-passwall2_INCLUDE_V2ray_Plugin=y
 # CONFIG_PACKAGE_luci-app-ssocks is not set
 # CONFIG_PACKAGE_luci-app-ssr-libev-server is not set
 # CONFIG_PACKAGE_luci-app-ssr-mudb-server is not set
-CONFIG_PACKAGE_luci-app-ssr-plus=y
-# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks_NONE_Client is not set
+# CONFIG_PACKAGE_luci-app-ssr-plus is not set
+CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks_NONE_Client=y
 # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks_Libev_Client is not set
-CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks_Rust_Client=y
-# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks_NONE_Server is not set
+# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks_Rust_Client is not set
+CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks_NONE_Server=y
 # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks_Libev_Server is not set
-CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks_Rust_Server=y
-# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_NONE_V2RAY is not set
+# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks_Rust_Server is not set
+CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_NONE_V2RAY=y
 # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_V2ray is not set
-CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Xray=y
-CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_ChinaDNS_NG=y
+# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Xray is not set
+# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_ChinaDNS_NG is not set
+# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_MosDNS is not set
 # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Hysteria is not set
 # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Tuic_Client is not set
-# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadow-TLS is not set
+# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadow_TLS is not set
 # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_IPT2Socks is not set
 # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Kcptun is not set
 # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_NaiveProxy is not set
 # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Redsocks2 is not set
-CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks_Simple_Obfs=y
+# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks_Simple_Obfs is not set
 # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks_V2ray_Plugin is not set
-# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks_Xray_Plugin is not set
-CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_ShadowsocksR_Libev_Client=y
+# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_ShadowsocksR_Libev_Client is not set
 # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_ShadowsocksR_Libev_Server is not set
 # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Trojan is not set
 # CONFIG_PACKAGE_luci-app-ssrserver-python is not set
@@ -4520,8 +4501,6 @@ CONFIG_PACKAGE_luci-i18n-mosdns-zh-cn=y
 # CONFIG_PACKAGE_luci-i18n-mosdns-zh_Hans is not set
 CONFIG_PACKAGE_luci-i18n-passwall-zh-cn=y
 # CONFIG_PACKAGE_luci-i18n-passwall-zh_Hans is not set
-CONFIG_PACKAGE_luci-i18n-ssr-plus-zh-cn=y
-# CONFIG_PACKAGE_luci-i18n-ssr-plus-zh_Hans is not set
 CONFIG_PACKAGE_luci-i18n-ttyd-zh-cn=y
 CONFIG_PACKAGE_luci-i18n-turboacc-zh-cn=y
 # CONFIG_PACKAGE_luci-i18n-upnp-ca is not set
@@ -4924,7 +4903,7 @@ CONFIG_PCAP_DNSPROXY_LIBPCAP=y
 CONFIG_PCAP_DNSPROXY_LIBSODIUM=y
 CONFIG_PCAP_DNSPROXY_TLS=y
 CONFIG_PCAP_DNSPROXY_LISTENPORT=1053
-# CONFIG_PACKAGE_pdnsd-alt is not set
+CONFIG_PACKAGE_pdnsd-alt=y
 # CONFIG_PACKAGE_stubby is not set
 # CONFIG_PACKAGE_tor-hs is not set
 # CONFIG_PACKAGE_torsocks is not set
@@ -5286,7 +5265,8 @@ CONFIG_PACKAGE_zerotier=y
 # CONFIG_PACKAGE_gateway-go is not set
 # CONFIG_PACKAGE_gq-client is not set
 # CONFIG_PACKAGE_gq-server is not set
-# CONFIG_PACKAGE_haproxy is not set
+CONFIG_PACKAGE_haproxy=y
+# CONFIG_PACKAGE_halog is not set
 # CONFIG_PACKAGE_haproxy-nossl is not set
 # CONFIG_PACKAGE_kcptun-client is not set
 # CONFIG_PACKAGE_kcptun-server is not set
@@ -5314,16 +5294,16 @@ CONFIG_PACKAGE_shadowsocks-libev-ss-redir=y
 # CONFIG_PACKAGE_shadowsocks-libev-ss-rules is not set
 CONFIG_PACKAGE_shadowsocks-libev-ss-server=y
 # CONFIG_PACKAGE_shadowsocks-libev-ss-tunnel is not set
-CONFIG_PACKAGE_shadowsocks-rust-sslocal=y
+# CONFIG_PACKAGE_shadowsocks-rust-sslocal is not set
 # CONFIG_PACKAGE_shadowsocks-rust-ssmanager is not set
-CONFIG_PACKAGE_shadowsocks-rust-ssserver=y
+# CONFIG_PACKAGE_shadowsocks-rust-ssserver is not set
 # CONFIG_PACKAGE_shadowsocks-rust-ssservice is not set
 # CONFIG_PACKAGE_shadowsocks-rust-ssurl is not set
-CONFIG_PACKAGE_shadowsocksr-libev-ssr-check=y
+# CONFIG_PACKAGE_shadowsocksr-libev-ssr-check is not set
 CONFIG_PACKAGE_shadowsocksr-libev-ssr-local=y
 # CONFIG_PACKAGE_shadowsocksr-libev-ssr-nat is not set
 CONFIG_PACKAGE_shadowsocksr-libev-ssr-redir=y
-# CONFIG_PACKAGE_shadowsocksr-libev-ssr-server is not set
+CONFIG_PACKAGE_shadowsocksr-libev-ssr-server=y
 CONFIG_PACKAGE_sing-box=y
 
 #
@@ -5334,7 +5314,7 @@ CONFIG_SING_BOX_WITH_CLASH_API=y
 CONFIG_SING_BOX_WITH_DHCP=y
 CONFIG_SING_BOX_WITH_ECH=y
 # CONFIG_SING_BOX_WITH_GRPC is not set
-CONFIG_SING_BOX_WITH_GVISOR=y
+# CONFIG_SING_BOX_WITH_GVISOR is not set
 CONFIG_SING_BOX_WITH_QUIC=y
 # CONFIG_SING_BOX_WITH_REALITY_SERVER is not set
 CONFIG_SING_BOX_WITH_UTLS=y
@@ -5354,7 +5334,7 @@ CONFIG_PACKAGE_uhttpd-mod-ubus=y
 # CONFIG_PACKAGE_uwsgi is not set
 # CONFIG_PACKAGE_uwsgi-cgi is not set
 # CONFIG_PACKAGE_uwsgi-cgi-luci-support is not set
-# CONFIG_PACKAGE_v2ray-plugin is not set
+CONFIG_PACKAGE_v2ray-plugin=y
 # CONFIG_PACKAGE_v2raya is not set
 # CONFIG_PACKAGE_xray-plugin is not set
 
@@ -6438,4 +6418,4 @@ CONFIG_PACKAGE_v2dat=y
 # Font-Utils
 #
 # CONFIG_PACKAGE_fontconfig is not set
-CONFIG_OVERRIDE_PKGS="brook chinadns-ng dns2socks dns2tcp gn hysteria ipt2socks lua-neturl luci-app-msd_lite luci-app-passwall microsocks naiveproxy redsocks2 shadow-tls shadowsocks-rust shadowsocksr-libev simple-obfs sing-box tcping trojan trojan-plus tuic-client v2ray-core v2ray-geodata v2ray-plugin xray-core xray-plugin"
+CONFIG_OVERRIDE_PKGS="chinadns-ng dns2socks dns2tcp gn hysteria ipt2socks lua-neturl luci-app-msd_lite microsocks naiveproxy redsocks2 shadow-tls shadowsocksr-libev simple-obfs tcping trojan tuic-client v2ray-core v2ray-geodata v2ray-plugin v2raya xray-core xray-plugin"
