@@ -101,12 +101,21 @@ jobs:
       run: |
         chmod +x $DIY_SCRIPT0
         cd $OPENWRT_PATH
-        chmod +x $GITHUB_WORKSPACE/scripts/*.sh
         $GITHUB_WORKSPACE/$DIY_SCRIPT0
         ./scripts/feeds update -a
+        
         rm -rf feeds/packages/lang/golang
         git clone https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang  
-        $GITHUB_WORKSPACE/scripts/replace_packages.sh 
+        
+        pushd feeds/packages/net
+        rm -rf tailscale
+        git clone --depth 1 --branch master https://github.com/openwrt/packages.git tailscale_new
+        cp -r tailscale_new/net/tailscale .
+        rm -rf tailscale_new
+        sed -i 's/option fw_mode nftables/option fw_mode iptables/' tailscale/files/tailscale.conf
+        sed -i 's/fw_mode nftables/fw_mode iptables/' tailscale/files/tailscale.init
+        popd
+        
         ./scripts/feeds install -a
 
     - name: Load Custom Configuration
