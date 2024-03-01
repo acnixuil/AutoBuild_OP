@@ -26,6 +26,7 @@ env:
   REPO_URL: https://github.com/breeze303/ipq60xx-6.1.git
   REPO_BRANCH1: ipq60xx-nss
   REPO_BRANCH2: ipq60xx-wifi
+  FEEDS_CONF: ipq6000/61_feeds.conf.default
   CONFIG_FILE1: ipq6000/61_nowifi.config
   CONFIG_FILE2: ipq6000/61_wifi.config
   DIY_P2_SH: ipq6000/61.sh
@@ -254,6 +255,7 @@ jobs:
       run: |
         cd openwrt 
         sed -i '/src-git kenzo https:\/\/github.com\/kenzok8\/openwrt-packages/s/^/# /' feeds.conf.default
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
         ./scripts/feeds update -a
         rm -rf feeds/packages/lang/golang
         git clone https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang
