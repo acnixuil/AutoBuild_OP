@@ -103,12 +103,14 @@ jobs:
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
         chmod +x $DIY_SCRIPT1
         cd $OPENWRT_PATH
+        chmod +x $GITHUB_WORKSPACE/scripts/*.sh
         $GITHUB_WORKSPACE/$DIY_SCRIPT1
         ./scripts/feeds update -a
         rm -rf feeds/packages/lang/golang
         git clone https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang        
         ./scripts/feeds install -a -f -p passwall_packages
         ./scripts/feeds install -a -f -p passwall
+        $GITHUB_WORKSPACE/scripts/replace_packages.sh
         ./scripts/feeds install -a
 
     - name: Load Custom Configuration
