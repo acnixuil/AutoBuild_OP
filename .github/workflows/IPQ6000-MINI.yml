@@ -101,7 +101,7 @@ jobs:
         chmod +x $GITHUB_WORKSPACE/scripts/*.sh
         $GITHUB_WORKSPACE/$DIY_SCRIPT1
         ./scripts/feeds update -a
-        rm -rf package/helloworld
+        rm -rf feeds/luci/applications/luci-app-ssr-plus
         git clone --depth=1 https://github.com/fw876/helloworld.git package/helloworld
         
         rm -rf feeds/packages/lang/golang
