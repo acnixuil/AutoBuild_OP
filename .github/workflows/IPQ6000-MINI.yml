@@ -111,7 +111,7 @@ jobs:
         ./scripts/feeds install -a
         rm -rf feeds/luci/applications/luci-app-ssr-plus
         git clone https://github.com/fw876/helloworld.git package/helloworld
-        cd helloworld
+        cd package/helloworld
         git checkout 8da98a47676463c9053dc5cfa771155f73bb4b9c
 
     - name: Load Custom Configuration
