@@ -97,10 +97,7 @@ jobs:
     - name: Install Feeds
       run: |
         cd $OPENWRT_PATH
-        ./scripts/feeds update -a
-        rm -rf feeds/luci/applications/luci-app-ssr-plus
-        git clone -b 8da98a47676463c9053dc5cfa771155f73bb4b9c https://github.com/fw876/helloworld.git package/helloworld
-        
+        ./scripts/feeds update -a      
         rm -rf feeds/packages/lang/golang
         git clone https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang
         
@@ -112,6 +109,10 @@ jobs:
         popd
         
         ./scripts/feeds install -a
+        rm -rf feeds/luci/applications/luci-app-ssr-plus
+        git clone https://github.com/fw876/helloworld.git package/helloworld
+        cd helloworld
+        git checkout 8da98a47676463c9053dc5cfa771155f73bb4b9c
 
     - name: Load Custom Configuration
       run: |
