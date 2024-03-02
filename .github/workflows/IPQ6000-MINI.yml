@@ -96,10 +96,7 @@ jobs:
 
     - name: Install Feeds
       run: |
-        chmod +x $DIY_SCRIPT1
         cd $OPENWRT_PATH
-        chmod +x $GITHUB_WORKSPACE/scripts/*.sh
-        $GITHUB_WORKSPACE/$DIY_SCRIPT1
         ./scripts/feeds update -a
         rm -rf feeds/luci/applications/luci-app-ssr-plus
         git clone --depth=1 https://github.com/fw876/helloworld.git package/helloworld
