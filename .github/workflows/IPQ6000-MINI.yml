@@ -98,7 +98,7 @@ jobs:
       run: |
         cd $OPENWRT_PATH
         ./scripts/feeds update -a      
-        
+       
         pushd feeds/packages/net
         rm -rf zerotier
         git clone --depth 1 --branch master https://github.com/immortalwrt/packages.git zerotier_new
@@ -113,7 +113,7 @@ jobs:
         rm -rf feeds/packages/net/v2ray-geodata*
         git clone https://github.com/fw876/helloworld.git package/helloworld
         cd package/helloworld
-        git checkout 8da98a47676463c9053dc5cfa771155f73bb4b9c
+        git reset --hard 8da98a47676463c9053dc5cfa771155f73bb4b9c
 
     - name: Load Custom Configuration
       run: |
