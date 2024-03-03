@@ -110,6 +110,7 @@ jobs:
         popd
         
         ./scripts/feeds install -a
+        git clone https://github.com/fw876/helloworld.git package/helloworld
 
     - name: Load Custom Configuration
       run: |
