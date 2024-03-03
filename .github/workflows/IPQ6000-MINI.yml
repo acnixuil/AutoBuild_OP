@@ -110,6 +110,7 @@ jobs:
         popd
         
         ./scripts/feeds install -a
+        sed -i 's/GO_PKG_TARGET_VARS:=$(filter-out CGO_ENABLED=%,$(GO_PKG_TARGET_VARS)) CGO_ENABLED=0/GO_PKG_TARGET_VARS:=$(filter-out CGO_ENABLED=%,$(GO_PKG_TARGET_VARS)) CGO_ENABLED=1/' feeds/packages/net/mosdns/Makefile
         git clone https://github.com/fw876/helloworld.git package/helloworld
 
     - name: Load Custom Configuration
