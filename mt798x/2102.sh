@@ -55,3 +55,6 @@ perl -0777 -i -pe 's|<footer>\s*<div>.*?</div>\s*</footer>|<footer>>\n\t<div>\n\
 WIFI_FILE="./package/mtk/applications/mtwifi-cfg/files/mtwifi.sh"
 sed -i "/htbsscoex=\"1\"/{n; s/ssid=\".*\"/ssid=\"罗技鼠标接收器_2.4G\"/}" $WIFI_FILE
 sed -i "/htbsscoex=\"0\"/{n; s/ssid=\".*\"/ssid=\"罗技鼠标接收器\"/}" $WIFI_FILE
+
+# 取消主题默认设置
+find package/luci-theme-*/* -type f -name '*luci-theme-*' -print -exec sed -i '/set luci.main.mediaurlbase/d' {} \;
