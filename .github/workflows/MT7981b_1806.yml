@@ -171,6 +171,7 @@ jobs:
         rm -rf *.itb
         rm -rf *.bz2
         rm -rf package*
+        rm -rf *.manifest
         sleep 2
         ls
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
