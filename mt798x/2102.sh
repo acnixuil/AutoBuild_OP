@@ -39,11 +39,12 @@ git clone --depth=1 -b master https://github.com/sbwml/v2ray-geodata package/v2r
 cp -f package/v2ray-geodata/Makefile feeds/packages/net/v2ray-geodata/Makefile
 
 # lucky 大吉
-git clone https://github.com/gdy666/luci-app-lucky.git package/lucky
+#git clone https://github.com/gdy666/luci-app-lucky.git package/lucky
 
 # argon
 git clone --depth=1 -b master https://github.com/yhl452493373/luci-theme-argon.git package/luci-theme-argon
 git clone --depth=1 -b master https://github.com/jerrykuku/luci-app-argon-config.git package/luci-app-argon-config
+rm -f package/luci-theme-argon/root/etc/uci-defaults/30_luci-theme-argon
 
 # 更改 Argon 主题背景
 cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
