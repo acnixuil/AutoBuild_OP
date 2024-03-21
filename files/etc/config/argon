@@ -8,5 +8,5 @@ config global
 	option online_wallpaper 'none'
 	option blur '7'
 	option transparency '0.4'
-	option mode 'dark'
+	option mode 'normal'
 
