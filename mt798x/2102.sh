@@ -57,4 +57,4 @@ sed -i "/htbsscoex=\"1\"/{n; s/ssid=\".*\"/ssid=\"罗技鼠标接收器_2.4G\"/}
 sed -i "/htbsscoex=\"0\"/{n; s/ssid=\".*\"/ssid=\"罗技鼠标接收器\"/}" $WIFI_FILE
 
 # 取消主题默认设置
-find package/luci-theme-*/* -type f -name '*luci-theme-*' -print -exec sed -i '/set luci.main.mediaurlbase/d' {} \;
+#find package/luci-theme-*/* -type f -name '*luci-theme-*' -print -exec sed -i '/set luci.main.mediaurlbase/d' {} \;
