@@ -38,7 +38,7 @@ perl -0777 -i -pe 's|<footer class="mobile-hide">\s*<div>.*?</div>\s*</footer>|<
 perl -0777 -i -pe 's|<footer>\s*<div>.*?</div>\s*</footer>|<footer>>\n\t<div>\n\t</div>\n</footer>|s' package/luci-theme-argon/luasrc/view/themes/argon/footer_login.htm
 
 # 取消主题默认设置
-#find package/luci-theme-*/* -type f -name '*luci-theme-*' -print -exec sed -i '/set luci.main.mediaurlbase/d' {} \;
+find package/luci-theme-*/* -type f -name '*luci-theme-*' -print -exec sed -i '/set luci.main.mediaurlbase/d' {} \;
 
 echo "========================="
 echo " DIY2 配置完成……"
