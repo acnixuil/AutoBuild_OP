@@ -9,7 +9,7 @@ env:
   REPO_URL: https://github.com/acnixuil/ipq6000.git
   REPO_BRANCH: master
   FEEDS_CONF: ipq6000/feeds.conf.default
-  CONFIG_FILE: ipq6000/p_a.config
+  CONFIG_FILE: ipq6000/m2.config
   DIY_SCRIPT1: ipq6000/diy-part1.sh
   DIY_SCRIPT2: ipq6000/diy-part2.sh
   CLASH_KERNEL: arm64
@@ -124,7 +124,7 @@ jobs:
     - name: Download DL Package
       run: |
         cd $OPENWRT_PATH
-
+        make defconfig
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
