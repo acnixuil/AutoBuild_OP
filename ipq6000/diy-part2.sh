@@ -26,7 +26,7 @@ rm -rf feeds/luci/applications/luci-app-passwall
 
 rm -rf feeds/packages/lang/golang
 git clone https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang
-git clone --depth=1 -b main https://github.com/fw876/helloworld package/luci-app-ssr-plus
+#git clone --depth=1 -b main https://github.com/fw876/helloworld package/luci-app-ssr-plus
 
 # lucky 大吉
 git clone https://github.com/gdy666/luci-app-lucky.git package/lucky
@@ -39,7 +39,6 @@ git clone --depth=1 -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git p
 git clone --depth=1 -b 18.06 https://github.com/jerrykuku/luci-app-argon-config.git package/luci-app-argon-config
 git clone --depth=1 -b main https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
 git clone --depth=1 -b master https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
-sed -i -r "s#navbar_proxy = 'openclash'#navbar_proxy = 'passwall'#g" feeds/luci/themes/luci-theme-design/luasrc/view/themes/design/header.htm
 
 # mosdns
 find ./ | grep Makefile | grep v2ray-geodata | xargs rm -f
@@ -54,9 +53,6 @@ cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-stat
 #rm -rf feeds/packages/net/msd_lite
 #git clone --depth=1 https://github.com/ximiTech/luci-app-msd_lite package/luci-app-msd_lite
 #git clone --depth=1 https://github.com/ximiTech/msd_lite package/msd_lite
-
-# 取消主题默认设置
-find package/luci-theme-*/* -type f -name '*luci-theme-*' -print -exec sed -i '/set luci.main.mediaurlbase/d' {} \;
 
 echo "========================="
 echo " DIY2 配置完成……"
