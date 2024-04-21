@@ -107,7 +107,7 @@ jobs:
         
         pushd ./package/network/services
         rm -rf dnsmasq
-        git clone --depth 1 --branch openwrt23.05 https://github.com/openwrt/openwrt openwrt_new
+        git clone --depth 1 --branch main https://github.com/openwrt/openwrt openwrt_new
         cp -r openwrt_new/package/network/services/dnsmasq .
         rm -rf openwrt_new
         popd       
