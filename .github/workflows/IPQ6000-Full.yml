@@ -43,8 +43,6 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        docker rmi $(docker images -q)
-        sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d /usr/local/lib/android $AGENT_TOOLSDIRECTORY
         curl -s https://raw.githubusercontent.com/immortalwrt/build-scripts/master/init_build_environment.sh | sudo bash
         sudo apt-get install -y rename pigz libfuse-dev upx subversion clang
         sudo apt-get autoremove -y --purge
@@ -92,13 +90,13 @@ jobs:
         DEVICE_SUBTARGET=$(cat .config | grep CONFIG_TARGET_SUBTARGET | awk -F '"' '{print $2}')
         echo "DEVICE_SUBTARGET=$DEVICE_SUBTARGET" >> $GITHUB_ENV
 
-    - name: Cache Toolchain
-      if: env.CACHE_TOOLCHAIN == 'true'
-      uses: HiGarfield/cachewrtbuild@main
-      with:
-        ccache: false
-        mixkey: ${{ env.SOURCE_REPO }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
-        prefix: ${{ env.OPENWRT_PATH }}
+    # - name: Cache Toolchain
+    #   if: env.CACHE_TOOLCHAIN == 'true'
+    #   uses: HiGarfield/cachewrtbuild@main
+    #   with:
+    #     ccache: false
+    #     mixkey: ${{ env.SOURCE_REPO }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
+    #     prefix: ${{ env.OPENWRT_PATH }}
 
     - name: Install Feeds
       run: |
@@ -164,13 +162,13 @@ jobs:
         cp -rf $(find ./bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
 
     - name: Upload buildinfo
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@main
       with:
         name: OpenWrt_buildinfo
         path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
 
     - name: Upload package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@main
       with:
         name: OpenWrt_package
         path: ${{ env.OPENWRT_PATH }}/artifact/package/
