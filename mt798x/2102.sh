@@ -47,10 +47,21 @@ git clone --depth=1 -b v5 https://github.com/sbwml/luci-app-mosdns package/mosdn
 git clone --depth=1 -b master https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
 cp -f package/v2ray-geodata/Makefile feeds/packages/net/v2ray-geodata/Makefile
 
-# lucky 大吉
-git clone https://github.com/sirpdboy/luci-app-lucky.git package/lucky
-#git clone https://github.com/sirpdboy/luci-app-autotimeset package/luci-app-autotimeset
-#git clone https://github.com/gdy666/luci-app-lucky.git package/lucky
+# ## -------------- lucky ---------------------------
+# rm -rf feeds/packages/net/lucky
+rm -rf feeds/luci/applications/luci-app-lucky
+git clone https://github.com/gdy666/luci-app-lucky.git package/custom/lucky
+# git clone https://github.com/sirpdboy/luci-app-lucky.git package/custom/lucky
+sleep 1
+## customize lucky ver
+# wget https://www.daji.it:6/files/$(PKG_VERSION)/$(PKG_NAME)_$(PKG_VERSION)_Linux_$(LUCKY_ARCH).tar.gz
+lkver=2.5.3
+sed -i 's/PKG_VERSION:=.*/PKG_VERSION:='"$lkver"'/g;s/github.com\/gdy666\/lucky\/releases\/download\/v/www.daji.it\:6\/files\//g' package/custom/lucky/lucky/Makefile
+# wget https://github.com/gdy666/lucky-files$(PKG_VERSION)/$(PKG_NAME)_$(PKG_VERSION)_Linux_$(LUCKY_ARCH).tar.gz
+# lkver=2.5.1
+# sed -i 's/PKG_VERSION:=.*/PKG_VERSION:='"$lkver"'/g;s/lucky\/releases\/download\/v/lucky-files\/raw\/main\//g' package/custom/lucky/lucky/Makefile
+# cat package/custom/lucky/lucky/Makefile
+# ## ---------------------------------------------------------
 
 # argon
 #git clone --depth=1 -b master https://github.com/yhl452493373/luci-theme-argon.git package/luci-theme-argon
