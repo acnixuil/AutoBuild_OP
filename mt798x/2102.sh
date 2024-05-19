@@ -4,7 +4,7 @@
 #============================================================
 
 # Modify default IP
-sed -i 's/192.168.6.1/192.168.2.1/g' package/base-files/files/bin/config_generate
+sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
 
 # 移除要替换的包
 #find ./ -name '*mosdns*' -print0 | xargs -0 rm -rf
@@ -16,7 +16,7 @@ rm -rf feeds/luci/themes/luci-theme-design*
 rm -rf feeds/luci/applications/luci-app-argon-config*
 rm -rf feeds/luci/applications/luci-app-design-config*
 #rm -rf feeds/luci/applications/luci-app-ssr-plus
-rm -rf feeds/luci/applications/luci-app-passwall
+#rm -rf feeds/luci/applications/luci-app-passwall
 
 # Git稀疏克隆，只克隆指定目录到本地
 function git_sparse_clone() {
@@ -29,7 +29,7 @@ function git_sparse_clone() {
 }
 
 # git_sparse_clone master https://github.com/vernesong/OpenClash luci-app-openclash
-git clone --depth=1 -b main https://github.com/fw876/helloworld package/luci-app-ssr-plus
+# git clone --depth=1 -b main https://github.com/fw876/helloworld package/luci-app-ssr-plus
 
 # 移除 openwrt feeds 自带的核心包
 rm -rf feeds/packages/net/{xray-core,v2ray-core,v2ray-geodata,sing-box}
