@@ -25,8 +25,6 @@ dns:
   upstream_dns:
     - https://dns.alidns.com/dns-query
     - tls://dns.alidns.com
-    - tls://dns.ipv6dns.com
-    - https://dns.ipv6dns.com/dns-query
     - '2402:4e00::'
     - 2001:da8:202:10::36
     - 2001:da8:202:10::37
@@ -121,7 +119,6 @@ user_rules:
   - '||ocsp.apple.com^'
   - '||appldnld.apple.com^'
   - '||world-gen.g.aaplimg.com^'
-  - '@@||huya.com^'
   - '||*pcdn*.biliapi.net^$important'
   - '||mcdn.bilivideo.cn^$important'
   - '||szbdyd.com^$important'
