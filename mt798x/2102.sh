@@ -15,8 +15,8 @@ rm -rf feeds/luci/themes/luci-theme-argon*
 rm -rf feeds/luci/themes/luci-theme-design*
 rm -rf feeds/luci/applications/luci-app-argon-config*
 rm -rf feeds/luci/applications/luci-app-design-config*
-#rm -rf feeds/luci/applications/luci-app-ssr-plus
-rm -rf feeds/luci/applications/luci-app-passwall
+# rm -rf feeds/luci/applications/luci-app-ssr-plus
+# rm -rf feeds/luci/applications/luci-app-passwall
 rm -rf feeds/luci/applications/luci-app-openclash
 
 # Git稀疏克隆，只克隆指定目录到本地
