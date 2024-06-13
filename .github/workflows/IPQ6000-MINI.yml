@@ -97,6 +97,8 @@ jobs:
     - name: Install Feeds
       run: |
         cd $OPENWRT_PATH
+        echo "src-git passwall_packages https://github.com/xiaorouji/openwrt-passwall-packages.git;main" >> "feeds.conf.default"
+        echo "src-git passwall https://github.com/xiaorouji/openwrt-passwall.git;main" >> "feeds.conf.default"
         ./scripts/feeds update -a      
 
         rm -rf feeds/packages/lang/golang
@@ -111,7 +113,8 @@ jobs:
         
         ./scripts/feeds install -a
         sed -i 's/GO_PKG_TARGET_VARS:=$(filter-out CGO_ENABLED=%,$(GO_PKG_TARGET_VARS)) CGO_ENABLED=0/GO_PKG_TARGET_VARS:=$(filter-out CGO_ENABLED=%,$(GO_PKG_TARGET_VARS)) CGO_ENABLED=1/' feeds/packages/net/mosdns/Makefile
-        git clone https://github.com/fw876/helloworld.git package/helloworld
+        git clone https://github.com/gdy666/luci-app-lucky.git package/lucky
+
 
     - name: Load Custom Configuration
       run: |
