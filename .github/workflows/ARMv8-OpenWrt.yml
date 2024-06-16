@@ -111,6 +111,14 @@ jobs:
         $GITHUB_WORKSPACE/$DIY_SCRIPT2
         $GITHUB_WORKSPACE/scripts/preset-adguard-core.sh $CLASH_KERNEL
 
+    - name: Download DL Package
+      run: |
+        cd $OPENWRT_PATH
+        make defconfig
+        make download -j8
+        find dl -size -1024c -exec ls -l {} \;
+        find dl -size -1024c -exec rm -f {} \;
+
     - name: Compile Firmware
       id: compile
       run: |
