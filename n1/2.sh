@@ -37,9 +37,9 @@ git clone https://github.com/gngpp/luci-theme-design.git package/luci-theme-desi
 git clone https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
 
 # neko
-git_sparse_clone luci-app-neko https://github.com/nosignals/neko.git package/luci-app-neko
+git_sparse_clone luci-app-neko https://github.com/nosignals/neko.git luci-app-neko
 # 晶晨宝盒
-git_sparse_clone master https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic package/luci-app-amlogic
+git_sparse_clone main https://github.com/ophub/luci-app-amlogic luci-app-amlogic
 sed -i "s|ARMv8|ARMv8|g" package/luci-app-amlogic/root/etc/config/amlogic
 
 # 更改 Argon 主题背景
