@@ -220,26 +220,3 @@ jobs:
         body: |
           - 默认 IP：192.168.2.254 默认密码：password
         artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
-        
-    - name: Completion time 
-      run: |
-        echo "DATE1=$(date "+%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
-        end=$(date +%s)
-        seconds=$(( end - start ))
-        hour=$(( $seconds/3600 ))
-        min=$(( ($seconds-${hour}*3600)/60 ))
-        sec=$(( $seconds-${hour}*3600-${min}*60 ))
-        HMS=`echo ${hour}:${min}:${sec}`
-        echo "time=$HMS" >> $GITHUB_ENV
-        
-    - name: Telegram notification upload success
-      uses: appleboy/telegram-action@master
-      with:
-        to: ${{ secrets.TELEGRAM_CHAT_ID }}
-        token: ${{ secrets.TELEGRAM_TOKEN }}
-        message: |
-          ${{ env.PRODUCT_NAME }}打包完成
-          开始时间：${{ env.DATE }}
-          完成时间：${{ env.DATE1 }}
-          编译耗时：${{ env.time }}
-          🌐: https://github.com/acnixuil/AutoBuild_OP/releases/tag/ARMv8
