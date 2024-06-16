@@ -28,6 +28,8 @@ function git_sparse_clone() {
   mv -f $@ ../package
   cd .. && rm -rf $repodir
 }
+# neko
+git_sparse_clone luci-app-neko https://github.com/nosignals/neko luci-app-neko
 
 # git_sparse_clone master https://github.com/vernesong/OpenClash luci-app-openclash
 # git clone --depth=1 -b main https://github.com/fw876/helloworld package/luci-app-ssr-plus
