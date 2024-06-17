@@ -8,7 +8,7 @@ on:
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
-  CONFIG_FILE: x86/x86-1.config
+  CONFIG_FILE: x86/x86.config
   DIY_SCRIPT0: x86/diy-part1.sh
   DIY_SCRIPT: x86/diy-part2.sh
   CLASH_KERNEL: amd64
@@ -116,6 +116,7 @@ jobs:
         cd $OPENWRT_PATH
         $GITHUB_WORKSPACE/$DIY_SCRIPT
         $GITHUB_WORKSPACE/scripts/preset-adguard-core.sh $CLASH_KERNEL
+        $GITHUB_WORKSPACE/scripts/preset-clash-core.sh $CLASH_KERNEL
 
     - name: Download DL Package
       run: |
