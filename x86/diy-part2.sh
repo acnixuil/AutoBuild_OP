@@ -29,6 +29,8 @@ function git_sparse_clone() {
 }
 # openclash
 git_sparse_clone master https://github.com/vernesong/OpenClash luci-app-openclash
+# neko
+git_sparse_clone luci-app-neko https://github.com/nosignals/neko luci-app-neko
 
 # helloworld
 #rm -rf feeds/packages/net/{xray-core,v2ray-core,v2ray-geodata,sing-box}
