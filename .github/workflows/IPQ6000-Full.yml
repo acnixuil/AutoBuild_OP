@@ -9,8 +9,8 @@ env:
   REPO_URL: https://github.com/acnixuil/ipq6000.git
   REPO_BRANCH: master
   FEEDS_CONF: ipq6000/feeds.conf.default
-  # CONFIG_FILE: ipq6000/m2.config
-  CONFIG_FILE: ipq6000/oc.config
+  CONFIG_FILE: ipq6000/m2.config
+  # CONFIG_FILE: ipq6000/oc.config
   DIY_SCRIPT1: ipq6000/diy-part1.sh
   DIY_SCRIPT2: ipq6000/diy-part2.sh
   CLASH_KERNEL: arm64
