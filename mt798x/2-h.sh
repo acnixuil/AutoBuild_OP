@@ -30,17 +30,7 @@ function git_sparse_clone() {
 }
 # neko
 git_sparse_clone luci-app-neko https://github.com/nosignals/neko luci-app-neko
-git_sparse_clone master https://github.com/vernesong/OpenClash luci-app-openclash
 # git clone --depth=1 -b main https://github.com/fw876/helloworld package/luci-app-ssr-plus
-
-function git_sparse_clone() {
-  branch="$1" repourl="$2" && shift 2
-  git clone --depth=1 -b $branch --single-branch --filter=blob:none --sparse $repourl
-  repodir=$(echo $repourl | awk -F '/' '{print $(NF)}')
-  cd $repodir && git sparse-checkout set $@
-  mv -f $@ ../package
-  cd .. && rm -rf $repodir
-}
 # openclash
 git_sparse_clone master https://github.com/vernesong/OpenClash luci-app-openclash
 
