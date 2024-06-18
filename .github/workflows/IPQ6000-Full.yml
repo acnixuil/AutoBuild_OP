@@ -209,3 +209,18 @@ jobs:
           - 🚀 内核版本: ${{ env.KERNEL }}
           - 🌐 默认地址: 192.168.3.1
           - 🔑 默认密码: password
+
+    - name: Send Telegram Message
+      run: |
+        # 获取当前北京时间
+        CURRENT_DATE_TIME=$(TZ='Asia/Shanghai' date +'%Y/%m/%d %r')
+
+        # 构建消息
+        MESSAGE="${{ env.FIRMWARE_TAG }} 固件编译完成
+        发布时间：$CURRENT_DATE_TIME
+        发布页面：https://github.com/acnixuil/AutoBuild_OP/releases/tag/${{ env.FIRMWARE_TAG }}"
+
+        # 发送消息到 Telegram
+        curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d text="$MESSAGE"
