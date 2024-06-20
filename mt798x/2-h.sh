@@ -6,96 +6,70 @@
 # Modify default IP
 sed -i 's/192.168.6.1/192.168.2.1/g' package/base-files/files/bin/config_generate
 
-#安装和更新软件包
-UPDATE_PACKAGE() {
-	local PKG_NAME=$1
-	local PKG_REPO=$2
-	local PKG_BRANCH=$3
-	local PKG_SPECIAL=$4
-	local REPO_NAME=$(echo $PKG_REPO | cut -d '/' -f 2)
+# 移除要替换的包
+#find ./ -name '*mosdns*' -print0 | xargs -0 rm -rf
+rm -f package/feeds/packages/mosdns
+rm -rf feeds/packages/net/mosdns
+rm -rf feeds/packages/net/v2ray-geodata*
+rm -rf feeds/luci/themes/luci-theme-argon*
+rm -rf feeds/luci/themes/luci-theme-design*
+rm -rf feeds/luci/applications/luci-app-argon-config*
+rm -rf feeds/luci/applications/luci-app-design-config*
+# rm -rf feeds/luci/applications/luci-app-ssr-plus
+rm -rf feeds/luci/applications/luci-app-passwall
+rm -rf feeds/luci/applications/luci-app-openclash
 
-	rm -rf $(find ../feeds/luci/ -type d -iname "*$PKG_NAME*" -prune)
-
-	git clone --depth=1 --single-branch --branch $PKG_BRANCH "https://github.com/$PKG_REPO.git"
-
-	if [[ $PKG_SPECIAL == "pkg" ]]; then
-		cp -rf $(find ./$REPO_NAME/ -type d -iname "*$PKG_NAME*" -prune) ./
-		rm -rf ./$REPO_NAME/
-	elif [[ $PKG_SPECIAL == "name" ]]; then
-		mv -f $REPO_NAME $PKG_NAME
-	fi
+# Git稀疏克隆，只克隆指定目录到本地
+function git_sparse_clone() {
+  branch="$1" repourl="$2" && shift 2
+  git clone --depth=1 -b $branch --single-branch --filter=blob:none --sparse $repourl
+  repodir=$(echo $repourl | awk -F '/' '{print $(NF)}')
+  cd $repodir && git sparse-checkout set $@
+  mv -f $@ ../package
+  cd .. && rm -rf $repodir
 }
+# neko
+git_sparse_clone luci-app-neko https://github.com/nosignals/neko luci-app-neko
+# git clone --depth=1 -b main https://github.com/fw876/helloworld package/luci-app-ssr-plus
+# openclash
+git_sparse_clone master https://github.com/vernesong/OpenClash luci-app-openclash
 
-UPDATE_PACKAGE "design" "gngpp/luci-theme-design" "js"
-UPDATE_PACKAGE "design-config" "gngpp/luci-app-design-config" "master"
-UPDATE_PACKAGE "argon" "jerrykuku/luci-theme-argon" "master"
-UPDATE_PACKAGE "argon-config" "jerrykuku/luci-app-argon-config" "master"
-
-UPDATE_PACKAGE "helloworld" "fw876/helloworld" "master"
-UPDATE_PACKAGE "mihomo" "morytyann/OpenWrt-mihomo" "main"
-UPDATE_PACKAGE "openclash" "vernesong/OpenClash" "dev"
-UPDATE_PACKAGE "passwall" "xiaorouji/openwrt-passwall" "main"
-
-UPDATE_PACKAGE "adguardhome" "acnixuil/luci-app-adguardhome" "master"
-UPDATE_PACKAGE "neko" "nosignals/neko" "luci-app-neko"
-UPDATE_PACKAGE "mosdns" "sbwml/luci-app-mosdns" "v5"
-UPDATE_PACKAGE "lucky" "gdy666/luci-app-lucky" "main"
-}
-
-#更新软件包版本
-UPDATE_VERSION() {
-	local PKG_NAME=$1
-	local PKG_REPO=$2
-	local PKG_MARK=${3:-not}
-	local PKG_FILE=$(find ../feeds/packages/*/$PKG_NAME/ -type f -name "Makefile" 2>/dev/null)
-
-	if [ -f "$PKG_FILE" ]; then
-		echo "$PKG_NAME version update has started!"
-
-		local OLD_VER=$(grep -Po "PKG_VERSION:=\K.*" $PKG_FILE)
-		local PKG_VER=$(curl -sL "https://api.github.com/repos/$PKG_REPO/releases" | jq -r "map(select(.prerelease|$PKG_MARK)) | first | .tag_name")
-		local NEW_VER=$(echo $PKG_VER | sed "s/.*v//g; s/_/./g")
-		local NEW_HASH=$(curl -sL "https://codeload.github.com/$PKG_REPO/tar.gz/$PKG_VER" | sha256sum | cut -b -64)
-
-		echo "$OLD_VER $PKG_VER $NEW_VER $NEW_HASH"
-
-		if dpkg --compare-versions "$OLD_VER" lt "$NEW_VER"; then
-			sed -i "s/PKG_VERSION:=.*/PKG_VERSION:=$NEW_VER/g" $PKG_FILE
-			sed -i "s/PKG_HASH:=.*/PKG_HASH:=$NEW_HASH/g" $PKG_FILE
-			echo "$PKG_NAME version has been updated!"
-		else
-			echo "$PKG_NAME version is already the latest!"
-		fi
-
-		echo " "
-	else
-		echo "$PKG_NAME not found!"
-	fi
-}
-
-#UPDATE_VERSION "软件包名" "项目地址" "测试版true（可选，默认为否）"
-UPDATE_VERSION "brook" "txthinking/brook"
-UPDATE_VERSION "dns2tcp" "zfl9/dns2tcp"
-UPDATE_VERSION "hysteria" "apernet/hysteria"
-UPDATE_VERSION "ipt2socks" "zfl9/ipt2socks"
-UPDATE_VERSION "microsocks" "rofl0r/microsocks"
-UPDATE_VERSION "naiveproxy" "klzgrad/naiveproxy"
-UPDATE_VERSION "sing-box" "SagerNet/sing-box" "true"
-UPDATE_VERSION "trojan-go" "p4gefau1t/trojan-go"
-UPDATE_VERSION "trojan" "trojan-gfw/trojan"
-UPDATE_VERSION "v2ray-core" "v2fly/v2ray-core"
-UPDATE_VERSION "v2ray-plugin" "teddysun/v2ray-plugin"
-UPDATE_VERSION "xray-core" "XTLS/Xray-core"
-UPDATE_VERSION "xray-plugin" "teddysun/xray-plugin"
+# 移除 openwrt feeds 自带的核心包
+rm -rf feeds/packages/net/{xray-core,v2ray-core,v2ray-geodata,sing-box,chinadns-ng}
+git clone https://github.com/sbwml/openwrt_helloworld package/helloworld
 
 # 更新 golang 1.22 版本
 rm -rf feeds/packages/lang/golang
 git clone https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang
 
+# adguardhome
+git clone --depth=1 -b master https://github.com/acnixuil/luci-app-adguardhome.git package/luci-app-adguardhome
+
+# mosdns
+git clone --depth=1 -b v5 https://github.com/sbwml/luci-app-mosdns package/mosdns
+git clone --depth=1 -b master https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
+cp -f package/v2ray-geodata/Makefile feeds/packages/net/v2ray-geodata/Makefile
+
+# ## -------------- lucky ---------------------------
+# rm -rf feeds/packages/net/lucky
+rm -rf feeds/luci/applications/luci-app-lucky
+git clone https://github.com/gdy666/luci-app-lucky.git package/custom/lucky
+# git clone https://github.com/sirpdboy/luci-app-lucky.git package/custom/lucky
+sleep 1
 ## customize lucky ver
 # wget https://www.daji.it:6/files/$(PKG_VERSION)/$(PKG_NAME)_$(PKG_VERSION)_Linux_$(LUCKY_ARCH).tar.gz
 lkver=2.5.3
 sed -i 's/PKG_VERSION:=.*/PKG_VERSION:='"$lkver"'/g;s/github.com\/gdy666\/lucky\/releases\/download\/v/www.daji.it\:6\/files\//g' package/custom/lucky/lucky/Makefile
+# wget https://github.com/gdy666/lucky-files$(PKG_VERSION)/$(PKG_NAME)_$(PKG_VERSION)_Linux_$(LUCKY_ARCH).tar.gz
+# lkver=2.5.1
+# sed -i 's/PKG_VERSION:=.*/PKG_VERSION:='"$lkver"'/g;s/lucky\/releases\/download\/v/lucky-files\/raw\/main\//g' package/custom/lucky/lucky/Makefile
+# cat package/custom/lucky/lucky/Makefile
+# ## ---------------------------------------------------------
+
+# argon
+#git clone --depth=1 -b master https://github.com/yhl452493373/luci-theme-argon.git package/luci-theme-argon
+git clone --depth=1 -b master https://github.com/jerrykuku/luci-theme-argon.git package/luci-theme-argon
+git clone --depth=1 -b master https://github.com/jerrykuku/luci-app-argon-config.git package/luci-app-argon-config
 
 # 更改 Argon 主题背景
 cp -f $GITHUB_WORKSPACE/images/bg1.jpg package/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
