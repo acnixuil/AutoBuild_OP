@@ -9,8 +9,8 @@ env:
   REPO_URL: https://github.com/padavanonly/immortalwrt-mt798x.git
   REPO_BRANCH: openwrt-21.02
   # CONFIG_FILE: mt798x/pw.config
-  # CONFIG_FILE: mt798x/neko.config
-  CONFIG_FILE: mt798x/o.config
+  CONFIG_FILE: mt798x/neko.config
+  # CONFIG_FILE: mt798x/o.config
   DIY_P1_SH: mt798x/1.sh
   DIY_P2_SH: mt798x/2-h.sh
   CLASH_KERNEL: arm64
