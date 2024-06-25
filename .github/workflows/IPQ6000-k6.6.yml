@@ -110,10 +110,8 @@ jobs:
         chmod +x $GITHUB_WORKSPACE/scripts/*.sh
         cd $OPENWRT_PATH/package/
         $GITHUB_WORKSPACE/scripts/Packages.sh
-        echo "=====debug===="
-        ls $OPENWRT_PATH/package/
-        echo "=====debug===="
         $GITHUB_WORKSPACE/scripts/Handles.sh
+        sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
 
     - name: Download DL Package
       run: |
@@ -181,7 +179,7 @@ jobs:
         rm -rf *package*
         rm -rf *.itb
         rm -rf *.manifest
-        rename -v 's/^/k6.6--/' *
+        rename -v 's/^/k6.6-/' *
 
     - name: Upload Firmware To Release
       if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
