@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PKG_PATCH="$GITHUB_WORKSPACE/openwrt/package/"
+PKG_PATCH="$OPENWRT_PATH/package/"
 
 #预置HomeProxy数据
 if [ -d *"homeproxy"* ]; then
@@ -8,7 +8,7 @@ if [ -d *"homeproxy"* ]; then
 	HP_PATCH="homeproxy/root/etc/homeproxy"
 
 	#替换列表源
-	mv -f $GITHUB_WORKSPACE/Patches/homeproxy/update_resources.sh ./$HP_PATCH/scripts/
+	# mv -f $GITHUB_WORKSPACE/Patches/homeproxy/update_resources.sh ./$HP_PATCH/scripts/
 	chmod +x ./$HP_PATCH/scripts/*
 
 	#更新列表
