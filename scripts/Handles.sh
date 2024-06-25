@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PKG_PATCH="$OPENWRT_PATH/package/"
+PKG_PATCH="$GITHUB_WORKSPACE/openwrt/package/"
 
 #预置HomeProxy数据
 if [ -d *"homeproxy"* ]; then
