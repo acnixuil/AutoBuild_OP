@@ -1,7 +1,6 @@
 #!/bin/bash
 
 PKG_PATCH="$OPENWRT_PATH/package/"
-ls $OPENWRT_PATH/package/
 
 #预置HomeProxy数据
 if [ -d *"homeproxy"* ]; then

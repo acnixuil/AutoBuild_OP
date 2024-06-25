@@ -10,6 +10,7 @@ env:
   REPO_BRANCH: main
   FEEDS_CONF: ipq6000/feeds.conf.default
   CONFIG_FILE: ipq6000/m2-k6.6.config
+  # CONFIG_FILE: ipq6000/m2-k6.6-nowifi.config
   CLASH_KERNEL: arm64
   CACHE_TOOLCHAIN: true
   UPLOAD_BIN_DIR: false
@@ -109,6 +110,9 @@ jobs:
         chmod +x $GITHUB_WORKSPACE/scripts/*.sh
         cd $OPENWRT_PATH/package/
         $GITHUB_WORKSPACE/scripts/Packages.sh
+        echo "=====debug===="
+        ls $OPENWRT_PATH/package/
+        echo "=====debug===="
         $GITHUB_WORKSPACE/Scripts/Handles.sh
 
     - name: Download DL Package
