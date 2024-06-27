@@ -77,7 +77,7 @@ if [ -d "$PKG_PATCH/luci-theme-argon" ]; then
 fi
 
 # 修改 amlogic 配置
-if [ -d "$PKG_PATCH/luci-app-amlogic ]; then
-    sed -i "s|ARMv8|ARMv8|g" "$PKG_PATCH/luci-app-amlogic/luci-app-amlogic/root/etc/config/amlogic
+if [ -d "${PKG_PATCH}/luci-app-amlogic" ]; then
+    sed -i "s|ARMv8|ARMv8|g" "${PKG_PATCH}/luci-app-amlogic/luci-app-amlogic/root/etc/config/amlogic"
     cd $PKG_PATCH && echo "Amlogic configuration has been updated!"
 fi
