@@ -1,4 +1,4 @@
-name: X86_64 Immortalwrt
+name: X86_64 OpenWrt test
 
 on:
   workflow_dispatch:
@@ -6,10 +6,10 @@ on:
     - cron: '0 22 * * 5'
 
 env:
-  REPO_URL: https://github.com/immortalwrt/immortalwrt
-  REPO_BRANCH: openwrt-23.05
-  CONFIG_FILE: x86_imm/x86.config
-  CUSTOM_SCRIPT: x86_imm/custom.sh
+  REPO_URL: https://github.com/coolsnowwolf/lede
+  REPO_BRANCH: master
+  CONFIG_FILE: x86/x86.config
+  CUSTOM_SCRIPT: x86/custom.sh
   CLASH_KERNEL: amd64
   CACHE_TOOLCHAIN: true
   UPLOAD_BIN_DIR: false
@@ -109,7 +109,7 @@ jobs:
         chmod +x $GITHUB_WORKSPACE/scripts/*.sh
         chmod +x $CUSTOM_SCRIPT
         cd $OPENWRT_PATH/package/
-        $GITHUB_WORKSPACE/scripts/Packages.sh
+        $GITHUB_WORKSPACE/scripts/Packages-lede.sh
         $GITHUB_WORKSPACE/scripts/Handles.sh
         $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
 
@@ -180,7 +180,7 @@ jobs:
       with:
         name: R${{ env.DATE }} for ${{ env.FIRMWARE_TAG }}
         allowUpdates: true
-        tag: Immortalwrt_${{ env.FIRMWARE_TAG }}
+        tag: ${{ env.FIRMWARE_TAG }}
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: ${{ env.FIRMWARE_PATH }}/*
         body: |
@@ -193,17 +193,17 @@ jobs:
           - 🌐 默认地址: 192.168.3.1
           - 🔑 默认密码: 无
           
-    #- name: Send Telegram Message
-    #  run: |
-    #    # 获取当前北京时间
-    #    CURRENT_DATE_TIME=$(TZ='Asia/Shanghai' date +'%Y/%m/%d %r')
-    #
-    #    # 构建消息
-    #    MESSAGE="${{ env.FIRMWARE_TAG }} 固件编译完成
-    #    发布时间：$CURRENT_DATE_TIME
-    #    发布页面：https://github.com/acnixuil/AutoBuild_OP/releases/tag/Immortalwrt_${{ env.FIRMWARE_TAG }}
-    #
-    #    # 发送消息到 Telegram
-    #    curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
-    #      -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-    #      -d text="$MESSAGE"
+    - name: Send Telegram Message
+      run: |
+        # 获取当前北京时间
+        CURRENT_DATE_TIME=$(TZ='Asia/Shanghai' date +'%Y/%m/%d %r')
+
+        # 构建消息
+        MESSAGE="${{ env.FIRMWARE_TAG }} 固件编译完成
+        发布时间：$CURRENT_DATE_TIME
+        发布页面：https://github.com/acnixuil/AutoBuild_OP/releases/tag/${{ env.FIRMWARE_TAG }}"
+
+        # 发送消息到 Telegram
+        curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d text="$MESSAGE"

@@ -1,20 +1,23 @@
-name: X86_64 Immortalwrt
+name: IPQ6000-Full
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 22 * * 5'
+  #schedule:
+  #  - cron: '0 22 * * 5'
 
 env:
-  REPO_URL: https://github.com/immortalwrt/immortalwrt
-  REPO_BRANCH: openwrt-23.05
-  CONFIG_FILE: x86_imm/x86.config
-  CUSTOM_SCRIPT: x86_imm/custom.sh
-  CLASH_KERNEL: amd64
+  REPO_URL: https://github.com/acnixuil/ipq6000.git
+  REPO_BRANCH: master
+  FEEDS_CONF: ipq6000/feeds.conf.default
+  CONFIG_FILE: ipq6000/m2.config
+  # CONFIG_FILE: ipq6000/oc.config
+  DIY_SCRIPT1: ipq6000/diy-part1.sh
+  DIY_SCRIPT2: ipq6000/diy-part2.sh
+  CLASH_KERNEL: arm64
   CACHE_TOOLCHAIN: true
   UPLOAD_BIN_DIR: false
   FIRMWARE_RELEASE: true
-  FIRMWARE_TAG: X86_64
+  FIRMWARE_TAG: ipq6000
   TZ: Asia/Shanghai
 
 jobs:
@@ -41,11 +44,11 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        docker rmi $(docker images -q)
-        sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d /usr/local/lib/android $AGENT_TOOLSDIRECTORY
-        sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
-        sudo -E apt-get -y update
-        sudo -E apt-get -y install $(curl -fsSL is.gd/depends_ubuntu_2204)
+        curl -s https://raw.githubusercontent.com/immortalwrt/build-scripts/master/init_build_environment.sh | sudo bash
+        sudo apt-get install -y rename pigz libfuse-dev upx subversion clang
+        sudo apt-get autoremove -y --purge
+        sudo apt-get clean
+        sudo rm -rf po2lmo
         sudo -E systemctl daemon-reload
         sudo -E apt-get -y autoremove --purge
         sudo -E apt-get -y clean
@@ -64,7 +67,7 @@ jobs:
     - name: Clone Source Code
       run: |
         df -hT $GITHUB_WORKSPACE
-        git clone $REPO_URL -b $REPO_BRANCH openwrt
+        git clone --depth=1 -b $REPO_BRANCH $REPO_URL openwrt
         cd openwrt
         echo "OPENWRT_PATH=$PWD" >> $GITHUB_ENV
         COMMIT_AUTHOR=$(git show -s --date=short --format="作者: %an")
@@ -98,8 +101,15 @@ jobs:
 
     - name: Install Feeds
       run: |
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
+        chmod +x $DIY_SCRIPT1
+        chmod +x $GITHUB_WORKSPACE/scripts/*.sh
         cd $OPENWRT_PATH
-        ./scripts/feeds update -a               
+        $GITHUB_WORKSPACE/$DIY_SCRIPT1
+        ./scripts/feeds update -a     
+        $GITHUB_WORKSPACE/scripts/replace_packages.sh     
+        ./scripts/feeds install -a -f -p passwall_packages
+        ./scripts/feeds install -a -f -p passwall_luci   
         ./scripts/feeds install -a
 
     - name: Load Custom Configuration
@@ -107,11 +117,11 @@ jobs:
         [ -e files ] && mv files $OPENWRT_PATH/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE $OPENWRT_PATH/.config
         chmod +x $GITHUB_WORKSPACE/scripts/*.sh
-        chmod +x $CUSTOM_SCRIPT
-        cd $OPENWRT_PATH/package/
-        $GITHUB_WORKSPACE/scripts/Packages.sh
-        $GITHUB_WORKSPACE/scripts/Handles.sh
-        $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
+        chmod +x $DIY_SCRIPT2
+        cd $OPENWRT_PATH
+        $GITHUB_WORKSPACE/$DIY_SCRIPT2
+        $GITHUB_WORKSPACE/scripts/preset-adguard-core.sh $CLASH_KERNEL
+        $GITHUB_WORKSPACE/scripts/preset-clash-core.sh $CLASH_KERNEL
 
     - name: Download DL Package
       run: |
@@ -154,13 +164,13 @@ jobs:
         cp -rf $(find ./bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
 
     - name: Upload buildinfo
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@main
       with:
         name: OpenWrt_buildinfo
         path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
 
     - name: Upload package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@main
       with:
         name: OpenWrt_package
         path: ${{ env.OPENWRT_PATH }}/artifact/package/
@@ -168,11 +178,18 @@ jobs:
     - name: Organize Files
       if: steps.compile.outputs.status == 'success'
       run: |
-        cd $OPENWRT_PATH/bin/targets/*/*
+        cd openwrt/bin/targets/*/*
         echo "KERNEL=$(cat *.manifest | grep ^kernel | cut -d- -f2 | tr -d ' ')" >> $GITHUB_ENV
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
-        cd $OPENWRT_PATH
-        bash rename.sh
+        rm -rf *kernel*
+        rm -rf sha256sums
+        rm -rf *rootfs*
+        rm -rf profiles.json
+        rm -rf *.buildinfo
+        rm -rf *package*
+        rm -rf *.itb
+        rm -rf *.manifest
+        rename -v 's/^/full-/' *
 
     - name: Upload Firmware To Release
       if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
@@ -180,7 +197,7 @@ jobs:
       with:
         name: R${{ env.DATE }} for ${{ env.FIRMWARE_TAG }}
         allowUpdates: true
-        tag: Immortalwrt_${{ env.FIRMWARE_TAG }}
+        tag: ${{ env.FIRMWARE_TAG }}
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: ${{ env.FIRMWARE_PATH }}/*
         body: |
@@ -191,19 +208,19 @@ jobs:
           - 💝 源码分支: ${{ env.REPO_BRANCH }}
           - 🚀 内核版本: ${{ env.KERNEL }}
           - 🌐 默认地址: 192.168.3.1
-          - 🔑 默认密码: 无
-          
-    #- name: Send Telegram Message
-    #  run: |
-    #    # 获取当前北京时间
-    #    CURRENT_DATE_TIME=$(TZ='Asia/Shanghai' date +'%Y/%m/%d %r')
-    #
-    #    # 构建消息
-    #    MESSAGE="${{ env.FIRMWARE_TAG }} 固件编译完成
-    #    发布时间：$CURRENT_DATE_TIME
-    #    发布页面：https://github.com/acnixuil/AutoBuild_OP/releases/tag/Immortalwrt_${{ env.FIRMWARE_TAG }}
-    #
-    #    # 发送消息到 Telegram
-    #    curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
-    #      -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-    #      -d text="$MESSAGE"
+          - 🔑 默认密码: password
+
+    - name: Send Telegram Message
+      run: |
+        # 获取当前北京时间
+        CURRENT_DATE_TIME=$(TZ='Asia/Shanghai' date +'%Y/%m/%d %r')
+
+        # 构建消息
+        MESSAGE="${{ env.FIRMWARE_TAG }} 固件编译完成
+        发布时间：$CURRENT_DATE_TIME
+        发布页面：https://github.com/acnixuil/AutoBuild_OP/releases/tag/${{ env.FIRMWARE_TAG }}"
+
+        # 发送消息到 Telegram
+        curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d text="$MESSAGE"

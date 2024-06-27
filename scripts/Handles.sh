@@ -58,19 +58,29 @@ if [ -d *"openclash"* ]; then
 	cd $PKG_PATCH && echo "openclash date has been updated!"
 fi
 
-#移除ShadowsocksR组件
-# PW_FILE=$(find ./ -maxdepth 3 -type f -wholename "*/luci-app-passwall/Makefile")
-# if [ -f "$PW_FILE" ]; then
-# 	sed -i '/config PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR/,/default n/d' $PW_FILE
-# 	sed -i '/ShadowsocksR/d' $PW_FILE
-#
-# 	cd $PKG_PATCH && echo "passwall has been fixed!"
-# fi
-#
-# SP_FILE=$(find ./ -maxdepth 3 -type f -wholename "*/luci-app-ssr-plus/Makefile")
-# if [ -f "$SP_FILE" ]; then
-# 	sed -i '/config PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR/,/default y if i386||x86_64||arm/d' $SP_FILE
-# 	sed -i '/ShadowsocksR/d' $SP_FILE
-#
-# 	cd $PKG_PATCH && echo "ssr-plus has been fixed!"
-# fi
+# 预置AdGuardHome数据
+if [ -d *"adguardhome"* ]; then
+    AGH_PATCH="luci-app-adguardhome/root/usr/bin/AdGuardHome"
+
+    mkdir -p ./$AGH_PATCH
+
+    AGH_CORE=$(curl -sL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | grep /AdGuardHome_linux_${1} | awk -F '"' '{print $4}')
+
+    wget -qO- $AGH_CORE | tar xOvz > ./$AGH_PATCH/AdGuardHome
+
+    chmod +x ./$AGH_PATCH/AdGuardHome
+
+    cd $PKG_PATCH && echo "AdGuardHome data has been updated!"
+fi
+
+# 替换背景图像
+if [ -d *"argon"* ]; then
+    cp -f $GITHUB_WORKSPACE/images/bg1.jpg $PKG_PATCH/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
+    cd $PKG_PATCH && echo "Background image has been updated!"
+fi
+
+# 修改 amlogic 配置
+if [ -d *"amlogic"* ]; then
+    sed -i "s|ARMv8|ARMv8|g" *"amlogic"*/root/etc/config/amlogic
+    cd $PKG_PATCH && echo "Amlogic configuration has been updated!"
+fi

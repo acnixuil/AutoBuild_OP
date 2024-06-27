@@ -8,9 +8,9 @@ on:
 env:
   REPO_URL: https://github.com/King-Of-Knights/openwrt-6.x.git
   REPO_BRANCH: main
-  FEEDS_CONF: ipq6000/feeds.conf.default
   CONFIG_FILE: ipq6000/m2-k6.6.config
   # CONFIG_FILE: ipq6000/m2-k6.6-nowifi.config
+  CUSTOM_SCRIPT: ipq6000/custom.sh
   CLASH_KERNEL: arm64
   CACHE_TOOLCHAIN: true
   UPLOAD_BIN_DIR: false
@@ -84,7 +84,7 @@ jobs:
     - name: Clone Source Code
       run: |
         df -hT $GITHUB_WORKSPACE
-        git clone --depth=1 -b $REPO_BRANCH $REPO_URL openwrt
+        git clone --depth=1 --single-branch -b $REPO_BRANCH $REPO_URL openwrt
         cd openwrt
         echo "OPENWRT_PATH=$PWD" >> $GITHUB_ENV
         COMMIT_AUTHOR=$(git show -s --date=short --format="作者: %an")
@@ -119,18 +119,20 @@ jobs:
     - name: Install Feeds
       run: |
         cd $OPENWRT_PATH
-        ./scripts/feeds update -a      
+        ./scripts/feeds update -a               
         ./scripts/feeds install -a
-        sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
 
     - name: Load Custom Configuration
       run: |
         [ -e files ] && mv files $OPENWRT_PATH/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE $OPENWRT_PATH/.config
         chmod +x $GITHUB_WORKSPACE/scripts/*.sh
+        chmod +x $CUSTOM_SCRIPT
         cd $OPENWRT_PATH/package/
         $GITHUB_WORKSPACE/scripts/Packages.sh
         $GITHUB_WORKSPACE/scripts/Handles.sh
+        $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
+        
 
     - name: Download DL Package
       run: |

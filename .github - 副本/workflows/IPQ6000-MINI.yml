@@ -1,20 +1,18 @@
-name: X86_64 Immortalwrt
+name: IPQ6000-Mini
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 22 * * 5'
+  #schedule:
+  #  - cron: '0 22 * * 5'
 
 env:
-  REPO_URL: https://github.com/immortalwrt/immortalwrt
-  REPO_BRANCH: openwrt-23.05
-  CONFIG_FILE: x86_imm/x86.config
-  CUSTOM_SCRIPT: x86_imm/custom.sh
-  CLASH_KERNEL: amd64
+  REPO_URL: https://github.com/coolsnowwolf/lede
+  REPO_BRANCH: master
+  CONFIG_FILE: ipq6000/ssr.config
   CACHE_TOOLCHAIN: true
   UPLOAD_BIN_DIR: false
   FIRMWARE_RELEASE: true
-  FIRMWARE_TAG: X86_64
+  FIRMWARE_TAG: ipq6000
   TZ: Asia/Shanghai
 
 jobs:
@@ -88,30 +86,42 @@ jobs:
         DEVICE_SUBTARGET=$(cat .config | grep CONFIG_TARGET_SUBTARGET | awk -F '"' '{print $2}')
         echo "DEVICE_SUBTARGET=$DEVICE_SUBTARGET" >> $GITHUB_ENV
 
-    - name: Cache Toolchain
-      if: env.CACHE_TOOLCHAIN == 'true'
-      uses: HiGarfield/cachewrtbuild@main
-      with:
-        ccache: false
-        mixkey: ${{ env.SOURCE_REPO }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
-        prefix: ${{ env.OPENWRT_PATH }}
+    #- name: Cache Toolchain
+    #  if: env.CACHE_TOOLCHAIN == 'true'
+    #  uses: HiGarfield/cachewrtbuild@main
+    #  with:
+    #    ccache: false
+    #    mixkey: ${{ env.SOURCE_REPO }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
+    #    prefix: ${{ env.OPENWRT_PATH }}
 
     - name: Install Feeds
       run: |
         cd $OPENWRT_PATH
-        ./scripts/feeds update -a               
+        echo "src-git passwall_packages https://github.com/xiaorouji/openwrt-passwall-packages.git;main" >> "feeds.conf.default"
+        echo "src-git passwall https://github.com/xiaorouji/openwrt-passwall.git;main" >> "feeds.conf.default"
+        ./scripts/feeds update -a      
+
+        rm -rf feeds/packages/lang/golang
+        git clone https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang 
+       
+        pushd feeds/packages/net
+        rm -rf zerotier
+        git clone --depth 1 --branch master https://github.com/immortalwrt/packages.git zerotier_new
+        cp -r zerotier_new/net/zerotier .
+        rm -rf zerotier_new
+        popd
+        
         ./scripts/feeds install -a
+        sed -i 's/GO_PKG_TARGET_VARS:=$(filter-out CGO_ENABLED=%,$(GO_PKG_TARGET_VARS)) CGO_ENABLED=0/GO_PKG_TARGET_VARS:=$(filter-out CGO_ENABLED=%,$(GO_PKG_TARGET_VARS)) CGO_ENABLED=1/' feeds/packages/net/mosdns/Makefile
+        git clone https://github.com/gdy666/luci-app-lucky.git package/lucky
+
 
     - name: Load Custom Configuration
       run: |
         [ -e files ] && mv files $OPENWRT_PATH/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE $OPENWRT_PATH/.config
-        chmod +x $GITHUB_WORKSPACE/scripts/*.sh
-        chmod +x $CUSTOM_SCRIPT
-        cd $OPENWRT_PATH/package/
-        $GITHUB_WORKSPACE/scripts/Packages.sh
-        $GITHUB_WORKSPACE/scripts/Handles.sh
-        $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
+        cd $OPENWRT_PATH
+        sed -i 's/192.168.1.1/192.168.5.1/g' package/base-files/files/bin/config_generate
 
     - name: Download DL Package
       run: |
@@ -125,8 +135,6 @@ jobs:
       id: compile
       run: |
         cd $OPENWRT_PATH
-        mkdir -p files/etc/uci-defaults
-        cp $GITHUB_WORKSPACE/scripts/init-settings.sh files/etc/uci-defaults/99-init-settings
         echo -e "$(nproc) thread compile"
         make -j$(nproc) || make -j1 || make -j1 V=s
         echo "status=success" >> $GITHUB_OUTPUT
@@ -144,35 +152,43 @@ jobs:
         name: ${{ env.SOURCE_REPO }}-bin-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-${{ env.FILE_DATE }}
         path: ${{ env.OPENWRT_PATH }}/bin
 
-    - name: Prepare artifact
-      run: |
-        cd $OPENWRT_PATH
-        mkdir -p ./artifact/package
-        mkdir -p ./artifact/buildinfo
-        rm -rf $(find ./bin/targets/ -type d -name "packages")
-        cp -rf $(find ./bin/packages/ -type f -name "*.ipk") ./artifact/package/
-        cp -rf $(find ./bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
-
-    - name: Upload buildinfo
-      uses: actions/upload-artifact@v3
-      with:
-        name: OpenWrt_buildinfo
-        path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
-
-    - name: Upload package
-      uses: actions/upload-artifact@v3
-      with:
-        name: OpenWrt_package
-        path: ${{ env.OPENWRT_PATH }}/artifact/package/
+    #- name: Prepare artifact
+    #  run: |
+    #    cd $OPENWRT_PATH
+    #    mkdir -p ./artifact/package
+    #    mkdir -p ./artifact/buildinfo
+    #    rm -rf $(find ./bin/targets/ -type d -name "packages")
+    #    cp -rf $(find ./bin/packages/ -type f -name "*.ipk") ./artifact/package/
+    #    cp -rf $(find ./bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
+    #
+    #- name: Upload buildinfo
+    #  uses: actions/upload-artifact@v3
+    #  with:
+    #    name: OpenWrt_buildinfo
+    #    path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
+    #
+    #- name: Upload package
+    #  uses: actions/upload-artifact@v3
+    #  with:
+    #    name: OpenWrt_package
+    #    path: ${{ env.OPENWRT_PATH }}/artifact/package/
 
     - name: Organize Files
       if: steps.compile.outputs.status == 'success'
       run: |
-        cd $OPENWRT_PATH/bin/targets/*/*
+        cd openwrt/bin/targets/*/*
         echo "KERNEL=$(cat *.manifest | grep ^kernel | cut -d- -f2 | tr -d ' ')" >> $GITHUB_ENV
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
-        cd $OPENWRT_PATH
-        bash rename.sh
+        rm -rf *kernel*
+        rm -rf sha256sums
+        rm -rf *rootfs*
+        rm -rf profiles.json
+        rm -rf *.buildinfo
+        rm -rf *package*
+        rm -rf *.itb
+        rm -rf *.manifest
+        mv *.ubi mini-zn_m2-factory.ubi
+        mv *.bin mini-zn_m2-sysupgrade.bin
 
     - name: Upload Firmware To Release
       if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
@@ -180,7 +196,7 @@ jobs:
       with:
         name: R${{ env.DATE }} for ${{ env.FIRMWARE_TAG }}
         allowUpdates: true
-        tag: Immortalwrt_${{ env.FIRMWARE_TAG }}
+        tag: ${{ env.FIRMWARE_TAG }}
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: ${{ env.FIRMWARE_PATH }}/*
         body: |
@@ -190,8 +206,8 @@ jobs:
           - ⚽ 固件源码: ${{ env.REPO_URL }}
           - 💝 源码分支: ${{ env.REPO_BRANCH }}
           - 🚀 内核版本: ${{ env.KERNEL }}
-          - 🌐 默认地址: 192.168.3.1
-          - 🔑 默认密码: 无
+          - 🌐 默认地址: 192.168.2.1
+          - 🔑 默认密码: password
           
     #- name: Send Telegram Message
     #  run: |
@@ -201,7 +217,7 @@ jobs:
     #    # 构建消息
     #    MESSAGE="${{ env.FIRMWARE_TAG }} 固件编译完成
     #    发布时间：$CURRENT_DATE_TIME
-    #    发布页面：https://github.com/acnixuil/AutoBuild_OP/releases/tag/Immortalwrt_${{ env.FIRMWARE_TAG }}
+    #    发布页面：https://github.com/acnixuil/AutoBuild_OP/releases/tag/${{ env.FIRMWARE_TAG }}
     #
     #    # 发送消息到 Telegram
     #    curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
