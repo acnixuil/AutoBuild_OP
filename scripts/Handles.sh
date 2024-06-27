@@ -7,15 +7,11 @@ if [ -d *"homeproxy"* ]; then
 	HP_RULES="surge"
 	HP_PATCH="homeproxy/root/etc/homeproxy"
 
-	#替换列表源
-	# mv -f $GITHUB_WORKSPACE/Patches/homeproxy/update_resources.sh ./$HP_PATCH/scripts/
 	chmod +x ./$HP_PATCH/scripts/*
-
-	#更新列表
 	rm -rf ./$HP_PATCH/resources/*
 
 	git clone -q --depth=1 --single-branch --branch "release" "https://github.com/Loyalsoldier/surge-rules.git" ./$HP_RULES/
-	cd ./$HP_RULES/ && RES_VER=$(git log -1 --pretty=format:'%s' -- $RES_FILE | grep -o "[0-9]*")
+	cd ./$HP_RULES/ && RES_VER=$(git log -1 --pretty=format:'%s' | grep -o "[0-9]*")
 
 	echo $RES_VER | tee china_ip4.ver china_ip6.ver china_list.ver gfw_list.ver
 	awk -F, '/^IP-CIDR,/{print $2 > "china_ip4.txt"} /^IP-CIDR6,/{print $2 > "china_ip6.txt"}' cncidr.txt
@@ -53,7 +49,7 @@ if [ -d *"openclash"* ]; then
 	curl -sL -o tun.gz $CORE_TUN && gzip -d tun.gz && mv -f tun clash_tun && echo "tun done!"
 	curl -sL -o dev.tar.gz $CORE_DEV && tar -zxf dev.tar.gz && echo "dev done!"
 
-	chmod +x ./clash* && rm -rf ./*.gz
+	chmod +x ./* && rm -rf ./*.gz
 
 	cd $PKG_PATCH && echo "openclash date has been updated!"
 fi
@@ -64,7 +60,8 @@ if [ -d *"adguardhome"* ]; then
 
     mkdir -p ./$AGH_PATCH
 
-    AGH_CORE=$(curl -sL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | grep /AdGuardHome_linux_${1} | awk -F '"' '{print $4}')
+    # 直接使用环境变量$CLASH_KERNEL来确定下载哪个版本的AdGuardHome
+    AGH_CORE=$(curl -sL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | grep /AdGuardHome_linux_${CLASH_KERNEL} | awk -F '"' '{print $4}')
 
     wget -qO- $AGH_CORE | tar xOvz > ./$AGH_PATCH/AdGuardHome
 
@@ -74,13 +71,13 @@ if [ -d *"adguardhome"* ]; then
 fi
 
 # 替换背景图像
-if [ -d *"argon"* ]; then
+if [ -d "$PKG_PATCH/luci-theme-argon" ]; then
     cp -f $GITHUB_WORKSPACE/images/bg1.jpg $PKG_PATCH/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
     cd $PKG_PATCH && echo "Background image has been updated!"
 fi
 
 # 修改 amlogic 配置
-if [ -d *"amlogic"* ]; then
-    sed -i "s|ARMv8|ARMv8|g" *"amlogic"*/root/etc/config/amlogic
+if [ -d "$PKG_PATCH/luci-app-amlogic ]; then
+    sed -i "s|ARMv8|ARMv8|g" "$PKG_PATCH/luci-app-amlogic/luci-app-amlogic/root/etc/config/amlogic
     cd $PKG_PATCH && echo "Amlogic configuration has been updated!"
 fi
