@@ -14,10 +14,8 @@ on:
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
-  FEEDS_CONF: n1/feeds.conf.default
   CONFIG_FILE: n1/n1.config
-  DIY_SCRIPT1: n1/1.sh
-  DIY_SCRIPT2: n1/2.sh
+  CUSTOM_SCRIPT: n1/custom.sh
   UPLOAD_FIRMWARE: false
   UPLOAD_RELEASE: true
   TZ: Asia/Shanghai
@@ -125,10 +123,8 @@ jobs:
 
     - name: Install Feeds
       run: |
-        chmod +x $DIY_SCRIPT1
         cd $OPENWRT_PATH
-        $GITHUB_WORKSPACE/$DIY_SCRIPT1
-        ./scripts/feeds update -a                  
+        ./scripts/feeds update -a               
         ./scripts/feeds install -a
 
     - name: Load Custom Configuration
@@ -136,10 +132,11 @@ jobs:
         [ -e files ] && mv files $OPENWRT_PATH/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE $OPENWRT_PATH/.config
         chmod +x $GITHUB_WORKSPACE/scripts/*.sh
-        chmod +x $DIY_SCRIPT2
-        cd $OPENWRT_PATH
-        $GITHUB_WORKSPACE/$DIY_SCRIPT2
-        $GITHUB_WORKSPACE/scripts/preset-clash-core.sh $CLASH_KERNEL
+        chmod +x $CUSTOM_SCRIPT
+        cd $OPENWRT_PATH/package/
+        $GITHUB_WORKSPACE/scripts/Packages-lede.sh
+        $GITHUB_WORKSPACE/scripts/Handles.sh
+        $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
 
     - name: Download DL Package
       run: |
