@@ -22,7 +22,7 @@ UPDATE_PACKAGE() {
 	elif [[ $PKG_SPECIAL == "name" ]]; then
 		mv -f $REPO_NAME $PKG_NAME
 	fi
-
+}
 
 #UPDATE_PACKAGE "包名" "项目地址" "项目分支" "pkg/name，可选，pkg为从大杂烩中单独提取包名插件；name为重命名为包名"
 UPDATE_PACKAGE "design" "gngpp/luci-theme-design" "main"
@@ -76,7 +76,6 @@ UPDATE_VERSION() {
         fi
     done
 }
-
 
 #UPDATE_VERSION "软件包名" "项目地址" "测试版true（可选，默认为否）"
 UPDATE_VERSION "brook" "txthinking/brook"
