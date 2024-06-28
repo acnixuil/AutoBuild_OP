@@ -188,10 +188,9 @@ jobs:
     - name: Organize Files
       if: steps.compile.outputs.status == 'success'
       run: |
-        cd openwrt/bin/targets/*/*
+        cd $OPENWRT_PATH/bin/targets/*/*
         echo "KERNEL=$(cat *.manifest | grep ^kernel | cut -d- -f2 | tr -d ' ')" >> $GITHUB_ENV
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
-        cd $OPENWRT_PATH
         $GITHUB_WORKSPACE/scripts/cleanup_targets.sh
         rename -v 's/^/k44-nowifi-/' *
 

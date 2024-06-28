@@ -1,4 +1,4 @@
-name: IPQ6000-k6.6-nowifi
+name: IPQ6000-k66-nowifi
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
 env:
   REPO_URL: https://github.com/King-Of-Knights/openwrt-6.x.git
   REPO_BRANCH: main
-  CONFIG_FILE: ipq6000/k6.6_nowifi_m2.config
+  CONFIG_FILE: ipq6000/k66_nowifi_m2.config
   CUSTOM_SCRIPT: ipq6000/custom.sh
   CLASH_KERNEL: arm64
   CACHE_TOOLCHAIN: true
@@ -187,10 +187,9 @@ jobs:
     - name: Organize Files
       if: steps.compile.outputs.status == 'success'
       run: |
-        cd openwrt/bin/targets/*/*
+        cd $OPENWRT_PATH/bin/targets/*/*
         echo "KERNEL=$(cat *.manifest | grep ^kernel | cut -d- -f2 | tr -d ' ')" >> $GITHUB_ENV
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
-        cd $OPENWRT_PATH
         $GITHUB_WORKSPACE/scripts/cleanup_targets.sh
         rename -v 's/^/k66_nowifi-/' *
 

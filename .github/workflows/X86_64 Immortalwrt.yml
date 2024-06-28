@@ -107,13 +107,13 @@ jobs:
         DEVICE_SUBTARGET=$(cat .config | grep CONFIG_TARGET_SUBTARGET | awk -F '"' '{print $2}')
         echo "DEVICE_SUBTARGET=$DEVICE_SUBTARGET" >> $GITHUB_ENV
 
-    - name: Cache Toolchain
-      if: env.CACHE_TOOLCHAIN == 'true'
-      uses: HiGarfield/cachewrtbuild@main
-      with:
-        ccache: false
-        mixkey: ${{ env.SOURCE_REPO }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
-        prefix: ${{ env.OPENWRT_PATH }}
+    # - name: Cache Toolchain
+    #   if: env.CACHE_TOOLCHAIN == 'true'
+    #   uses: HiGarfield/cachewrtbuild@main
+    #   with:
+    #     ccache: false
+    #     mixkey: ${{ env.SOURCE_REPO }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
+    #     prefix: ${{ env.OPENWRT_PATH }}
 
     - name: Install Feeds
       run: |
@@ -190,7 +190,6 @@ jobs:
         cd $OPENWRT_PATH/bin/targets/*/*
         echo "KERNEL=$(cat *.manifest | grep ^kernel | cut -d- -f2 | tr -d ' ')" >> $GITHUB_ENV
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
-        cd $OPENWRT_PATH
         $GITHUB_WORKSPACE/scripts/cleanup_targets.sh
 
     - name: Upload Firmware To Release
