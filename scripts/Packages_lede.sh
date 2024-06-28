@@ -22,7 +22,7 @@ UPDATE_PACKAGE() {
 	elif [[ $PKG_SPECIAL == "name" ]]; then
 		mv -f $REPO_NAME $PKG_NAME
 	fi
-}
+
 
 #UPDATE_PACKAGE "包名" "项目地址" "项目分支" "pkg/name，可选，pkg为从大杂烩中单独提取包名插件；name为重命名为包名"
 UPDATE_PACKAGE "design" "gngpp/luci-theme-design" "main"
@@ -42,7 +42,6 @@ UPDATE_PACKAGE "lucky" "gdy666/luci-app-lucky" "main"
 UPDATE_PACKAGE "adguardhome" "acnixuil/luci-app-adguardhome" "master"
 UPDATE_PACKAGE "amlogic" "ophub/luci-app-amlogic" "main"
 
-
 #更新软件包版本
 UPDATE_VERSION() {
 	local PKG_NAME=$1
@@ -59,7 +58,7 @@ UPDATE_VERSION() {
 
     echo "$PKG_NAME version update has started!"
 
-    local PKG_VER=$(curl -sL "https://api.github.com/repos/$PKG_REPO/releases/latest" | jq -r "map(select(.prerelease|$PKG_MARK)) | first | .tag_name")
+    local PKG_VER=$(curl -sL "https://api.github.com/repos/$PKG_REPO/releases" | jq -r "map(select(.prerelease|$PKG_MARK)) | first | .tag_name")
     local NEW_VER=$(echo $PKG_VER | sed "s/.*v//g; s/_/./g")
     local NEW_HASH=$(curl -sL "https://codeload.github.com/$PKG_REPO/tar.gz/$PKG_VER" | sha256sum | cut -b -64)
 
@@ -77,6 +76,7 @@ UPDATE_VERSION() {
         fi
     done
 }
+
 
 #UPDATE_VERSION "软件包名" "项目地址" "测试版true（可选，默认为否）"
 UPDATE_VERSION "brook" "txthinking/brook"
