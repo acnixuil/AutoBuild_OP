@@ -58,7 +58,7 @@ UPDATE_VERSION() {
 
     echo "$PKG_NAME version update has started!"
 
-    local PKG_VER=$(curl -sL "https://api.github.com/repos/$PKG_REPO/releases/latest" | jq -r "map(select(.prerelease|$PKG_MARK)) | first | .tag_name")
+    local PKG_VER=$(curl -sL "https://api.github.com/repos/$PKG_REPO/releases" | jq -r "map(select(.prerelease|$PKG_MARK)) | first | .tag_name")
     local NEW_VER=$(echo $PKG_VER | sed "s/.*v//g; s/_/./g")
     local NEW_HASH=$(curl -sL "https://codeload.github.com/$PKG_REPO/tar.gz/$PKG_VER" | sha256sum | cut -b -64)
 
@@ -77,7 +77,7 @@ UPDATE_VERSION() {
     done
 }
 
-#UPDATE_VERSION "软件包名" "项目地址" "测试版true（可选，默认为否）"
+#UPDATE_VERSION "软件包名" "项目地址" "测试版，true，可选，默认为否"
 UPDATE_VERSION "brook" "txthinking/brook"
 UPDATE_VERSION "dns2tcp" "zfl9/dns2tcp"
 UPDATE_VERSION "hysteria" "apernet/hysteria"
