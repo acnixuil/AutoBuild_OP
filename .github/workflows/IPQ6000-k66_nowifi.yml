@@ -1,4 +1,4 @@
-name: IPQ6000-Full
+name: IPQ6000-k6.6_nowifi
 
 on:
   workflow_dispatch:
@@ -6,13 +6,10 @@ on:
   #  - cron: '0 22 * * 5'
 
 env:
-  REPO_URL: https://github.com/acnixuil/ipq6000.git
-  REPO_BRANCH: master
-  FEEDS_CONF: ipq6000/feeds.conf.default
-  CONFIG_FILE: ipq6000/m2.config
-  # CONFIG_FILE: ipq6000/oc.config
-  DIY_SCRIPT1: ipq6000/diy-part1.sh
-  DIY_SCRIPT2: ipq6000/diy-part2.sh
+  REPO_URL: https://github.com/King-Of-Knights/openwrt-6.x.git
+  REPO_BRANCH: main
+  CONFIG_FILE: ipq6000/m2-k6.6-nowifi.config
+  CUSTOM_SCRIPT: ipq6000/custom.sh
   CLASH_KERNEL: arm64
   CACHE_TOOLCHAIN: true
   UPLOAD_BIN_DIR: false
@@ -40,15 +37,34 @@ jobs:
         echo "--------------------------硬盘信息--------------------------"
         echo "硬盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l)" && df -hT
 
+    - name: Free Disk Space
+      uses: endersonmenezes/free-disk-space@main
+      with:
+        remove_android: true
+        remove_dotnet: true
+        remove_haskell: true
+        remove_tool_cache: true
+        remove_swap: true
+        remove_packages: "android* azure* clang* dotnet* firefox* ghc* golang* google* libclang* libgl1* lld* llvm* \
+          microsoft* mongodb* mono* mysql* nodejs* openjdk* php* postgresql* powershell* snap* temurin* yarn* zulu*"
+        remove_packages_one_command: true
+        remove_folders: "/etc/apt/sources.list.d* /etc/mono* /etc/mysql* /usr/include/linux/android* /usr/lib/llvm* /usr/lib/mono* \
+          /usr/local/lib/android* /usr/local/lib/node_modules* /usr/local/share/chromium* /usr/local/share/powershell* \
+          /usr/local/share/vcpkg/ports/azure* /usr/local/share/vcpkg/ports/google* /usr/local/share/vcpkg/ports/libpq/android* \
+          /usr/local/share/vcpkg/ports/llvm* /usr/local/share/vcpkg/ports/mysql* /usr/local/share/vcpkg/ports/snap* \
+          /usr/share/azure* /usr/share/dotnet* /usr/share/glade* /usr/share/miniconda* /usr/share/php* /usr/share/swift \
+          /var/lib/mysql* /var/log/azure*"
+        testing: false
+
     - name: Initialization Environment
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        curl -s https://raw.githubusercontent.com/immortalwrt/build-scripts/master/init_build_environment.sh | sudo bash
-        sudo apt-get install -y rename pigz libfuse-dev upx subversion clang
-        sudo apt-get autoremove -y --purge
-        sudo apt-get clean
-        sudo rm -rf po2lmo
+        docker rmi $(docker images -q)
+        sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d /usr/local/lib/android $AGENT_TOOLSDIRECTORY
+        sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
+        sudo -E apt-get -y update
+        sudo -E apt-get -y install $(curl -fsSL is.gd/depends_ubuntu_2204) rename
         sudo -E systemctl daemon-reload
         sudo -E apt-get -y autoremove --purge
         sudo -E apt-get -y clean
@@ -101,15 +117,8 @@ jobs:
 
     - name: Install Feeds
       run: |
-        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
-        chmod +x $DIY_SCRIPT1
-        chmod +x $GITHUB_WORKSPACE/scripts/*.sh
         cd $OPENWRT_PATH
-        $GITHUB_WORKSPACE/$DIY_SCRIPT1
-        ./scripts/feeds update -a     
-        $GITHUB_WORKSPACE/scripts/replace_packages.sh     
-        ./scripts/feeds install -a -f -p passwall_packages
-        ./scripts/feeds install -a -f -p passwall_luci   
+        ./scripts/feeds update -a               
         ./scripts/feeds install -a
 
     - name: Load Custom Configuration
@@ -117,11 +126,11 @@ jobs:
         [ -e files ] && mv files $OPENWRT_PATH/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE $OPENWRT_PATH/.config
         chmod +x $GITHUB_WORKSPACE/scripts/*.sh
-        chmod +x $DIY_SCRIPT2
-        cd $OPENWRT_PATH
-        $GITHUB_WORKSPACE/$DIY_SCRIPT2
-        $GITHUB_WORKSPACE/scripts/preset-adguard-core.sh $CLASH_KERNEL
-        $GITHUB_WORKSPACE/scripts/preset-clash-core.sh $CLASH_KERNEL
+        chmod +x $CUSTOM_SCRIPT
+        cd $OPENWRT_PATH/package/
+        $GITHUB_WORKSPACE/scripts/Packages_lede.sh
+        $GITHUB_WORKSPACE/scripts/Handles.sh
+        $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
 
     - name: Download DL Package
       run: |
@@ -181,15 +190,9 @@ jobs:
         cd openwrt/bin/targets/*/*
         echo "KERNEL=$(cat *.manifest | grep ^kernel | cut -d- -f2 | tr -d ' ')" >> $GITHUB_ENV
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
-        rm -rf *kernel*
-        rm -rf sha256sums
-        rm -rf *rootfs*
-        rm -rf profiles.json
-        rm -rf *.buildinfo
-        rm -rf *package*
-        rm -rf *.itb
-        rm -rf *.manifest
-        rename -v 's/^/full-/' *
+        cd $OPENWRT_PATH
+        $GITHUB_WORKSPACE/scripts/cleanup_targets.sh
+        rename -v 's/^/k66_nowifi-/' *
 
     - name: Upload Firmware To Release
       if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'

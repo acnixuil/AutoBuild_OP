@@ -1,4 +1,4 @@
-name: IPQ6000-k6.6_nowifi
+name: IPQ6000-k44-nowifi
 
 on:
   workflow_dispatch:
@@ -6,10 +6,11 @@ on:
   #  - cron: '0 22 * * 5'
 
 env:
-  REPO_URL: https://github.com/King-Of-Knights/openwrt-6.x.git
-  REPO_BRANCH: main
-  FEEDS_CONF: ipq6000/feeds.conf.default
-  CONFIG_FILE: ipq6000/m2-k6.6-nowifi.config
+  REPO_URL: https://github.com/acnixuil/ipq6000.git
+  REPO_BRANCH: master
+  CONFIG_FILE: ipq6000/m2.config
+  # CONFIG_FILE: ipq6000/oc.config
+  CUSTOM_SCRIPT: ipq6000/custom.sh
   CLASH_KERNEL: arm64
   CACHE_TOOLCHAIN: true
   UPLOAD_BIN_DIR: false
@@ -118,18 +119,19 @@ jobs:
     - name: Install Feeds
       run: |
         cd $OPENWRT_PATH
-        ./scripts/feeds update -a      
+        ./scripts/feeds update -a               
         ./scripts/feeds install -a
-        sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
 
     - name: Load Custom Configuration
       run: |
         [ -e files ] && mv files $OPENWRT_PATH/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE $OPENWRT_PATH/.config
         chmod +x $GITHUB_WORKSPACE/scripts/*.sh
+        chmod +x $CUSTOM_SCRIPT
         cd $OPENWRT_PATH/package/
-        $GITHUB_WORKSPACE/scripts/Packages.sh
+        $GITHUB_WORKSPACE/scripts/Packages_lede.sh
         $GITHUB_WORKSPACE/scripts/Handles.sh
+        $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
 
     - name: Download DL Package
       run: |
@@ -189,15 +191,9 @@ jobs:
         cd openwrt/bin/targets/*/*
         echo "KERNEL=$(cat *.manifest | grep ^kernel | cut -d- -f2 | tr -d ' ')" >> $GITHUB_ENV
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
-        rm -rf *kernel*
-        rm -rf sha256sums
-        rm -rf *rootfs*
-        rm -rf profiles.json
-        rm -rf *.buildinfo
-        rm -rf *package*
-        rm -rf *.itb
-        rm -rf *.manifest
-        rename -v 's/^/k6.6_nowifi-/' *
+        cd $OPENWRT_PATH
+        $GITHUB_WORKSPACE/scripts/cleanup_targets.sh
+        rename -v 's/^/k44-nowifi-/' *
 
     - name: Upload Firmware To Release
       if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
@@ -215,7 +211,7 @@ jobs:
           - ⚽ 固件源码: ${{ env.REPO_URL }}
           - 💝 源码分支: ${{ env.REPO_BRANCH }}
           - 🚀 内核版本: ${{ env.KERNEL }}
-          - 🌐 默认地址: 192.168.3.1
+          - 🌐 默认地址: 192.168.2.1
           - 🔑 默认密码: password
 
     - name: Send Telegram Message

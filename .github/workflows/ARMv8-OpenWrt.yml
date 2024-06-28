@@ -134,7 +134,7 @@ jobs:
         chmod +x $GITHUB_WORKSPACE/scripts/*.sh
         chmod +x $CUSTOM_SCRIPT
         cd $OPENWRT_PATH/package/
-        $GITHUB_WORKSPACE/scripts/Packages-lede.sh
+        $GITHUB_WORKSPACE/scripts/Packages_lede.sh
         $GITHUB_WORKSPACE/scripts/Handles.sh
         $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
 

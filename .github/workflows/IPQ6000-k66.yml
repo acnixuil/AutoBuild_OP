@@ -9,7 +9,6 @@ env:
   REPO_URL: https://github.com/King-Of-Knights/openwrt-6.x.git
   REPO_BRANCH: main
   CONFIG_FILE: ipq6000/m2-k6.6.config
-  # CONFIG_FILE: ipq6000/m2-k6.6-nowifi.config
   CUSTOM_SCRIPT: ipq6000/custom.sh
   CLASH_KERNEL: arm64
   CACHE_TOOLCHAIN: true
@@ -132,7 +131,6 @@ jobs:
         $GITHUB_WORKSPACE/scripts/Packages.sh
         $GITHUB_WORKSPACE/scripts/Handles.sh
         $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
-        
 
     - name: Download DL Package
       run: |
@@ -192,15 +190,9 @@ jobs:
         cd openwrt/bin/targets/*/*
         echo "KERNEL=$(cat *.manifest | grep ^kernel | cut -d- -f2 | tr -d ' ')" >> $GITHUB_ENV
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
-        rm -rf *kernel*
-        rm -rf sha256sums
-        rm -rf *rootfs*
-        rm -rf profiles.json
-        rm -rf *.buildinfo
-        rm -rf *package*
-        rm -rf *.itb
-        rm -rf *.manifest
-        rename -v 's/^/k6.6-/' *
+        cd $OPENWRT_PATH
+        $GITHUB_WORKSPACE/scripts/cleanup_targets.sh
+        rename -v 's/^/k66-/' *
 
     - name: Upload Firmware To Release
       if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
