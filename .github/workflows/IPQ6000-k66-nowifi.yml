@@ -1,4 +1,4 @@
-name: IPQ6000-k6.6_nowifi
+name: IPQ6000-k6.6-nowifi
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
 env:
   REPO_URL: https://github.com/King-Of-Knights/openwrt-6.x.git
   REPO_BRANCH: main
-  CONFIG_FILE: ipq6000/m2-k6.6-nowifi.config
+  CONFIG_FILE: ipq6000/k6.6_nowifi_m2.config
   CUSTOM_SCRIPT: ipq6000/custom.sh
   CLASH_KERNEL: arm64
   CACHE_TOOLCHAIN: true

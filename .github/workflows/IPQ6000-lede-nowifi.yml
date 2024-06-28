@@ -8,10 +8,8 @@ on:
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
-  CONFIG_FILE: ipq6000/m2-lede-nowifi.config
-  # CONFIG_FILE: ipq6000/oc.config
-  DIY_SCRIPT1: ipq6000/diy-part1.sh
-  DIY_SCRIPT2: ipq6000/diy-part2.sh
+  CONFIG_FILE: ipq6000/lede_nowifi_m2.config
+  CUSTOM_SCRIPT: ipq6000/custom.sh
   CLASH_KERNEL: arm64
   CACHE_TOOLCHAIN: true
   UPLOAD_BIN_DIR: false

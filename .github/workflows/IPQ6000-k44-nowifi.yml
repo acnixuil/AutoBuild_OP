@@ -8,8 +8,8 @@ on:
 env:
   REPO_URL: https://github.com/acnixuil/ipq6000.git
   REPO_BRANCH: master
-  CONFIG_FILE: ipq6000/m2.config
-  # CONFIG_FILE: ipq6000/oc.config
+  CONFIG_FILE: ipq6000/k44_nowifi_m2.config
+  # CONFIG_FILE: ipq6000/k44_nowifi_m2_oc.config
   CUSTOM_SCRIPT: ipq6000/custom.sh
   CLASH_KERNEL: arm64
   CACHE_TOOLCHAIN: true
