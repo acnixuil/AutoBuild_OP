@@ -5,7 +5,7 @@ rm -rf feeds/packages/lang/golang
 git clone --depth=1 --single-branch https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang
 
 # 删除 passwall, ssr-plus 目录
-rm -rf $(find ../feeds/luci/ -maxdepth 3 -type d \( -iname "*passwall*" -o -iname "*ssr-plus*" \) -prune)
+# rm -rf $(find ../feeds/luci/ -maxdepth 3 -type d \( -iname "*passwall*" -o -iname "*ssr-plus*" \) -prune)
 
 #安装和更新软件包
 UPDATE_PACKAGE() {
@@ -34,9 +34,9 @@ UPDATE_PACKAGE "argon" "jerrykuku/luci-theme-argon" "18.06"
 UPDATE_PACKAGE "argon-config" "jerrykuku/luci-app-argon-config" "18.06"
 
 UPDATE_PACKAGE "openclash" "vernesong/OpenClash" "dev" "pkg"
-UPDATE_PACKAGE "helloworld" "sbwml/openwrt_helloworld" "v5"
-# UPDATE_PACKAGE "passwall" "xiaorouji/openwrt-passwall" "main"
-# UPDATE_PACKAGE "ssr-plus" "fw876/helloworld" "master"
+# UPDATE_PACKAGE "helloworld" "sbwml/openwrt_helloworld" "v5"
+UPDATE_PACKAGE "passwall" "xiaorouji/openwrt-passwall" "main"
+UPDATE_PACKAGE "ssr-plus" "fw876/helloworld" "master"
 # UPDATE_PACKAGE "mihomo" "morytyann/OpenWrt-mihomo" "main" "pkg"
 # UPDATE_PACKAGE "homeproxy" "VIKINGYFY/homeproxy" "dev"
 
@@ -46,8 +46,8 @@ UPDATE_PACKAGE "lucky" "gdy666/luci-app-lucky" "main"
 UPDATE_PACKAGE "adguardhome" "acnixuil/luci-app-adguardhome" "master"
 UPDATE_PACKAGE "amlogic" "ophub/luci-app-amlogic" "main"
 
-rm -rf helloworld/pdnsd
-ls helloworld
+# rm -rf helloworld/pdnsd
+# ls helloworld
 
 #更新软件包版本
 UPDATE_VERSION() {
