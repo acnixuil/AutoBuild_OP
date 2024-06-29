@@ -46,6 +46,8 @@ UPDATE_PACKAGE "lucky" "gdy666/luci-app-lucky" "main"
 UPDATE_PACKAGE "adguardhome" "acnixuil/luci-app-adguardhome" "master"
 UPDATE_PACKAGE "amlogic" "ophub/luci-app-amlogic" "main"
 
+rm -rf helloworld/pdnsd
+
 #更新软件包版本
 UPDATE_VERSION() {
 	local PKG_NAME=$1
