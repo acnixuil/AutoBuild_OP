@@ -142,7 +142,7 @@ jobs:
       run: |
         cd $OPENWRT_PATH/bin/targets/*/*
         cat config.buildinfo
-        echo "LANIP=$LAN_IP" >> $GITHUB_ENV
+        echo "KERNEL=$(cat *.manifest | grep ^kernel | cut -d- -f2 | tr -d ' ')" >> $GITHUB_ENV
         $GITHUB_WORKSPACE/scripts/cleanup_targets.sh
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
 
