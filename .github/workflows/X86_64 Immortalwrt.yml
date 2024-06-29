@@ -158,7 +158,7 @@ jobs:
 
     - name: Upload Bin Directory
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
-      uses: actions/upload-artifact@main
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.SOURCE_REPO }}-bin-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-${{ env.FILE_DATE }}
         path: ${{ env.OPENWRT_PATH }}/bin
@@ -173,13 +173,13 @@ jobs:
         cp -rf $(find ./bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
 
     - name: Upload buildinfo
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: OpenWrt_buildinfo
         path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
 
     - name: Upload package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: OpenWrt_package
         path: ${{ env.OPENWRT_PATH }}/artifact/package/

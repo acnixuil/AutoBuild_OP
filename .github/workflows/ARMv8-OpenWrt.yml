@@ -19,7 +19,7 @@ env:
   UPLOAD_FIRMWARE: false
   UPLOAD_RELEASE: true
   TZ: Asia/Shanghai
-  CLASH_KERNEL: amd64
+  CLASH_KERNEL: arm64
   CACHE_TOOLCHAIN: true
   FIRMWARE_TAG: ARMv8
 
