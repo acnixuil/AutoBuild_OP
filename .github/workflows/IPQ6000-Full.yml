@@ -119,7 +119,6 @@ jobs:
         chmod +x $DIY_SCRIPT2
         cd $OPENWRT_PATH
         $GITHUB_WORKSPACE/$DIY_SCRIPT2
-        $GITHUB_WORKSPACE/scripts/preset-adguard-core.sh $CLASH_KERNEL
         $GITHUB_WORKSPACE/scripts/preset-clash-core.sh $CLASH_KERNEL
 
     - name: Download DL Package
