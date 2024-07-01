@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # 更新golang版本
-rm -rf feeds/packages/lang/golang
-git clone --depth=1 --single-branch https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang
+rm -rf ../feeds/packages/lang/golang
+git clone --depth=1 --single-branch https://github.com/sbwml/packages_lang_golang -b 22.x ../feeds/packages/lang/golang
 
 #安装和更新软件包
 UPDATE_PACKAGE() {
