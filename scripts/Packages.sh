@@ -29,16 +29,16 @@ function git_sparse_clone() {
 }
 
 git_sparse_clone master https://github.com/vernesong/OpenClash luci-app-openclash
-git_sparse_clone main https://github.com/ophub/luci-app-amlogic luci-app-amlogic
 
 git clone --depth=1 -b main https://github.com/xiaorouji/openwrt-passwall.git package/openwrt-passwall
 git clone --depth=1 -b main https://github.com/xiaorouji/openwrt-passwall-packages.git package/openwrt-passwall-packages
 
-git clone --depth=1 -b master https://github.com/0x676e67/luci-theme-design.git package/luci-app-design-config
+git clone --depth=1 -b master https://github.com/0x676e67/luci-app-design-config.git package/luci-app-design-config
 git clone --depth=1 -b v5 https://github.com/sbwml/luci-app-mosdns.git package/luci-app-mosdns
 git clone --depth=1 -b master https://github.com/sbwml/v2ray-geodata.git package/v2ray-geodata
 git clone --depth=1 -b main https://github.com/gdy666/luci-app-lucky.git package/luci-app-lucky
 git clone --depth=1 -b master https://github.com/acnixuil/luci-app-adguardhome.git package/luci-app-adguardhome
+git clone --depth=1 -b main https://github.com/ophub/luci-app-amlogic.git package/luci-app-amlogic
 
 # 判断 REPO_URL 是否包含 'lede' 或 'ipq6000'，设置分支并运行相应的 git clone 命令
 if [[ "$REPO_URL" == *"lede"* || "$REPO_URL" == *"ipq6000"* ]]; then
