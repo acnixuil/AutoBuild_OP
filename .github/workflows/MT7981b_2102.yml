@@ -95,6 +95,8 @@ jobs:
         cd $OPENWRT_PATH
         ./scripts/feeds update -a               
         ./scripts/feeds install -a
+        rm -rf feeds/packages/lang/golang
+        git clone https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang
 
     - name: Load Custom Configuration
       run: |
