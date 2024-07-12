@@ -43,7 +43,7 @@ UPDATE_PACKAGE "mosdns" "sbwml/luci-app-mosdns" "v5"
 UPDATE_PACKAGE "v2ray-geodata" "sbwml/v2ray-geodata" "master"
 UPDATE_PACKAGE "lucky" "gdy666/luci-app-lucky" "main"
 UPDATE_PACKAGE "adguardhome" "acnixuil/luci-app-adguardhome" "master"
-
+sed -i 's#GO_PKG_TARGET_VARS.*# #g' ../feeds/packages/utils/v2dat/Makefile
 #更新软件包版本
 UPDATE_VERSION() {
 	local PKG_NAME=$1
