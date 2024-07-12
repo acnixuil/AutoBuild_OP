@@ -15,6 +15,9 @@ find ../feeds/luci/ -name '*adguardhome*' | xargs rm -rf
 find ../feeds/luci/ -name '*argon*' | xargs rm -rf
 find ../feeds/luci/ -name '*design*' | xargs rm -rf
 
+rm -rf ../feeds/packages/lang/golang
+git clone https://github.com/sbwml/packages_lang_golang -b 22.x ../feeds/packages/lang/golang
+
 # Git稀疏克隆，只克隆指定目录到本地
 function git_sparse_clone() {
   branch="$1" repourl="$2" && shift 2
@@ -26,24 +29,29 @@ function git_sparse_clone() {
 }
 
 git_sparse_clone master https://github.com/vernesong/OpenClash luci-app-openclash
-
-git clone --depth=1 -b js https://github.com/gngpp/luci-theme-design.git package/luci-theme-design
-git clone --depth=1 -b master https://github.com/gngpp/luci-app-design-config.git package/luci-app-design-config
-git clone --depth=1 -b master https://github.com/jerrykuku/luci-theme-argon.git package/luci-theme-argon
-git clone --depth=1 -b master https://github.com/jerrykuku/luci-app-argon-config.git package/luci-app-argon-config
+git_sparse_clone main https://github.com/ophub/luci-app-amlogic luci-app-amlogic
 
 git clone --depth=1 -b main https://github.com/xiaorouji/openwrt-passwall.git package/openwrt-passwall
 git clone --depth=1 -b main https://github.com/xiaorouji/openwrt-passwall-packages.git package/openwrt-passwall-packages
-git clone --depth=1 -b main https://github.com/morytyann/OpenWrt-mihomo.git package/mihomo
-git clone --depth=1 -b main https://github.com/VIKINGYFY/homeproxy.git package/homeproxy
 
+git clone --depth=1 -b master https://github.com/0x676e67/luci-theme-design.git package/luci-app-design-config
 git clone --depth=1 -b v5 https://github.com/sbwml/luci-app-mosdns.git package/luci-app-mosdns
 git clone --depth=1 -b master https://github.com/sbwml/v2ray-geodata.git package/v2ray-geodata
 git clone --depth=1 -b main https://github.com/gdy666/luci-app-lucky.git package/luci-app-lucky
 git clone --depth=1 -b master https://github.com/acnixuil/luci-app-adguardhome.git package/luci-app-adguardhome
 
-rm -rf ../feeds/packages/lang/golang
-git clone --depth=1 --single-branch https://github.com/sbwml/packages_lang_golang -b 22.x ../feeds/packages/lang/golang
+# 判断 REPO_URL 是否包含 'lede' 或 'ipq6000'，设置分支并运行相应的 git clone 命令
+if [[ "$REPO_URL" == *"lede"* || "$REPO_URL" == *"ipq6000"* ]]; then
+  git clone --depth=1 -b main https://github.com/0x676e67/luci-theme-design.git package/luci-theme-design
+  git clone --depth=1 -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git package/luci-theme-argon
+  git clone --depth=1 -b 18.06 https://github.com/jerrykuku/luci-app-argon-config.git package/luci-app-argon-config
+else
+  git clone --depth=1 -b js https://github.com/0x676e67/luci-theme-design.git package/luci-theme-design
+  git clone --depth=1 -b master https://github.com/jerrykuku/luci-theme-argon.git package/luci-theme-argon
+  git clone --depth=1 -b master https://github.com/jerrykuku/luci-app-argon-config.git package/luci-app-argon-config
+  git clone --depth=1 -b main https://github.com/morytyann/OpenWrt-mihomo.git package/mihomo
+  git clone --depth=1 -b main https://github.com/VIKINGYFY/homeproxy.git package/homeproxy
+fi
 
 echo "========================="
 echo " DIY2 配置完成……"
