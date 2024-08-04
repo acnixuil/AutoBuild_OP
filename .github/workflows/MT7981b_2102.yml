@@ -8,8 +8,8 @@ on:
 env:
   REPO_URL: https://github.com/padavanonly/immortalwrt-mt798x.git
   REPO_BRANCH: openwrt-21.02
-  # CONFIG_FILE: mt798x/pw.config
-  CONFIG_FILE: mt798x/o.config
+  CONFIG_FILE: mt798x/pw.config
+  # CONFIG_FILE: mt798x/o.config
   CUSTOM_SCRIPT: mt798x/custom.sh
   CLASH_KERNEL: arm64
   CACHE_TOOLCHAIN: true
