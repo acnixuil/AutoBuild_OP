@@ -1,0 +1,57 @@
+name: Delete Releases and Tags
+
+on:
+  workflow_dispatch:
+    inputs:
+      delete_releases:
+        description: 'Delete Releases (true or false)'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
+      delete_tags:
+        description: 'Delete Tags (true or false)'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
+
+jobs:
+  delete_releases_and_tags:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Delete Releases
+        if: ${{ github.event.inputs.delete_releases == 'true' }}
+        run: |
+          # 删除所有 Release
+          releases=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/releases")
+          for release in $(echo "$releases" | jq -r '.[].id'); do
+            curl -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/releases/$release"
+          done
+
+      - name: Delete Tags
+        if: ${{ github.event.inputs.delete_tags == 'true' }}
+        run: |
+          # 删除所有 Tag
+          tags=$(git for-each-ref --format '%(refname:short)' refs/tags)
+          for tag in $tags; do
+            git push --delete origin $tag
+          done
+  clean:
+    if: ${{ always() }}
+    needs: [delete_releases_and_tags]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Delete workflow runs
+      uses: Jejz168/delete-workflow-runs@main
+      with:
+        retain_days: 1
+        keep_minimum_runs: 1

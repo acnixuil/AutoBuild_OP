@@ -1,0 +1,12 @@
+
+config global
+	option primary '#5e90b8'
+	option dark_primary '#3c5e91'
+	option blur_dark '10'
+	option transparency_dark '0.5'
+	option save '保存更改'
+	option online_wallpaper 'none'
+	option blur '7'
+	option transparency '0.4'
+	option mode 'normal'
+

@@ -1,0 +1,4 @@
+config global
+	option mode 'normal'
+	option navbar_proxy 'passwall'
+	option navbar 'close'
