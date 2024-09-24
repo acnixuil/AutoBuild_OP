@@ -1,0 +1,216 @@
+name: IPQ6000-k66-
+
+on:
+  workflow_dispatch:
+    inputs:
+      subnet:
+        description: "默认IP地址:192.168.[].1"
+        required: true
+        default: "2"
+
+env:
+  REPO_URL: https://github.com/King-Of-Knights/openwrt-6.x.git
+  REPO_BRANCH: main
+  CONFIG_FILE: ipq6000/k66_m2.config
+  CUSTOM_SCRIPT: ipq6000/custom.sh
+  CLASH_KERNEL: arm64
+  CACHE_TOOLCHAIN: true
+  FIRMWARE_RELEASE: true
+  FIRMWARE_TAG: ipq6000
+  TZ: Asia/Shanghai
+
+jobs:
+  Build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Check Server Performance
+      run: |
+        echo "警告⚠"
+        echo "分配的服务器性能有限，若选择的插件过多，务必注意CPU性能！"
+        echo -e "已知CPU型号(降序): 7763，8370C，8272CL，8171M，E5-2673\n"
+        echo "--------------------------CPU信息--------------------------"
+        echo "CPU物理数量: $(nproc --all | grep -c '^')"
+        echo "CPU核心数量: $(nproc)"
+        echo -e "CPU型号信息:$(awk -F: '/model name/ {print $2; exit}' /proc/cpuinfo)\n"
+        echo "--------------------------内存信息--------------------------"
+        echo "已安装内存详细信息: $(sudo lshw -short -C memory | grep GiB)\n"
+        echo "--------------------------硬盘信息--------------------------"
+        echo "硬盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l)" && df -hT
+
+    - name: Free Disk Space
+      uses: endersonmenezes/free-disk-space@main
+      with:
+        remove_android: true
+        remove_dotnet: true
+        remove_haskell: true
+        remove_tool_cache: true
+        remove_swap: true
+        remove_packages: >
+          android* azure* clang* dotnet* firefox* ghc* golang* google* libclang* 
+          libgl1* lld* llvm* microsoft* mongodb* mono* mysql* nodejs* openjdk* 
+          php* postgresql* powershell* snap* temurin* yarn* zulu*
+        remove_packages_one_command: true
+        remove_folders: >
+          /etc/apt/sources.list.d* /etc/mono* /etc/mysql* /usr/include/linux/android* 
+          /usr/lib/llvm* /usr/lib/mono* /usr/local/lib/android* /usr/local/lib/node_modules* 
+          /usr/local/share/chromium* /usr/local/share/powershell* /usr/local/share/vcpkg/ports/azure* 
+          /usr/local/share/vcpkg/ports/google* /usr/local/share/vcpkg/ports/libpq/android* 
+          /usr/local/share/vcpkg/ports/llvm* /usr/local/share/vcpkg/ports/mysql* 
+          /usr/local/share/vcpkg/ports/snap* /usr/share/azure* /usr/share/dotnet* 
+          /usr/share/glade* /usr/share/miniconda* /usr/share/php* /usr/share/swift 
+          /var/lib/mysql* /var/log/azure*
+        testing: false
+
+    - name: Initialization Environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        docker rmi $(docker images -q)
+        sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d /usr/local/lib/android $AGENT_TOOLSDIRECTORY
+        sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
+        sudo -E apt-get -y update
+        sudo -E apt-get -y install $(curl -fsSL is.gd/depends_ubuntu_2204) rename
+        sudo -E apt-get -y autoremove --purge
+        sudo -E apt-get -y clean
+        sudo timedatectl set-timezone "$TZ"
+
+    - name: Combine Disks
+      uses: easimon/maximize-build-space@master
+      with:
+        swap-size-mb: 1024
+        temp-reserve-mb: 100
+        root-reserve-mb: 1024
+
+    - name: Checkout
+      uses: actions/checkout@main
+
+    - name: Clone Source Code
+      run: |
+        git clone --depth=1 -b $REPO_BRANCH $REPO_URL openwrt
+        cd openwrt
+        echo "OPENWRT_PATH=$PWD" >> $GITHUB_ENV
+
+    - name: Generate Variables
+      run: |
+        cp $CONFIG_FILE $OPENWRT_PATH/.config
+        cd $OPENWRT_PATH
+        make defconfig > /dev/null 2>&1
+        echo "DEVICE_TARGET=$(grep CONFIG_TARGET_BOARD .config | cut -d '"' -f 2)" >> $GITHUB_ENV
+        echo "DEVICE_SUBTARGET=$(grep CONFIG_TARGET_SUBTARGET .config | cut -d '"' -f 2)" >> $GITHUB_ENV
+
+    - name: Cache Toolchain
+      if: env.CACHE_TOOLCHAIN == 'true'
+      uses: HiGarfield/cachewrtbuild@main
+      with:
+        ccache: false
+        mixkey: ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
+        prefix: ${{ env.OPENWRT_PATH }}
+
+    - name: Install Feeds
+      run: |
+        cd $OPENWRT_PATH
+        ./scripts/feeds update -a               
+        ./scripts/feeds install -a
+        
+    - name: Set custom subnet and update script
+      run: |
+        SUBNET=${{ github.event.inputs.subnet }}
+        cat << EOF > $CUSTOM_SCRIPT
+        #!/bin/bash
+        sed -i 's/192\\.168\\.1\\.[0-9]\\{1,3\\}/192.168.${SUBNET}.1/g' base-files/files/bin/config_generate
+        sed -i "s/\.ssid=.*/\.ssid=99Pass1/g" network/config/wifi-scripts/files/lib/wifi/mac80211.uc
+        echo "完成自定义设置"
+        EOF
+
+    - name: Load Custom Configuration
+      run: |
+        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE $OPENWRT_PATH/.config
+        chmod +x $GITHUB_WORKSPACE/scripts/*.sh $CUSTOM_SCRIPT
+        cd $OPENWRT_PATH/package/
+        $GITHUB_WORKSPACE/scripts/Packages.sh
+        $GITHUB_WORKSPACE/scripts/Handles.sh
+        $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
+
+    - name: Download DL Package
+      run: |
+        cd $OPENWRT_PATH
+        make defconfig
+        make download -j8
+        find dl -size -1024c -exec rm -f {} \;
+
+    - name: Compile Firmware
+      id: compile
+      run: |
+        cd $OPENWRT_PATH
+        mkdir -p files/etc/uci-defaults
+        cp $GITHUB_WORKSPACE/scripts/init-settings.sh files/etc/uci-defaults/99-init-settings
+        make -j$(nproc) || make -j1 || make -j1 V=s
+        echo "status=success" >> $GITHUB_OUTPUT
+
+    - name: Check Space Usage
+      if: (!cancelled())
+      run: df -hT
+
+    - name: Upload Bin Directory
+      if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
+      uses: actions/upload-artifact@main
+      with:
+        name: ${{ env.REPO_URL }}-bin-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
+        path: ${{ env.OPENWRT_PATH }}/bin
+
+    - name: Prepare artifact
+      run: |
+        cd $OPENWRT_PATH
+        mkdir -p ./artifact/package ./artifact/buildinfo
+        cp -rf $(find ./bin/packages/ -type f -name "*.ipk") ./artifact/package/
+        cp -rf $(find ./bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
+
+    - name: Upload buildinfo
+      uses: actions/upload-artifact@main
+      with:
+        name: OpenWrt_buildinfo
+        path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
+
+    - name: Upload package
+      uses: actions/upload-artifact@main
+      with:
+        name: OpenWrt_package
+        path: ${{ env.OPENWRT_PATH }}/artifact/package/
+
+    - name: Organize Files
+      if: steps.compile.outputs.status == 'success'
+      run: |
+        cd $OPENWRT_PATH/bin/targets/*/*
+        echo "KERNEL=$(grep ^kernel *.manifest | cut -d- -f2 | tr -d ' ')" >> $GITHUB_ENV
+        echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
+        $GITHUB_WORKSPACE/scripts/cleanup_targets.sh
+        rename -v 's/^/k66-/' *
+
+    - name: Upload Firmware To Release
+      if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
+      uses: ncipollo/release-action@main
+      with:
+        name: R$(date +"%Y-%m-%d") for ${{ env.FIRMWARE_TAG }}
+        tag: ${{ env.FIRMWARE_TAG }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: ${{ env.FIRMWARE_PATH }}/*
+        body: |
+          **This is OpenWrt Firmware for ${{ env.FIRMWARE_TAG }}**
+          ### 📒 固件信息
+          - 💻 平台架构: ${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
+          - ⚽ 固件源码: ${{ env.REPO_URL }}
+          - 💝 源码分支: ${{ env.REPO_BRANCH }}
+          - 🚀 内核版本: ${{ env.KERNEL }}
+          - 🌐 默认地址: 192.168.2.1
+          - 🔑 默认密码: 
+
+    - name: Send Telegram Message
+      run: |
+        CURRENT_DATE_TIME=$(TZ='Asia/Shanghai' date +'%Y/%m/%d %r')
+        MESSAGE="${{ env.FIRMWARE_TAG }} 固件编译完成
+        发布时间：$CURRENT_DATE_TIME
+        发布页面：https://github.com/acnixuil/AutoBuild_OP/releases/tag/${{ env.FIRMWARE_TAG }}"
+        curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d text="$MESSAGE"
