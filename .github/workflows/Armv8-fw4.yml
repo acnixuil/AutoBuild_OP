@@ -143,35 +143,13 @@ jobs:
         echo "status=success" >> $GITHUB_OUTPUT
         echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
         echo "FILE_DATE=$(date +"%Y.%m.%d")" >> $GITHUB_ENV
-
-    - name: Check Space Usage
-      if: (!cancelled())
-      run: df -hT
-
-    - name: Upload Bin Directory
-      if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
-      uses: actions/upload-artifact@main
-      with:
-        name: ${{ env.SOURCE_REPO }}-bin-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-${{ env.FILE_DATE }}
-        path: ${{ env.OPENWRT_PATH }}/bin
-
-    - name: Organize Files
-      if: steps.compile.outputs.status == 'success'
-      run: |
-        cd $OPENWRT_PATH/bin/targets/*/*
-        cat sha256sums
-        cp $OPENWRT_PATH/.config build.config
-        mv -f $OPENWRT_PATH/bin/packages/*/*/*.ipk packages
-        tar -zcf Packages.tar.gz packages
-        rm -rf packages feeds.buildinfo version.buildinfo
-        ls
-        echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
+        ls $OPENWRT_PATH/bin/targets/*/*
 
     - name: Package OpenWrt Firmware
       uses: ophub/flippy-openwrt-actions@main
       env:
         SCRIPT_REPO_URL: acnixuil/openwrt_packit
-        OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
+        OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*immortalwrt-armsr-armv8-generic-rootfs.tar.gz
         PACKAGE_SOC: s905d
         WHOAMI: Coldfish
         DISTRIB_REVISION: ${OPENWRT_VER} (By @Coldfish build $(TZ=UTC-8 date "+%Y-%m-%d %H:%M"))
@@ -190,4 +168,4 @@ jobs:
         allowUpdates: true
         tag: ${{ env.FIRMWARE_TAG }}
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: ${{ env.FIRMWARE_PATH }}/*.img.gz
+        artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*.img.gz
