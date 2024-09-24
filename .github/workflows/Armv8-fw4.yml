@@ -227,7 +227,7 @@ jobs:
       uses: ophub/flippy-openwrt-actions@main
       env:
         SCRIPT_REPO_URL: acnixuil/openwrt_packit
-        OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
+        OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*immortalwrt-armsr-armv8-generic-rootfs.tar.gz
         PACKAGE_SOC: s905d
         WHOAMI: Coldfish
         DISTRIB_REVISION: ${OPENWRT_VER} (By @Coldfish build $(TZ=UTC-8 date "+%Y-%m-%d %H:%M"))
