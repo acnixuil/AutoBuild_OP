@@ -6,7 +6,6 @@ on:
   #   - cron: 0 20 * * *
 
 env:
-env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
   REPO_BRANCH: openwrt-23.05
   CONFIG_FILE: n1/n1-fw4.config
