@@ -166,68 +166,11 @@ jobs:
         rm -rf packages feeds.buildinfo version.buildinfo
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
 
-    - name: Upload Firmware To Artifact
-      if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE != 'true'
-      uses: actions/upload-artifact@main
-      with:
-        name: ${{ env.SOURCE_REPO }}-firmware-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-${{ env.FILE_DATE }}
-        path: ${{ env.FIRMWARE_PATH }}
-
-    - name: Upload Firmware To Release
-      if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
-      uses: ncipollo/release-action@v1
-      with:
-        name: R${{ env.DATE }} for ${{ env.FIRMWARE_TAG }}
-        allowUpdates: true
-        tag: ${{ env.FIRMWARE_TAG }}
-        token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: ${{ env.FIRMWARE_PATH }}/*
-
-  Package:
-    needs: [Build]
-    runs-on: ubuntu-22.04
-
-    env:
-      COMMIT_AUTHOR: ${{ needs.Build.outputs.COMMIT_AUTHOR }}
-      COMMIT_DATE: ${{ needs.Build.outputs.COMMIT_DATE }}
-      COMMIT_MESSAGE: ${{ needs.Build.outputs.COMMIT_MESSAGE }}
-      COMMIT_HASH: ${{ needs.Build.outputs.COMMIT_HASH }}
-      DEVICE_TARGET: ${{ needs.Build.outputs.DEVICE_TARGET }}
-      DEVICE_SUBTARGET: ${{ needs.Build.outputs.DEVICE_SUBTARGET }}
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@main
-
-    - name: Initialization Environment
-      env:
-        DEBIAN_FRONTEND: noninteractive
-      run: |
-        docker rmi $(docker images -q)
-        sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d /usr/local/lib/android $AGENT_TOOLSDIRECTORY
-        sudo -E apt-get -y update
-        sudo -E apt-get -y install $(curl -fsSL is.gd/depends_ubuntu_2204)
-        sudo -E apt-get -y autoremove --purge
-        sudo -E apt-get -y clean
-        sudo timedatectl set-timezone "$TZ"
-
-    - name: Download Armvirt Firmware
-      id: download
-      run: |
-        FIRMWARE_PATH=openwrt/bin/targets/armvirt/64
-        [ -d $FIRMWARE_PATH ] || mkdir -p $FIRMWARE_PATH
-        cd $FIRMWARE_PATH
-        wget -q $(curl -s "https://api.github.com/repos/$GITHUB_REPOSITORY/releases" | grep '"name": "immortalwrt.*rootfs\.tar\.gz"' | awk -F '"' '{print $4}')
-        echo "status=success" >> $GITHUB_OUTPUT
-        echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
-        echo "DATE1=$(date +"%y.%m.%d")" >> $GITHUB_ENV
-
     - name: Package OpenWrt Firmware
-      if: steps.download.outputs.status == 'success'
       uses: ophub/flippy-openwrt-actions@main
       env:
         SCRIPT_REPO_URL: acnixuil/openwrt_packit
-        OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*immortalwrt-armsr-armv8-generic-rootfs.tar.gz
+        OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
         PACKAGE_SOC: s905d
         WHOAMI: Coldfish
         DISTRIB_REVISION: ${OPENWRT_VER} (By @Coldfish build $(TZ=UTC-8 date "+%Y-%m-%d %H:%M"))
@@ -238,19 +181,12 @@ jobs:
         ENABLE_WIFI_K504: 0
         ENABLE_WIFI_K510: 0
 
-    - name: Upload OpenWrt To Artifact
-      if: env.PACKAGED_STATUS == 'success' && env.OPENWRT_RELEASE != 'true'
-      uses: kittaakos/upload-artifact-as-is@master
-      with:
-        path: ${{ env.PACKAGED_OUTPUTPATH }}
-
-    - name: Upload OpenWrt To Release
-      if: env.PACKAGED_STATUS == 'success' && env.OPENWRT_RELEASE == 'true'
+    - name: Upload Firmware To Release
+      if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
       uses: ncipollo/release-action@v1
       with:
-        name: R${{ env.DATE }} for ${{ env.OPENWRT_TAG }}
+        name: R${{ env.DATE }} for ${{ env.FIRMWARE_TAG }}
         allowUpdates: true
-        removeArtifacts: true
-        tag: ${{ env.OPENWRT_TAG }}
+        tag: ${{ env.FIRMWARE_TAG }}
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
+        artifacts: ${{ env.FIRMWARE_PATH }}/*.img.gz
