@@ -32,6 +32,10 @@ if [ -d "./luci-app-openclash" ]; then
 	GEO_IP="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip-lite.dat"
 	GEO_SITE="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat"
 	GEO_MMDB="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb"
+    UI="https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.tar.gz"
+
+	rm -rf ./luci-app-openclash/root/usr/share/openclash/ui/metacubexd/*
+    curl -sL $UI | tar -xz --strip-components=1 -C ./luci-app-openclash/root/usr/share/openclash/ui/metacubexd metacubexd-gh-pages
 
 	cd ./luci-app-openclash/root/etc/openclash/
 	curl -sL -o Country.mmdb $GEO_MMDB && echo "Country.mmdb done!"
