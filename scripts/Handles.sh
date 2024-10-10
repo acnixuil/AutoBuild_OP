@@ -32,10 +32,12 @@ if [ -d "./luci-app-openclash" ]; then
 	GEO_IP="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip-lite.dat"
 	GEO_SITE="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat"
 	GEO_MMDB="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb"
-    UI="https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.tar.gz"
+    # UI="https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.tar.gz"
+    UI="https://github.com/MetaCubeX/metacubexd/releases/download/v1.151.0/compressed-dist.tgz"
 
 	rm -rf ./luci-app-openclash/root/usr/share/openclash/ui/metacubexd/*
-    curl -sL $UI | tar -xz --strip-components=1 -C ./luci-app-openclash/root/usr/share/openclash/ui/metacubexd metacubexd-gh-pages
+    # curl -sL $UI | tar -xz --strip-components=1 -C ./luci-app-openclash/root/usr/share/openclash/ui/metacubexd metacubexd-gh-pages
+    curl -sL $UI | tar -xz -C ./luci-app-openclash/root/usr/share/openclash/ui/metacubexd
 
 	cd ./luci-app-openclash/root/etc/openclash/
 	curl -sL -o Country.mmdb $GEO_MMDB && echo "Country.mmdb done!"
@@ -56,7 +58,9 @@ if [ -d "./mihomo" ]; then
     GEO_IP="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip-lite.dat"
     GEO_SITE="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat"
     GEO_MMDB="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb"
-    UI="https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.tar.gz"
+    # latest版本
+    # UI="https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.tar.gz" 
+    UI="https://github.com/MetaCubeX/metacubexd/releases/download/v1.151.0/compressed-dist.tgz"
     
     # 创建运行目录
     mkdir -p ./mihomo/luci-app-mihomo/root/etc/mihomo/run/ui/metacubexd
@@ -69,7 +73,9 @@ if [ -d "./mihomo" ]; then
     
     # 下载、解压和移动UI资源
     echo "下载并解压UI资源..."
-    curl -sL $UI | tar -xz --strip-components=1 -C ./ui/metacubexd metacubexd-gh-pages
+    # latest版本
+    # curl -sL $UI | tar -xz --strip-components=1 -C ./ui/metacubexd metacubexd-gh-pages 
+    curl -sL $UI | tar -xz -C ./ui/metacubexd
     echo "UI资源更新完成"
     
     echo "Mihomo数据和UI资源更新完成"
