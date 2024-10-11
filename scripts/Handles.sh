@@ -68,8 +68,8 @@ if [ -d "./mihomo" ]; then
     
     # 下载并保存数据文件
     curl -sL -o ASN.mmdb $GEO_MMDB && echo "ASN.mmdb done!"
-    curl -sL -o geosite.dat $GEO_SITE && echo "GeoSite.dat done!"
-    curl -sL -o geoip.dat $GEO_IP && echo "GeoIP.dat done!"
+    curl -sL -o GeoSite.dat $GEO_SITE && echo "GeoSite.dat done!"
+    curl -sL -o GeoIP.dat $GEO_IP && echo "GeoIP.dat done!"
     
     # 下载、解压和移动UI资源
     echo "下载并解压UI资源..."
