@@ -8,7 +8,7 @@ on:
         default: "2"
 
 env:
-  REPO_URL: https://github.com/LiBwrt-op/openwrt-6.x.git
+  REPO_URL: https://github.com/King-Of-Knights/openwrt-6.x.git
   REPO_BRANCH: main
   CONFIG_FILE: ipq6000/k66_m2.config
   # CONFIG_FILE: ipq6000/k66_m2_new.config
