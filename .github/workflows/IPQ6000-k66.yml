@@ -8,7 +8,7 @@ on:
         default: "2"
 
 env:
-  REPO_URL: https://github.com/King-Of-Knights/openwrt-6.x.git
+  REPO_URL: https://github.com/acnixuil/openwrt-6.x.git
   REPO_BRANCH: main
   CONFIG_FILE: ipq6000/k66_m2.config
   # CONFIG_FILE: ipq6000/k66_m2_new.config
@@ -95,7 +95,7 @@ jobs:
       run: |
         cp $CONFIG_FILE $OPENWRT_PATH/.config
         cd $OPENWRT_PATH
-        # make defconfig > /dev/null 2>&1
+        make defconfig > /dev/null 2>&1
         echo "DEVICE_TARGET=$(grep CONFIG_TARGET_BOARD .config | cut -d '"' -f 2)" >> $GITHUB_ENV
         echo "DEVICE_SUBTARGET=$(grep CONFIG_TARGET_SUBTARGET .config | cut -d '"' -f 2)" >> $GITHUB_ENV
 
@@ -135,7 +135,7 @@ jobs:
     - name: Download DL Package
       run: |
         cd $OPENWRT_PATH
-        # make defconfig
+        make defconfig
         make download -j8
         find dl -size -1024c -exec rm -f {} \;
 
