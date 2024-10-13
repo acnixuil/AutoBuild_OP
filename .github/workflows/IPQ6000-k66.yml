@@ -8,7 +8,7 @@ on:
         default: "2"
 
 env:
-  REPO_URL: https://github.com/King-Of-Knights/openwrt-6.x.git
+  REPO_URL: https://github.com/LiBwrt-op/openwrt-6.x.git
   REPO_BRANCH: main
   CONFIG_FILE: ipq6000/k66_m2.config
   # CONFIG_FILE: ipq6000/k66_m2_new.config
@@ -87,13 +87,9 @@ jobs:
 
     - name: Clone Source Code
       run: |
-        git clone -b $REPO_BRANCH $REPO_URL openwrt
+        git clone --depth=1 --single-branch -b $REPO_BRANCH $REPO_URL openwrt
         cd openwrt
         echo "OPENWRT_PATH=$PWD" >> $GITHUB_ENV
-        
-        # 提取指定的提交，以允许回退
-        git fetch origin 7ea086bb8942781853a1c752f0a60ea6b68bc72c
-        git reset --hard 7ea086bb8942781853a1c752f0a60ea6b68bc72c
 
     - name: Generate Variables
       run: |
