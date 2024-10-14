@@ -90,22 +90,22 @@ jobs:
         git clone --depth=1 --single-branch -b $REPO_BRANCH $REPO_URL openwrt
         cd openwrt
         echo "OPENWRT_PATH=$PWD" >> $GITHUB_ENV
-    #
-    # - name: Generate Variables
-    #   run: |
-    #     cp $CONFIG_FILE $OPENWRT_PATH/.config
-    #     cd $OPENWRT_PATH
-    #     make defconfig > /dev/null 2>&1
-    #     echo "DEVICE_TARGET=$(grep CONFIG_TARGET_BOARD .config | cut -d '"' -f 2)" >> $GITHUB_ENV
-    #     echo "DEVICE_SUBTARGET=$(grep CONFIG_TARGET_SUBTARGET .config | cut -d '"' -f 2)" >> $GITHUB_ENV
-    #
-    # - name: Cache Toolchain
-    #   if: env.CACHE_TOOLCHAIN == 'true'
-    #   uses: HiGarfield/cachewrtbuild@main
-    #   with:
-    #     ccache: false
-    #     mixkey: ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
-    #     prefix: ${{ env.OPENWRT_PATH }}
+
+    - name: Generate Variables
+      run: |
+        cp $CONFIG_FILE $OPENWRT_PATH/.config
+        cd $OPENWRT_PATH
+        make defconfig > /dev/null 2>&1
+        echo "DEVICE_TARGET=$(grep CONFIG_TARGET_BOARD .config | cut -d '"' -f 2)" >> $GITHUB_ENV
+        echo "DEVICE_SUBTARGET=$(grep CONFIG_TARGET_SUBTARGET .config | cut -d '"' -f 2)" >> $GITHUB_ENV
+
+    - name: Cache Toolchain
+      if: env.CACHE_TOOLCHAIN == 'true'
+      uses: HiGarfield/cachewrtbuild@main
+      with:
+        ccache: false
+        mixkey: ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
+        prefix: ${{ env.OPENWRT_PATH }}
 
     - name: Install Feeds
       run: |
