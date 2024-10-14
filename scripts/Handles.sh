@@ -115,7 +115,7 @@ fi
 
 cd $GITHUB_WORKSPACE/openwrt/
 # zerotier
-sed -i 's/services/vpn/g' feeds/luci/applications/luci-app-zerotier/root/usr/share/luci/menu.d/luci-app-zerotier.json
+sed -i 's/vpn/services/g' feeds/luci/applications/luci-app-zerotier/root/usr/share/luci/menu.d/luci-app-zerotier.json
 # 改名
 sed -i 's/msgstr "UPnP IGD 和 PCP\/NAT-PMP"/msgstr "UPnP"/' feeds/luci/applications/luci-app-upnp/po/zh_Hans/upnp.po
 
