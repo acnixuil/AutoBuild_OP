@@ -3,15 +3,14 @@ on:
   workflow_dispatch:
     inputs:
       subnet:
-        description: "默认IP地址:192.168.[].1"
+        description: "默认IP地址:192.168.(X).1"
         required: true
         default: "2"
 
 env:
   REPO_URL: https://github.com/LiBwrt-op/openwrt-6.x.git
   REPO_BRANCH: main
-  # CONFIG_FILE: ipq6000/k66_m2.config
-  CONFIG_FILE: ipq6000/k66_m2_old.config
+  CONFIG_FILE: ipq6000/k66_wifi_m2.config
   CUSTOM_SCRIPT: ipq6000/custom.sh
   CLASH_KERNEL: arm64
   CACHE_TOOLCHAIN: true
