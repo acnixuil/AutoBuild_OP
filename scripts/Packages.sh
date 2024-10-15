@@ -15,8 +15,8 @@ find ../feeds/luci/ -name '*adguardhome*' | xargs rm -rf
 find ../feeds/luci/ -name '*argon*' | xargs rm -rf
 find ../feeds/luci/ -name '*design*' | xargs rm -rf
 
-rm -rf ../feeds/packages/lang/golang
-git clone https://github.com/sbwml/packages_lang_golang -b 22.x ../feeds/packages/lang/golang
+rm -rf $GITHUB_WORKSPACE/openwrt/feeds/packages/lang/golang
+git clone https://github.com/sbwml/packages_lang_golang -b 23.x $GITHUB_WORKSPACE/openwrt/feeds/packages/lang/golang
 
 # Git稀疏克隆，只克隆指定目录到本地
 function git_sparse_clone() {
@@ -37,6 +37,7 @@ git clone --depth=1 --single-branch -b v5 https://github.com/sbwml/luci-app-mosd
 git clone --depth=1 --single-branch -b master https://github.com/sbwml/v2ray-geodata.git v2ray-geodata
 git clone --depth=1 --single-branch -b main https://github.com/gdy666/luci-app-lucky.git luci-app-lucky
 git clone --depth=1 --single-branch -b master https://github.com/acnixuil/luci-app-adguardhome.git luci-app-adguardhome
+git clone --depth=1 --single-branch -b main https://github.com/asvow/luci-app-tailscale luci-app-tailscale
 
 # 判断 REPO_URL 是否包含 'lede' 或 'ipq6000'，设置分支并运行相应的 git clone 命令
 if [[ "$REPO_URL" == *"lede"* || "$REPO_URL" == *"ipq6000"* ]]; then

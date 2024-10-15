@@ -114,6 +114,7 @@ if [ -d "./luci-app-amlogic" ]; then
 fi
 
 cd $GITHUB_WORKSPACE/openwrt/
+sed -i '/\/etc\/init\.d\/tailscale/d;/\/etc\/config\/tailscale/d;' feeds/packages/net/tailscale/Makefile
 # zerotier
 sed -i 's/vpn/services/g' feeds/luci/applications/luci-app-zerotier/root/usr/share/luci/menu.d/luci-app-zerotier.json
 # 改名
