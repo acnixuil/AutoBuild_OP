@@ -141,9 +141,9 @@ jobs:
         EOF
         echo "开始补全tailscale配置文件"
         mkdir -p $OPENWRT_PATH/files/etc/init.d
-        cp feeds/packages/net/tailscale/files/tailscale.init files/etc/init.d/tailscale
+        cp $OPENWRT_PATH/feeds/packages/net/tailscale/files/tailscale.init $OPENWRT_PATH/files/etc/init.d/tailscale
         mkdir -p $OPENWRT_PATH/files/etc/config
-        cp feeds/packages/net/tailscale/files/tailscale.conf files/etc/config/tailscale      
+        cp $OPENWRT_PATH/feeds/packages/net/tailscale/files/tailscale.conf $OPENWRT_PATH/files/etc/config/tailscale      
         echo "已完成修补" 
 
     - name: Display updated custom script
