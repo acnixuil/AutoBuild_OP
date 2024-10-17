@@ -122,13 +122,6 @@ jobs:
         sed -i "/htbsscoex=\"0\"/{n; s/ssid=\".*\"/ssid=\"万事大吉daji\"/}" mtk/applications/mtwifi-cfg/files/mtwifi.sh
         echo "完成自定义设置"
         EOF
-        echo "开始补全tailscale配置文件"
-        mkdir -p $OPENWRT_PATH/files/etc/init.d
-        cp -f $OPENWRT_PATH/feeds/packages/net/tailscale/files/tailscale.init $OPENWRT_PATH/files/etc/init.d/tailscale
-        mkdir -p $OPENWRT_PATH/files/etc/config
-        cp -f $OPENWRT_PATH/feeds/packages/net/tailscale/files/tailscale.conf $OPENWRT_PATH/files/etc/config/tailscale
-        chmod +x $OPENWRT_PATH/files/etc/init.d/tailscale
-        echo "已完成修补"
 
     - name: Load Custom Configuration
       run: |
@@ -138,6 +131,15 @@ jobs:
         $GITHUB_WORKSPACE/scripts/Packages.sh
         $GITHUB_WORKSPACE/scripts/Handles.sh
         $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
+        
+        $GITHUB_WORKSPACE/scripts/update-tailscale.sh
+        echo "开始补全tailscale配置文件"
+        mkdir -p $OPENWRT_PATH/files/etc/init.d
+        cp -f $OPENWRT_PATH/feeds/packages/net/tailscale/files/tailscale.init $OPENWRT_PATH/files/etc/init.d/tailscale
+        mkdir -p $OPENWRT_PATH/files/etc/config
+        cp -f $OPENWRT_PATH/feeds/packages/net/tailscale/files/tailscale.conf $OPENWRT_PATH/files/etc/config/tailscale
+        chmod +x $OPENWRT_PATH/files/etc/init.d/tailscale
+        echo "已完成修补"
 
     - name: Download DL Package
       run: |
