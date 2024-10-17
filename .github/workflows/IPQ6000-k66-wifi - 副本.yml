@@ -121,7 +121,13 @@ jobs:
         sed -i "s/\.ssid=.*/\.ssid=99Pass1/g" network/config/wifi-scripts/files/lib/wifi/mac80211.uc
         echo "完成自定义设置"
         EOF
-
+        echo "开始补全tailscale配置文件"
+        mkdir -p $OPENWRT_PATH/files/etc/init.d
+        cp feeds/packages/net/tailscale/files/tailscale.init files/etc/init.d/tailscale
+        mkdir -p $OPENWRT_PATH/files/etc/config
+        cp feeds/packages/net/tailscale/files/tailscale.conf files/etc/config/tailscale      
+        echo "已完成修补"  
+         
     - name: Load Custom Configuration
       run: |
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE $OPENWRT_PATH/.config
@@ -144,6 +150,7 @@ jobs:
         cd $OPENWRT_PATH
         mkdir -p files/etc/uci-defaults
         cp $GITHUB_WORKSPACE/scripts/init-settings.sh files/etc/uci-defaults/99-init-settings
+        cp $GITHUB_WORKSPACE/scripts/init-tailscale.sh files/etc/uci-defaults/init-tailscale
         make -j$(nproc) || make -j1 || make -j1 V=s
         echo "status=success" >> $GITHUB_OUTPUT
 
