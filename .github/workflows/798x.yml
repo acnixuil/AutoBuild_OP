@@ -10,7 +10,6 @@ on:
 env:
   REPO_URL: https://github.com/padavanonly/immortalwrt-mt798x-23.05.git
   REPO_BRANCH: openwrt-23.05
-  # CONFIG_FILE: ipq6000/k66_m2.config
   CONFIG_FILE: mt798x/7981-2305.config
   CUSTOM_SCRIPT: mt798x/custom.sh
   CLASH_KERNEL: arm64
@@ -123,6 +122,13 @@ jobs:
         sed -i "/htbsscoex=\"0\"/{n; s/ssid=\".*\"/ssid=\"万事大吉daji\"/}" mtk/applications/mtwifi-cfg/files/mtwifi.sh
         echo "完成自定义设置"
         EOF
+        echo "开始补全tailscale配置文件"
+        mkdir -p $OPENWRT_PATH/files/etc/init.d
+        cp -f $OPENWRT_PATH/feeds/packages/net/tailscale/files/tailscale.init $OPENWRT_PATH/files/etc/init.d/tailscale
+        mkdir -p $OPENWRT_PATH/files/etc/config
+        cp -f $OPENWRT_PATH/feeds/packages/net/tailscale/files/tailscale.conf $OPENWRT_PATH/files/etc/config/tailscale
+        chmod +x $OPENWRT_PATH/files/etc/init.d/tailscale
+        echo "已完成修补"
 
     - name: Load Custom Configuration
       run: |
@@ -146,6 +152,7 @@ jobs:
         cd $OPENWRT_PATH
         mkdir -p files/etc/uci-defaults
         cp $GITHUB_WORKSPACE/scripts/init-settings.sh files/etc/uci-defaults/99-init-settings
+        cp $GITHUB_WORKSPACE/scripts/init-tailscale.sh files/etc/uci-defaults/init-tailscale
         make -j$(nproc) || make -j1 || make -j1 V=s
         echo "status=success" >> $GITHUB_OUTPUT
 

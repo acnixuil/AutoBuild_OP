@@ -141,9 +141,9 @@ jobs:
         EOF
         echo "开始补全tailscale配置文件"
         mkdir -p $OPENWRT_PATH/files/etc/init.d
-        cp $OPENWRT_PATH/feeds/packages/net/tailscale/files/tailscale.init $OPENWRT_PATH/files/etc/init.d/tailscale
+        cp -f $OPENWRT_PATH/feeds/packages/net/tailscale/files/tailscale.init $OPENWRT_PATH/files/etc/init.d/tailscale
         mkdir -p $OPENWRT_PATH/files/etc/config
-        cp $OPENWRT_PATH/feeds/packages/net/tailscale/files/tailscale.conf $OPENWRT_PATH/files/etc/config/tailscale
+        cp -f $OPENWRT_PATH/feeds/packages/net/tailscale/files/tailscale.conf $OPENWRT_PATH/files/etc/config/tailscale
         chmod +x $OPENWRT_PATH/files/etc/init.d/tailscale
         echo "已完成修补"
 
@@ -174,6 +174,7 @@ jobs:
         cd $OPENWRT_PATH
         mkdir -p files/etc/uci-defaults
         cp $GITHUB_WORKSPACE/scripts/init-settings.sh files/etc/uci-defaults/99-init-settings
+        cp $GITHUB_WORKSPACE/scripts/init-tailscale.sh files/etc/uci-defaults/init-tailscale
         echo -e "$(nproc) thread compile"
         make -j$(nproc) || make -j1 || make -j1 V=s
         echo "status=success" >> $GITHUB_OUTPUT
