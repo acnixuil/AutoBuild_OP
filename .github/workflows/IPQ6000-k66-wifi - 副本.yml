@@ -125,7 +125,8 @@ jobs:
         mkdir -p $OPENWRT_PATH/files/etc/init.d
         cp $OPENWRT_PATH/feeds/packages/net/tailscale/files/tailscale.init $OPENWRT_PATH/files/etc/init.d/tailscale
         mkdir -p $OPENWRT_PATH/files/etc/config
-        cp $OPENWRT_PATH/feeds/packages/net/tailscale/files/tailscale.conf $OPENWRT_PATH/files/etc/config/tailscale      
+        cp $OPENWRT_PATH/feeds/packages/net/tailscale/files/tailscale.conf $OPENWRT_PATH/files/etc/config/tailscale
+        chmod +x $OPENWRT_PATH/files/etc/init.d/tailscale
         echo "已完成修补" 
          
     - name: Load Custom Configuration
