@@ -1,0 +1,29 @@
+name: Delete Old Workflows
+
+on:
+  schedule:
+    - cron: '0 21 * * 5'  # 每周五 UTC 21:00，即每周六中国时间 5:00
+  workflow_dispatch:       # 手动触发
+
+jobs:
+  Cleaning:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Delete workflow runs
+      uses: Mattraks/delete-workflow-runs@v2
+      with:
+        token: ${{ github.token }}
+        repository: ${{ github.repository }}
+        retain_days: 0      
+        keep_minimum_runs: 1  
+        delete_workflow_by_state_pattern: active
+        delete_run_by_conclusion_pattern: success, failure, cancelled, skipped
+
+    - name: Delete Old Releases
+      uses: dev-drprasad/delete-older-releases@master
+      with:
+        keep_latest: 15
+        delete_tags: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
