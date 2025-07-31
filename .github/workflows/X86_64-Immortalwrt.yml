@@ -161,8 +161,7 @@ jobs:
         find ./bin/packages/ -type f \( -name "*.ipk" -o -name "*.apk" \) -exec cp -f {} ./artifact/package/ \;
         find ./bin/targets/ -type f \( -name "*.buildinfo" -o -name "*.manifest" \) -exec cp -f {} ./artifact/buildinfo/ \;
         cd ./artifact
-        tar -zcf "${DEVICE_ARCH}_packages.tar.gz" package
-        cp -f *.tar.gz ${{ env.FIRMWARE_PATH }}
+        tar --transform='s|^package/||' -zcf "${DEVICE_ARCH}_packages.tar.gz" package
         echo "已完成 packages 压缩，KERNEL 变量已写入"
 
     - name: ⬆️ 上传 Buildinfo Artifact
@@ -177,7 +176,7 @@ jobs:
       uses: actions/upload-artifact@main
       with:
         name: OpenWrt_packages
-        path: ${{ env.OPENWRT_PATH }}/artifact/packages.tar.gz
+        path: ${{ env.OPENWRT_PATH }}/artifact/*packages.tar.gz
 
     - name: 🚀 上传固件到 Release
       if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
@@ -187,7 +186,11 @@ jobs:
         allowUpdates: true
         tag: ${{ env.DEVICE_TARGET }}
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: ${{ env.FIRMWARE_PATH }}/*.tar.gz, ${{ env.FIRMWARE_PATH }}/*combined-efi.img.gz, ${{ env.FIRMWARE_PATH }}/*.vmdk
+        artifacts: |
+          ${{ env.FIRMWARE_PATH }}/*.tar.gz
+          ${{ env.FIRMWARE_PATH }}/*combined-efi.img.gz
+          ${{ env.FIRMWARE_PATH }}/*.vmdk
+          ${{ env.OPENWRT_PATH }}/artifact/*.tar.gz
         body: |
           💻 **This is OpenWrt Firmware for ${{ env.FIRMWARE_TAG }}**
           ### 📋 固件信息
