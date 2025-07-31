@@ -183,7 +183,7 @@ jobs:
       with:
         name: R${{ env.DATE }} for ${{ env.FIRMWARE_TAG }}
         allowUpdates: true
-        tag: Immortalwrt_${{ env.FIRMWARE_TAG }}
+        tag: ${{ env.DEVICE_TARGET }}
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: ${{ env.OPENWRT_PATH }}/bin/targets/*/*/*.tar.gz, ${{ env.OPENWRT_PATH }}/bin/targets/*/*/*combined-efi.img.gz, ${{ env.OPENWRT_PATH }}/bin/targets/*/*/*.vmdk
         body: |

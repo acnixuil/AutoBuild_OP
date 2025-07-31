@@ -212,7 +212,7 @@ jobs:
         if: ${{ matrix.run_this && steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true' }}
         uses: ncipollo/release-action@main
         with:
-          name: R${{ env.DATE }} for ${{ env.DEVICE_MODEL }}
+          name: R${{ env.DATE }} for ${{ env.FIRMWARE_TAG }}
           allowUpdates: true
           replacesArtifacts: true
           tag: ${{ env.DEVICE_TARGET }}
