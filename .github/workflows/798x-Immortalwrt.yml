@@ -178,7 +178,6 @@ jobs:
         echo "KERNEL=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p')" >> $GITHUB_ENV
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
         $GITHUB_WORKSPACE/scripts/cleanup_targets.sh
-
         echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
 
     - name: Upload Firmware To Release

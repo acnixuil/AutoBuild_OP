@@ -152,6 +152,7 @@ jobs:
       if: steps.compile.outputs.status == 'success'
       run: |
         cd $OPENWRT_PATH/bin/targets/*/*
+        echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
         ls -l
         # echo "KERNEL=$(grep ^kernel *.manifest | cut -d- -f2-3 | tr -d ' ')" >> $GITHUB_ENV
         echo "KERNEL=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p')" >> $GITHUB_ENV
@@ -161,6 +162,7 @@ jobs:
         find ./bin/targets/ -type f \( -name "*.buildinfo" -o -name "*.manifest" \) -exec cp -f {} ./artifact/buildinfo/ \;
         cd ./artifact
         tar -zcf "${DEVICE_ARCH}_packages.tar.gz" package
+        cp -f *.tar.gz ${{ env.FIRMWARE_PATH }}
         echo "已完成 packages 压缩，KERNEL 变量已写入"
 
     - name: ⬆️ 上传 Buildinfo Artifact
@@ -185,7 +187,7 @@ jobs:
         allowUpdates: true
         tag: ${{ env.DEVICE_TARGET }}
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: ${{ env.OPENWRT_PATH }}/bin/targets/*/*/*.tar.gz, ${{ env.OPENWRT_PATH }}/bin/targets/*/*/*combined-efi.img.gz, ${{ env.OPENWRT_PATH }}/bin/targets/*/*/*.vmdk
+        artifacts: ${{ env.FIRMWARE_PATH }}/*.tar.gz, ${{ env.FIRMWARE_PATH }}/*combined-efi.img.gz, ${{ env.FIRMWARE_PATH }}/*.vmdk
         body: |
           💻 **This is OpenWrt Firmware for ${{ env.FIRMWARE_TAG }}**
           ### 📋 固件信息
