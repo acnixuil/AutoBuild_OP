@@ -23,7 +23,7 @@ keep_patterns=(
     "*-squashfs-combined-efi.vmdk"
     "*-squashfs-sysupgrade.itb"
     "*-squashfs-factory.ubi"
-    "Packages.tar.gz"
+    "*packages.tar.gz"
 )
 
 [ -d "${dir_path}packages" ] && rm -rf "${dir_path}packages" && echo "packages directory has been deleted!"

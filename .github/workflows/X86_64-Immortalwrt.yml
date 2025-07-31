@@ -74,9 +74,22 @@ jobs:
         cp $CONFIG_FILE $OPENWRT_PATH/.config
         cd $OPENWRT_PATH
         make defconfig > /dev/null 2>&1
+        
+        # 提取源码仓库名（例如 AutoBuild-OpenWrt）
         echo "SOURCE_REPO=$(echo $REPO_URL | awk -F '/' '{print $(NF)}')" >> $GITHUB_ENV
+
+        # 提取设备主架构（例如 x86、qualcommax）
         echo "DEVICE_TARGET=$(grep CONFIG_TARGET_BOARD .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
+
+        # 提取设备子架构（例如 64、ipq60xx）
         echo "DEVICE_SUBTARGET=$(grep CONFIG_TARGET_SUBTARGET .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
+
+        # 提取架构包名（例如 x86_64、aarch64_cortex-a53）
+        echo "DEVICE_ARCH=$(sed -n 's/^CONFIG_TARGET_ARCH_PACKAGES="\([^"]*\)"/\1/p' .config)" >> $GITHUB_ENV
+
+        # 提取设备型号（例如 generic、zn_m2）
+        echo "DEVICE_MODEL=$(sed -n 's/^CONFIG_TARGET_PROFILE="DEVICE_\([^"]*\)"/\1/p' .config)" >> $GITHUB_ENV
+    
         if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
           SUBNET="${{ github.event.inputs.subnet }}"
           [ -z "$SUBNET" ] && SUBNET="2"
@@ -147,7 +160,7 @@ jobs:
         find ./bin/packages/ -type f \( -name "*.ipk" -o -name "*.apk" \) -exec cp -f {} ./artifact/package/ \;
         find ./bin/targets/ -type f \( -name "*.buildinfo" -o -name "*.manifest" \) -exec cp -f {} ./artifact/buildinfo/ \;
         cd ./artifact
-        tar -zcf packages.tar.gz package
+        tar -zcf "${DEVICE_ARCH}_packages.tar.gz" package
         echo "已完成 packages 压缩，KERNEL 变量已写入"
 
     - name: ⬆️ 上传 Buildinfo Artifact

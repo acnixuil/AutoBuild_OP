@@ -82,8 +82,21 @@ jobs:
           SUBNET="5"
         fi
         echo "SUBNET=$SUBNET" >> $GITHUB_ENV
-        echo "DEVICE_TARGET=$(grep CONFIG_TARGET_BOARD .config | cut -d '"' -f 2)" >> $GITHUB_ENV
-        echo "DEVICE_SUBTARGET=$(grep CONFIG_TARGET_SUBTARGET .config | cut -d '"' -f 2)" >> $GITHUB_ENV
+          
+        # 提取源码仓库名（例如 AutoBuild-OpenWrt）
+        echo "SOURCE_REPO=$(echo $REPO_URL | awk -F '/' '{print $(NF)}')" >> $GITHUB_ENV
+
+        # 提取设备主架构（例如 x86、qualcommax）
+        echo "DEVICE_TARGET=$(grep CONFIG_TARGET_BOARD .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
+
+        # 提取设备子架构（例如 64、ipq60xx）
+        echo "DEVICE_SUBTARGET=$(grep CONFIG_TARGET_SUBTARGET .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
+
+        # 提取架构包名（例如 x86_64、aarch64_cortex-a53）
+        echo "DEVICE_ARCH=$(sed -n 's/^CONFIG_TARGET_ARCH_PACKAGES="\([^"]*\)"/\1/p' .config)" >> $GITHUB_ENV
+
+        # 提取设备型号（例如 generic、zn_m2）
+        echo "DEVICE_MODEL=$(sed -n 's/^CONFIG_TARGET_PROFILE="DEVICE_\([^"]*\)"/\1/p' .config)" >> $GITHUB_ENV
 
     - name: Cache Toolchain
       if: env.CACHE_TOOLCHAIN == 'true'
