@@ -15,27 +15,44 @@ section() {
 
 PKG_PATCH="$GITHUB_WORKSPACE/openwrt/package"
 
+# 通用配置
+UI_URL="https://github.com/Zephyruso/zashboard/releases/latest/download/dist-cdn-fonts.zip"
+GEO_IP="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip-lite.dat"
+GEO_SITE="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat"
+GEO_MMDB="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb"
+
+download_ui() {
+  local target_dir="$1"
+  local tmp_dir
+  tmp_dir=$(mktemp -d)
+  curl -sL "$UI_URL" -o "$tmp_dir/ui.zip"
+  unzip -q "$tmp_dir/ui.zip" -d "$tmp_dir"
+  rm -rf "$target_dir"/*
+  mkdir -p "$target_dir"
+  cp -r "$tmp_dir"/dist/* "$target_dir"/
+  rm -rf "$tmp_dir"
+  echo "UI 资源已更新 -> $target_dir"
+}
+
+download_geo_files() {
+  curl -sL -o GeoIP.dat "$GEO_IP" && log "GeoIP.dat 已下载"
+  curl -sL -o GeoSite.dat "$GEO_SITE" && log "GeoSite.dat 已下载"
+  curl -sL -o Country.mmdb "$GEO_MMDB" && log "Country.mmdb 已下载"
+}
+
 # OpenClash
 if [ -d "./luci-app-openclash" ]; then
   section "处理 OpenClash 数据"
   CORE_TYPE=$CLASH_KERNEL
   CORE_META="https://github.com/vernesong/OpenClash/raw/core/dev/meta/clash-linux-$CORE_TYPE.tar.gz"
-  GEO_IP="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip-lite.dat"
-  GEO_SITE="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat"
-  GEO_MMDB="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb"
-  UI="https://github.com/MetaCubeX/metacubexd/releases/download/v1.151.0/compressed-dist.tgz"
 
-  rm -rf ./luci-app-openclash/root/usr/share/openclash/ui/metacubexd/*
-  curl -sL $UI | tar -xz -C ./luci-app-openclash/root/usr/share/openclash/ui/metacubexd
+  download_ui "./luci-app-openclash/root/usr/share/openclash/ui/metacubexd"
 
   cd ./luci-app-openclash/root/etc/openclash/
-  curl -sL -o Country.mmdb $GEO_MMDB && log "Country.mmdb 已下载"
-  curl -sL -o GeoSite.dat $GEO_SITE && log "GeoSite.dat 已下载"
-  curl -sL -o GeoIP.dat $GEO_IP && log "GeoIP.dat 已下载"
+  download_geo_files
 
   mkdir ./core && cd ./core
-  curl -sL -o meta.tar.gz $CORE_META && tar -zxf meta.tar.gz && mv -f clash clash_meta && log "核心 meta 已完成"
-
+  curl -sL -o meta.tar.gz "$CORE_META" && tar -zxf meta.tar.gz && mv -f clash clash_meta && log "核心 meta 已完成"
   chmod +x ./* && rm -f ./*.gz
   log "OpenClash 数据已更新"
   cd "$PKG_PATCH"
@@ -44,24 +61,19 @@ fi
 # nikki
 if [ -d "./nikki" ]; then
   section "处理 nikki 插件"
-  GEO_IP="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip-lite.dat"
-  GEO_SITE="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat"
-  GEO_MMDB="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb"
-  UI="https://github.com/MetaCubeX/metacubexd/releases/download/v1.151.0/compressed-dist.tgz"
+  UI_TARGET="./nikki/luci-app-nikki/root/etc/nikki/run/ui"
+  download_ui "$UI_TARGET"
 
-  mkdir -p ./nikki/luci-app-nikki/root/etc/nikki/run/ui
   cd ./nikki/luci-app-nikki/root/etc/nikki/run
-
   if [[ "$REPO_URL" != *"VIKINGYFY"* && "$REPO_URL" != *"LiBwrt"* && "$REPO_URL" != *"mt798x"* ]]; then
     log "REPO_URL 不包含 VIKINGYFY 或 LiBwrt，开始下载 nikki 所需数据文件"
-    curl -sL -o ASN.mmdb $GEO_MMDB && log "ASN.mmdb 已下载"
-    curl -sL -o GeoSite.dat $GEO_SITE && log "GeoSite.dat 已下载"
-    curl -sL -o GeoIP.dat $GEO_IP && log "GeoIP.dat 已下载"
+    curl -sL -o ASN.mmdb "$GEO_MMDB" && log "ASN.mmdb 已下载"
+    curl -sL -o GeoSite.dat "$GEO_SITE" && log "GeoSite.dat 已下载"
+    curl -sL -o GeoIP.dat "$GEO_IP" && log "GeoIP.dat 已下载"
   else
     log "REPO_URL 包含 VIKINGYFY 或 LiBwrt，跳过 nikki 数据文件下载"
   fi
-
-  curl -sL $UI | tar -xz -C ./ui && log "UI 资源已更新"
+  log "nikki 数据已更新"
   cd "$PKG_PATCH"
 fi
 
