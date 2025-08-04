@@ -199,9 +199,9 @@ jobs:
     - name: Send Telegram Message
       run: |
         CURRENT_DATE_TIME=$(TZ='Asia/Shanghai' date +'%Y/%m/%d %r')
-        MESSAGE="${{ env.FIRMWARE_TAG }} 固件编译完成
+        MESSAGE="${{ env.DEVICE_MODEL }} 固件编译完成
         发布时间：$CURRENT_DATE_TIME
-        发布页面：https://github.com/acnixuil/AutoBuild_OP/releases/tag/${{ env.FIRMWARE_TAG }}"
+        发布页面：https://github.com/acnixuil/AutoBuild_OP/releases/tag/${{ env.DEVICE_TARGET }}"
         curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
           -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
           -d text="$MESSAGE"

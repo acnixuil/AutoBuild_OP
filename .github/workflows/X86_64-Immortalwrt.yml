@@ -201,7 +201,7 @@ jobs:
     - name: 📢 发送 Telegram 通知
       run: |
         TIME=$(TZ='Asia/Shanghai' date '+%Y/%m/%d %H:%M')
-        MESSAGE="${{ env.FIRMWARE_TAG }} 编译完成
+        MESSAGE="${{ env.DEVICE_MODEL }} 编译完成
         发布时间: $TIME
         发布页面: https://github.com/${{ github.repository }}/releases/tag/${{ env.DEVICE_TARGET }}"
         curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
