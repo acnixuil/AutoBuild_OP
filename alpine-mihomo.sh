@@ -54,7 +54,7 @@ fi
 echo "[9] 下载默认配置..."
 mkdir -p /etc/mihomo
 if [ ! -f "/etc/mihomo/config.yaml" ]; then
-    wget -q https://wiki.metacubex.one/example/mrs -O /etc/mihomo/config.yaml
+    wget -q https://github.com/JohnsonRan/CRules/blob/master/config/AIB.yaml -O /etc/mihomo/config.yaml
     ln -sf /etc/mihomo/config.yaml /root/config.yaml
 fi
 sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mihomo/config.yaml
