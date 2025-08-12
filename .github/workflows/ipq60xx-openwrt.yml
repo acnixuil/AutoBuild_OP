@@ -137,12 +137,13 @@ jobs:
           # 提取设备型号（例如 generic、zn_m2）
           echo "DEVICE_MODEL=$(sed -n 's/^CONFIG_TARGET_PROFILE="DEVICE_\([^"]*\)"/\1/p' .config)" >> $GITHUB_ENV
           
-          # 写入缓存时间（20250813-只保留当天）
+          # 写入缓存时间
           echo "CACHE_DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
 
-      - name: Cache Toolchain
-        if: env.CACHE_TOOLCHAIN == 'true'     
+      - name: 缓存工具链
+        if: env.CACHE_TOOLCHAIN == 'true'
         uses: actions/cache@v4
+        id: cache-toolchain
         with:
           key: ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-${{ env.CACHE_DATE }}
           restore-keys: |
@@ -150,6 +151,24 @@ jobs:
           path: |
             ${{ env.OPENWRT_PATH }}/.ccache
             ${{ env.OPENWRT_PATH }}/staging_dir
+
+      - name: 输出缓存结果
+        run: |
+          echo "使用的缓存键: ${{ steps.cache-toolchain.outputs.cache-key }}"
+          echo "缓存命中情况: ${{ steps.cache-toolchain.outputs.cache-hit }}"
+          echo "缓存目录大小："
+          du -sh ${{ env.OPENWRT_PATH }}/.ccache || echo ".ccache 目录不存在"
+          du -sh ${{ env.OPENWRT_PATH }}/staging_dir || echo "staging_dir 目录不存在"
+
+      - name: 刷新缓存时间戳
+        run: |
+          echo "开始刷新缓存时间戳..."
+          if [ -d "$OPENWRT_PATH/staging_dir" ]; then
+            find "$OPENWRT_PATH/staging_dir" -type d -name "stamp" -not -path "*target*" | while read -r dir; do
+              find "$dir" -type f -exec touch {} +
+            done
+          fi
+          echo "缓存时间戳刷新完成。"
 
       - name: Install Feeds
         if: ${{ matrix.run_this }}
@@ -241,3 +260,14 @@ jobs:
           curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
             -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
             -d text="$MESSAGE"
+
+      - name: 删除旧缓存
+        run: |
+          echo "开始列出并删除旧缓存..."
+          gh cache list --key ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}- --json key --jq '.[] | .key' | while read -r key; do
+            echo "删除缓存：$key"
+            gh cache delete "$key"
+          done
+          echo "当前缓存使用情况："
+          echo "ccache 目录大小: $(du -sh ${{ env.OPENWRT_PATH }}/.ccache | cut -f 1)"
+          echo "staging_dir 目录大小: $(du -sh ${{ env.OPENWRT_PATH }}/staging_dir | cut -f 1)"
