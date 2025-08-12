@@ -97,14 +97,30 @@ jobs:
 
         # 提取设备型号（例如 generic、zn_m2）
         echo "DEVICE_MODEL=$(sed -n 's/^CONFIG_TARGET_PROFILE="DEVICE_\([^"]*\)"/\1/p' .config)" >> $GITHUB_ENV
-
+        
+        # 写入缓存时间（20250813-只保留当天）
+        echo "CACHE_DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+        
     - name: Cache Toolchain
       if: env.CACHE_TOOLCHAIN == 'true'
-      uses: HiGarfield/cachewrtbuild@main
+      uses: actions/cache@v4
       with:
-        ccache: false
-        mixkey: ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
-        prefix: ${{ env.OPENWRT_PATH }}
+        key: ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-${{ env.CACHE_DATE }}
+        restore-keys: |
+          ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-
+        path: |
+          ${{ env.OPENWRT_PATH }}/.ccache
+          ${{ env.OPENWRT_PATH }}/staging_dir
+
+    - name: 添加定时触发的值
+      run:
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          SUBNET="${{ github.event.inputs.subnet }}"
+          [ -z "$SUBNET" ] && SUBNET="5"
+        else
+          SUBNET="5"
+        fi
+        echo "SUBNET=$SUBNET" >> $GITHUB_ENV
 
     - name: Install Feeds
       run: |
