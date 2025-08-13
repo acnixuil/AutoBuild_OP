@@ -19,7 +19,7 @@ uci set argon.@global[0].online_wallpaper='none'
 uci commit argon
 
 uci delete dropbear.main.DirectInterface
-uci uci delete dropbear.main.Interface
+uci delete dropbear.main.Interface
 uci commit dropbear
 service dropbear restart
 
