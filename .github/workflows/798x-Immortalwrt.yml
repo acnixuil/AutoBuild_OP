@@ -43,8 +43,10 @@ jobs:
     - name: Free disk space
       uses: sbwml/actions@free-disk
 
-    - name: Build System Setup
-      run: |
+    - name: ⚙️ 初始化编译环境
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |        
         sudo bash -c 'bash <(curl -sL https://build-scripts.immortalwrt.org/init_build_environment.sh)'
         sudo -E apt -yqq install dos2unix rename
         sudo -E apt -yqq install libfuse-dev
