@@ -40,7 +40,7 @@ git clone --depth=1 --single-branch -b master https://github.com/acnixuil/luci-a
 git clone --depth=1 --single-branch -b main https://github.com/asvow/luci-app-tailscale luci-app-tailscale
 
 # smartdns
-find ../feeds -type d -name '*smartdns*' -prune -exec rm -rf {} +
+find ../ -name '*smartdns*' -exec rm -rf {} +
 git clone --depth=1 --single-branch -b master https://github.com/pymumu/luci-app-smartdns ../feeds/luci/applications/luci-app-smartdns
 git clone --depth=1 --single-branch -b master https://github.com/pymumu/openwrt-smartdns ../feeds/packages/net/smartdns
 
