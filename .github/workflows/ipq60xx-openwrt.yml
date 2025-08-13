@@ -67,6 +67,19 @@ jobs:
           echo "--------------------------硬盘信息--------------------------"
           echo "硬盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l)" && df -hT
 
+      - name: Maximize build space
+        if: ${{ matrix.run_this }}
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 512
+          temp-reserve-mb: 100
+          swap-size-mb: 1024
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+
       - name: Initialization Environment
         if: ${{ matrix.run_this }}
         env:
@@ -81,14 +94,6 @@ jobs:
           sudo bash -c 'bash <(curl -sL https://build-scripts.immortalwrt.org/init_build_environment.sh)'
           sudo -E systemctl daemon-reload
           sudo -E timedatectl set-timezone "Asia/Shanghai"
-          
-      - name: Combine Disks
-        if: ${{ matrix.run_this }}
-        uses: easimon/maximize-build-space@master
-        with:
-          swap-size-mb: 1024
-          temp-reserve-mb: 100
-          root-reserve-mb: 1024
 
       - name: Checkout
         if: ${{ matrix.run_this }}
@@ -217,11 +222,7 @@ jobs:
 
       - name: Organize Files
         if: ${{ matrix.run_this && steps.compile.outputs.status == 'success' }}
-        run: |
-          cd $OPENWRT_PATH/bin/targets/*/*
-          echo "KERNEL=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p')" >> $GITHUB_ENV
-          echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
-          
+        run: |         
           cd $OPENWRT_PATH
           mkdir -p ./artifact/package ./artifact/buildinfo
           find ./bin/packages/ -type f \( -name "*.ipk" -o -name "*.apk" \) -exec cp -f {} ./artifact/package/ \;
@@ -229,7 +230,10 @@ jobs:
           cd ./artifact
           tar --transform='s|^package/||' -zcf "${DEVICE_ARCH}_packages.tar.gz" package
           
+          cd $OPENWRT_PATH/bin/targets/*/*
+          echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
           # $GITHUB_WORKSPACE/scripts/cleanup_targets.sh
+          echo "KERNEL=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p')" >> $GITHUB_ENV
           rename -v "s/^/R$(date +'%y.%m.%d')-${{ env.RENAME_PREFIX }}/" *.ubi
           rename -v "s/^/R$(date +'%y.%m.%d')-${{ env.RENAME_PREFIX }}/" *.bin
           
