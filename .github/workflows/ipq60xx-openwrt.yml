@@ -41,7 +41,7 @@ jobs:
           - variant: nowifi
             run_this: ${{ github.event.inputs.build_variant == 'both' || github.event.inputs.build_variant == 'nowifi' }}
     steps:
-      # 当当前 variant 不需要运行时，输出提示并跳过后续步骤
+      # 当前 variant 不需要运行时，输出提示并跳过后续步骤
       - name: Check if current variant should run
         run: |
           if [ "${{ matrix.run_this }}" != "true" ]; then
@@ -65,7 +65,11 @@ jobs:
 
       - name: 🗂️ 最大化可用空间
         if: ${{ matrix.run_this }}
-        uses: sbwml/actions@free-disk
+        uses: easimon/maximize-build-space@master
+        with:
+          swap-size-mb: 1024
+          temp-reserve-mb: 100
+          root-reserve-mb: 1024
 
       - name: ⚙️ 初始化编译环境
         env:
