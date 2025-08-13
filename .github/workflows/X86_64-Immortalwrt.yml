@@ -7,6 +7,16 @@ on:
         description: "默认IP地址:192.168.[].1"
         required: true
         default: "2"
+      cache:
+        description: "使用缓存？"
+        required: true
+        type: boolean
+        default: true
+      release:
+        description: "上传到RELEASE？"
+        required: true
+        type: boolean
+        default: true
   schedule:
     - cron: '0 22 * * 5' # 每周六 6:00（北京时间）自动编译
 
@@ -15,7 +25,6 @@ env:
   REPO_BRANCH: master
   CONFIG_FILE: x86_imm/x86.config
   CUSTOM_SCRIPT: x86_imm/custom.sh
-  CACHE_TOOLCHAIN: true
   FIRMWARE_RELEASE: true
   FIRMWARE_TAG: X86_64
   TZ: Asia/Shanghai
@@ -94,7 +103,7 @@ jobs:
         echo "CACHE_DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV  
 
     - name: 缓存工具链
-      if: env.CACHE_TOOLCHAIN == 'true'
+      if: github.event.inputs.cache == 'true'
       uses: actions/cache@v4
       id: cache-toolchain
       with:
@@ -193,14 +202,14 @@ jobs:
 
     - name: ⬆️ 上传 Buildinfo Artifact
       if: always()
-      uses: actions/upload-artifact@main
+      uses: actions/upload-artifact@v4
       with:
         name: OpenWrt_buildinfo
         path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
 
     - name: ⬆️ 上传 Packages Artifact
       if: always()
-      uses: actions/upload-artifact@main
+      uses: actions/upload-artifact@v4
       with:
         name: OpenWrt_packages
         path: ${{ env.OPENWRT_PATH }}/artifact/*packages.tar.gz

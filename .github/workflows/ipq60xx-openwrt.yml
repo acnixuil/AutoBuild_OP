@@ -20,13 +20,17 @@ on:
         description: "非WiFi版默认IP地址:192.168.(X).1 中的X值"
         required: false
         default: "3"
+      cache:
+        description: "使用缓存？"
+        required: true
+        type: boolean
+        default: true
 
 env:
   REPO_URL: https://github.com/LiBwrt/openwrt-6.x.git
   REPO_BRANCH: k6.12-nss
   CUSTOM_SCRIPT: ipq6000/custom.sh
   CLASH_KERNEL: arm64
-  CACHE_TOOLCHAIN: true
   FIRMWARE_RELEASE: true
   TZ: Asia/Shanghai
 
@@ -141,7 +145,7 @@ jobs:
           echo "CACHE_DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
 
       - name: 缓存工具链
-        if: env.CACHE_TOOLCHAIN == 'true'
+        if: github.event.inputs.cache == 'true'
         uses: actions/cache@v4
         id: cache-toolchain
         with:
@@ -217,21 +221,44 @@ jobs:
           cd $OPENWRT_PATH/bin/targets/*/*
           echo "KERNEL=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p')" >> $GITHUB_ENV
           echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
-          mv -f $OPENWRT_PATH/bin/packages/*/*/*.apk packages
-          tar -zcf "${DEVICE_ARCH}_packages.tar.gz" packages
-          $GITHUB_WORKSPACE/scripts/cleanup_targets.sh
+          
+          cd $OPENWRT_PATH
+          mkdir -p ./artifact/package ./artifact/buildinfo
+          find ./bin/packages/ -type f \( -name "*.ipk" -o -name "*.apk" \) -exec cp -f {} ./artifact/package/ \;
+          find ./bin/targets/ -type f \( -name "*.buildinfo" -o -name "*.manifest" \) -exec cp -f {} ./artifact/buildinfo/ \;
+          cd ./artifact
+          tar --transform='s|^package/||' -zcf "${DEVICE_ARCH}_packages.tar.gz" package
+          
+          # $GITHUB_WORKSPACE/scripts/cleanup_targets.sh
           rename -v "s/^/R$(date +'%y.%m.%d')-${{ env.RENAME_PREFIX }}/" *.ubi
           rename -v "s/^/R$(date +'%y.%m.%d')-${{ env.RENAME_PREFIX }}/" *.bin
+          
           echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
           echo "DATE1=$(date +'%Y-%m-%d_%H-%M-%S')" >> $GITHUB_ENV
+
+      - name: ⬆️ 上传 Buildinfo Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenWrt_buildinfo
+          path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
+
+      - name: ⬆️ 上传 Packages Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenWrt_packages
+          path: ${{ env.OPENWRT_PATH }}/artifact/*packages.tar.gz
 
       - name: Upload Firmware To Artifact
         if: ${{ matrix.run_this }}
         continue-on-error: true
-        uses: actions/upload-artifact@main
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.DEVICE_MODEL }}-${{ env.DATE1 }}
-          path: ${{ env.FIRMWARE_PATH }}
+          name: ${{ env.RENAME_PREFIX }}-${{ env.DEVICE_MODEL }}-${{ env.DATE1 }}
+          path: |
+            ${{ env.FIRMWARE_PATH }}/*squashfs-factory.ubi
+            ${{ env.FIRMWARE_PATH }}/*squashfs-sysupgrade.bin
 
       - name: Upload Firmware To Release
         if: ${{ matrix.run_this && steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true' }}
@@ -242,7 +269,9 @@ jobs:
           replacesArtifacts: true
           tag: ${{ env.DEVICE_TARGET }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          artifacts: ${{ env.FIRMWARE_PATH }}/*
+          artifacts: |
+            ${{ env.FIRMWARE_PATH }}/*squashfs-factory.ubi
+            ${{ env.FIRMWARE_PATH }}/*squashfs-sysupgrade.bin
           body: |
             ### 📋 固件信息
             -  🔧 平台架构: ${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
