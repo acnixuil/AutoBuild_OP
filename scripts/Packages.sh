@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # 移除要替换的包
-find ../ | grep Makefile | grep v2ray-geodata | xargs rm -f
-find ../ | grep Makefile | grep mosdns | xargs rm -f
+find ../ -name '*v2ray-geodata*' -exec rm -rf {} +
+find ../ -name '*mosdns*' -exec rm -rf {} +
 find ../feeds/luci/ -name '*passwall*' | xargs rm -rf
 find ../feeds/luci/ -name '*nikki*' | xargs rm -rf
 find ../feeds/luci/ -name '*openclash*' | xargs rm -rf
@@ -10,8 +10,8 @@ find ../feeds/luci/ -name '*lucky*' | xargs rm -rf
 find ../feeds/luci/ -name '*adguardhome*' | xargs rm -rf
 find ../feeds/luci/ -name '*argon*' | xargs rm -rf
 
-rm -rf $GITHUB_WORKSPACE/openwrt/feeds/packages/lang/golang
-git clone https://github.com/sbwml/packages_lang_golang -b 24.x $GITHUB_WORKSPACE/openwrt/feeds/packages/lang/golang
+rm -rf ../feeds/packages/lang/golang
+git clone https://github.com/sbwml/packages_lang_golang -b 24.x ../feeds/packages/lang/golang
 
 # Git稀疏克隆，只克隆指定目录到本地
 function git_sparse_clone() {
