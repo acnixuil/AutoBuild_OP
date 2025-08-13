@@ -71,7 +71,7 @@ jobs:
         if: ${{ matrix.run_this }}
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 512
+          root-reserve-mb: 2048
           temp-reserve-mb: 100
           swap-size-mb: 1024
           remove-dotnet: 'true'
