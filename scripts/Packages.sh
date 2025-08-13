@@ -52,6 +52,7 @@ git clone --depth=1 --single-branch -b master https://github.com/yhl452493373/lu
 git clone --depth=1 --single-branch -b master https://github.com/jerrykuku/luci-app-argon-config.git luci-app-argon-config
 
 git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-nikki.git nikki
+git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-momo.git nikki
 
 ../scripts/feeds install -a
 
