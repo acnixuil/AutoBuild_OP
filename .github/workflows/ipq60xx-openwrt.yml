@@ -262,6 +262,7 @@ jobs:
           path: |
             ${{ env.FIRMWARE_PATH }}/*squashfs-factory.ubi
             ${{ env.FIRMWARE_PATH }}/*squashfs-sysupgrade.bin
+            ${{ env.OPENWRT_PATH }}/artifact/*.tar.gz
 
       - name: Upload Firmware To Release
         if: ${{ matrix.run_this && steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true' }}
