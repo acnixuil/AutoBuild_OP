@@ -52,7 +52,7 @@ jobs:
             echo "Skipping build for ${{ matrix.variant }} variant."
           fi
 
-      - name: Check Server Performance
+      - name: 检查服务器性能
         if: ${{ matrix.run_this }}
         run: |
           echo "警告⚠"
@@ -67,7 +67,7 @@ jobs:
           echo "--------------------------硬盘信息--------------------------"
           echo "硬盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l)" && df -hT
 
-      - name: Maximize build space
+      - name: 扩容空间
         if: ${{ matrix.run_this }}
         uses: easimon/maximize-build-space@master
         with:
@@ -80,7 +80,7 @@ jobs:
           remove-codeql: 'true'
           remove-docker-images: 'true'
 
-      - name: Initialization Environment
+      - name: 部署环境
         if: ${{ matrix.run_this }}
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -92,11 +92,11 @@ jobs:
           sudo -E apt-get -y clean
           sudo timedatectl set-timezone "$TZ"
 
-      - name: Checkout
+      - name: 检出仓库
         if: ${{ matrix.run_this }}
         uses: actions/checkout@main
 
-      - name: Clone Source Code
+      - name: 克隆 OpenWrt 源码
         if: ${{ matrix.run_this }}
         run: |
           df -hT $GITHUB_WORKSPACE
@@ -106,7 +106,7 @@ jobs:
           # 固定到某个 commit（可根据需要修改）
           echo -e "\e[32mCurrent commit: $(git rev-parse HEAD)\e[0m"
 
-      - name: Set Variant Configuration
+      - name: 区分型号
         if: ${{ matrix.run_this }}
         run: |
           if [ "${{ matrix.variant }}" == "wifi" ]; then
@@ -121,7 +121,7 @@ jobs:
             echo "SUBNET=${{ github.event.inputs.subnet_nowifi }}" >> $GITHUB_ENV
           fi
 
-      - name: Generate Variables
+      - name: 生成设备变量
         if: ${{ matrix.run_this }}
         run: |
           cp $CONFIG_FILE $OPENWRT_PATH/.config
@@ -176,14 +176,14 @@ jobs:
           fi
           echo "缓存时间戳刷新完成。"
 
-      - name: Install Feeds
+      - name: 更新并安装 feeds
         if: ${{ matrix.run_this }}
         run: |
           cd $OPENWRT_PATH
           ./scripts/feeds update -a  
           ./scripts/feeds install -a       
 
-      - name: Load Custom Configuration and Custom Script
+      - name: 加载自定义配置和脚本
         if: ${{ matrix.run_this }}
         env:
           SUBNET: ${{ env.SUBNET }}
@@ -198,7 +198,7 @@ jobs:
           $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
           $GITHUB_WORKSPACE/scripts/patch-tailscale.sh
 
-      - name: Download DL Package
+      - name: 下载依赖
         if: ${{ matrix.run_this }}
         run: |
           cd $OPENWRT_PATH
@@ -206,7 +206,7 @@ jobs:
           make download -j$(nproc)
           find dl -size -1024c -exec rm -f {} \;
 
-      - name: Compile Firmware
+      - name: 编译固件
         if: ${{ matrix.run_this }}
         id: compile
         run: |
@@ -217,7 +217,7 @@ jobs:
           make -j$(nproc) || make -j1 || make -j1 V=s
           echo "status=success" >> $GITHUB_OUTPUT
 
-      - name: Organize Files
+      - name: 整理文件
         if: ${{ matrix.run_this && steps.compile.outputs.status == 'success' }}
         run: |         
           cd $OPENWRT_PATH
@@ -237,7 +237,7 @@ jobs:
           echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
           echo "DATE1=$(date +'%Y-%m-%d_%H-%M-%S')" >> $GITHUB_ENV
 
-      - name: ⬆️ 上传 Buildinfo Artifact
+      - name: 上传 Buildinfo Artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -245,7 +245,7 @@ jobs:
           path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
           overwrite: true
 
-      - name: ⬆️ 上传 Packages Artifact
+      - name: 上传 Packages 到 Artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -253,7 +253,7 @@ jobs:
           path: ${{ env.OPENWRT_PATH }}/artifact/*packages.tar.gz
           overwrite: true
 
-      - name: Upload Firmware To Artifact
+      - name: 上传 Firmware 到 Artifact
         if: ${{ matrix.run_this }}
         continue-on-error: true
         uses: actions/upload-artifact@v4
@@ -262,9 +262,8 @@ jobs:
           path: |
             ${{ env.FIRMWARE_PATH }}/*squashfs-factory.ubi
             ${{ env.FIRMWARE_PATH }}/*squashfs-sysupgrade.bin
-            ${{ env.OPENWRT_PATH }}/artifact/*.tar.gz
 
-      - name: Upload Firmware To Release
+      - name: 上传 Firmware 到 Release
         if: ${{ matrix.run_this && steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true' }}
         uses: ncipollo/release-action@main
         with:
@@ -274,6 +273,7 @@ jobs:
           tag: ${{ env.DEVICE_TARGET }}
           token: ${{ secrets.GITHUB_TOKEN }}
           artifacts: |
+            ${{ env.OPENWRT_PATH }}/artifact/*.tar.gz
             ${{ env.FIRMWARE_PATH }}/*squashfs-factory.ubi
             ${{ env.FIRMWARE_PATH }}/*squashfs-sysupgrade.bin
           body: |
@@ -283,7 +283,7 @@ jobs:
             -  🌿 源码分支: ${{ env.REPO_BRANCH }}
             -  ⚙️ 内核版本: ${{ env.KERNEL }}
 
-      - name: Send Telegram Message
+      - name: 发送 Telegram 通知
         if: ${{ matrix.run_this }}
         run: |
           CURRENT_DATE_TIME=$(TZ='Asia/Shanghai' date +'%Y/%m/%d %r')

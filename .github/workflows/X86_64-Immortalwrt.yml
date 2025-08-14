@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - name: 🖥️ 检查服务器性能
+    - name: 检查服务器性能
       run: |
         echo "警告⚠"
         echo "分配的服务器性能有限，若选择的插件过多，务必注意CPU性能！"
@@ -48,37 +48,39 @@ jobs:
         echo "--------------------------硬盘信息--------------------------"
         echo "硬盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l)" && df -hT
 
-    - name: Initialization Environment
+    - name: 扩容空间
+      uses: easimon/maximize-build-space@master
+      with:
+        root-reserve-mb: 2048
+        temp-reserve-mb: 100
+        swap-size-mb: 1024
+        remove-dotnet: 'true'
+        remove-android: 'true'
+        remove-haskell: 'true'
+        remove-codeql: 'true'
+        remove-docker-images: 'true'
+
+    - name: 部署环境
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        sudo -E apt -yqq update
-        sudo -E apt -yqq full-upgrade
-        sudo -E apt -yqq autoremove --purge
-        sudo -E apt -yqq autoclean
-        sudo -E apt -yqq clean
-        sudo -E apt -yqq install dos2unix libfuse-dev rename
-        sudo bash -c 'bash <(curl -sL https://build-scripts.immortalwrt.org/init_build_environment.sh)'
+        sudo -E apt-get -y update
+        sudo -E apt-get -y install $(curl -fsSL is.gd/depends_ubuntu_2204) rename
         sudo -E systemctl daemon-reload
-        sudo -E timedatectl set-timezone "Asia/Shanghai"
-        
-    - name: Combine Disks
-      uses: easimon/maximize-build-space@master
-      with:
-        swap-size-mb: 1024
-        temp-reserve-mb: 100
-        root-reserve-mb: 1024
+        sudo -E apt-get -y autoremove --purge
+        sudo -E apt-get -y clean
+        sudo timedatectl set-timezone "$TZ"
 
-    - name: ⬇️ 检出仓库
+    - name: 检出仓库
       uses: actions/checkout@main
 
-    - name: 📦 克隆 OpenWrt 源码
+    - name: 克隆 OpenWrt 源码
       run: |
         git clone --depth=1 --single-branch $REPO_URL -b $REPO_BRANCH openwrt
         cd openwrt
         echo "OPENWRT_PATH=$PWD" >> $GITHUB_ENV
 
-    - name: 🔧 生成设备变量
+    - name: 生成设备变量
       run: |
         cp $CONFIG_FILE $OPENWRT_PATH/.config
         cd $OPENWRT_PATH
@@ -142,13 +144,13 @@ jobs:
         fi
         echo "SUBNET=$SUBNET" >> $GITHUB_ENV
 
-    - name: 🌱 更新并安装 feeds
+    - name: 更新并安装 feeds
       run: |
         cd $OPENWRT_PATH
         ./scripts/feeds update -a
         ./scripts/feeds install -a
 
-    - name: 📜 加载自定义配置和脚本
+    - name: 加载自定义配置和脚本
       env:
         SUBNET: ${{ env.SUBNET }}
       run: |
@@ -160,14 +162,14 @@ jobs:
         $GITHUB_WORKSPACE/scripts/Handles.sh
         $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
 
-    - name: 📥 下载依赖
+    - name: 下载依赖
       run: |
         cd $OPENWRT_PATH
         make defconfig
         make download -j8
         find dl -size -1024c -exec rm -f {} \;
 
-    - name: 🛠️ 编译固件
+    - name: 编译固件
       id: compile
       run: |
         cd $OPENWRT_PATH
@@ -180,11 +182,11 @@ jobs:
         echo "DATE=$(date '+%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
         echo "FILE_DATE=$(date '+%Y.%m.%d')" >> $GITHUB_ENV
 
-    - name: 📊 查看磁盘空间使用情况
+    - name: 查看磁盘空间使用情况
       if: always()
       run: df -hT
 
-    - name: 📂 整理并打包 artifacts
+    - name: 整理并打包 artifacts
       if: steps.compile.outputs.status == 'success'
       run: |
         cd $OPENWRT_PATH/bin/targets/*/*
@@ -200,21 +202,21 @@ jobs:
         tar --transform='s|^package/||' -zcf "${DEVICE_ARCH}_packages.tar.gz" package
         echo "已完成 packages 压缩，KERNEL 变量已写入"
 
-    - name: ⬆️ 上传 Buildinfo Artifact
+    - name: 上传 Buildinfo Artifact
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: OpenWrt_buildinfo
         path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
 
-    - name: ⬆️ 上传 Packages Artifact
+    - name: 上传 Packages Artifact
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: OpenWrt_packages
         path: ${{ env.OPENWRT_PATH }}/artifact/*packages.tar.gz
 
-    - name: 🚀 上传固件到 Release
+    - name: 上传固件到 Release
       if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
       uses: ncipollo/release-action@main
       with:
@@ -234,7 +236,7 @@ jobs:
           -  🌿 源码分支: ${{ env.REPO_BRANCH }}
           -  ⚙️ 内核版本: ${{ env.KERNEL }}
 
-    - name: 📢 发送 Telegram 通知
+    - name: 发送 Telegram 通知
       run: |
         TIME=$(TZ='Asia/Shanghai' date '+%Y/%m/%d %H:%M')
         MESSAGE="${{ env.DEVICE_MODEL }} 编译完成

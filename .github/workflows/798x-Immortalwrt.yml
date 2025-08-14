@@ -26,7 +26,7 @@ jobs:
 
     steps:
 
-    - name: Check Server Performance
+    - name: 检查服务器性能
       run: |
         echo "警告⚠"
         echo "分配的服务器性能有限，若选择的插件过多，务必注意CPU性能！"
@@ -40,37 +40,39 @@ jobs:
         echo "--------------------------硬盘信息--------------------------"
         echo "硬盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l)" && df -hT
 
-    - name: Initialization Environment
+    - name: 扩容空间
+      uses: easimon/maximize-build-space@master
+      with:
+        root-reserve-mb: 2048
+        temp-reserve-mb: 100
+        swap-size-mb: 1024
+        remove-dotnet: 'true'
+        remove-android: 'true'
+        remove-haskell: 'true'
+        remove-codeql: 'true'
+        remove-docker-images: 'true'
+
+    - name: 部署环境
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        sudo -E apt -yqq update
-        sudo -E apt -yqq full-upgrade
-        sudo -E apt -yqq autoremove --purge
-        sudo -E apt -yqq autoclean
-        sudo -E apt -yqq clean
-        sudo -E apt -yqq install dos2unix libfuse-dev rename
-        sudo bash -c 'bash <(curl -sL https://build-scripts.immortalwrt.org/init_build_environment.sh)'
+        sudo -E apt-get -y update
+        sudo -E apt-get -y install $(curl -fsSL is.gd/depends_ubuntu_2204) rename
         sudo -E systemctl daemon-reload
-        sudo -E timedatectl set-timezone "Asia/Shanghai"
-        
-    - name: Combine Disks
-      uses: easimon/maximize-build-space@master
-      with:
-        swap-size-mb: 1024
-        temp-reserve-mb: 100
-        root-reserve-mb: 1024
+        sudo -E apt-get -y autoremove --purge
+        sudo -E apt-get -y clean
+        sudo timedatectl set-timezone "$TZ"
 
-    - name: Checkout
+    - name: 检出仓库
       uses: actions/checkout@main
 
-    - name: Clone Source Code
+    - name: 克隆 OpenWrt 源码
       run: |
         git clone --depth=1 -b $REPO_BRANCH $REPO_URL openwrt
         cd openwrt
         echo "OPENWRT_PATH=$PWD" >> $GITHUB_ENV
 
-    - name: Generate Variables
+    - name: 生成设备变量
       run: |
         cp $CONFIG_FILE $OPENWRT_PATH/.config
         cd $OPENWRT_PATH
@@ -140,13 +142,13 @@ jobs:
         fi
         echo "SUBNET=$SUBNET" >> $GITHUB_ENV
 
-    - name: Install Feeds
+    - name: 更新并安装 feeds
       run: |
         cd $OPENWRT_PATH
         ./scripts/feeds update -a               
         ./scripts/feeds install -a
 
-    - name: Load Custom Configuration
+    - name: 加载自定义配置和脚本
       env:
         SUBNET: ${{ env.SUBNET }}
       run: |
@@ -158,14 +160,14 @@ jobs:
         $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
         $GITHUB_WORKSPACE/scripts/patch-tailscale.sh        
 
-    - name: Download DL Package
+    - name: 下载依赖
       run: |
         cd $OPENWRT_PATH
         
         make download -j8
         find dl -size -1024c -exec rm -f {} \;
 
-    - name: Compile Firmware
+    - name: 编译固件
       id: compile
       run: |
         cd $OPENWRT_PATH
@@ -175,37 +177,30 @@ jobs:
         make -j$(nproc) || make -j1 || make -j1 V=s
         echo "status=success" >> $GITHUB_OUTPUT
 
-    - name: Check Space Usage
+    - name: 查看磁盘空间使用情况
       if: (!cancelled())
       run: df -hT
-
-    - name: Upload Bin Directory
-      if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
-      uses: actions/upload-artifact@main
-      with:
-        name: ${{ env.REPO_URL }}-bin-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
-        path: ${{ env.OPENWRT_PATH }}/bin
 
     - name: Prepare artifact
       run: |
         cd $OPENWRT_PATH
         mkdir -p ./artifact/package ./artifact/buildinfo
-        cp -rf $(find ./bin/packages/ -type f -name "*.ipk") ./artifact/package/
-        cp -rf $(find ./bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
+        find ./bin/packages/ -type f \( -name "*.ipk" -o -name "*.apk" \) -exec cp -f {} ./artifact/package/ \;
+        find ./bin/targets/ -type f \( -name "*.buildinfo" -o -name "*.manifest" \) -exec cp -f {} ./artifact/buildinfo/ \;
 
-    - name: Upload buildinfo
+    - name: 上传 Buildinfo Artifact
       uses: actions/upload-artifact@v4
       with:
         name: OpenWrt_buildinfo
         path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
 
-    - name: Upload package
+    - name: 上传 Packages Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: OpenWrt_package
+        name: ${{ env.DEVICE_ARCH }}_package
         path: ${{ env.OPENWRT_PATH }}/artifact/package/
 
-    - name: Organize Files
+    - name: 整理
       if: steps.compile.outputs.status == 'success'
       run: |
         cd $OPENWRT_PATH/bin/targets/*/*
@@ -214,7 +209,7 @@ jobs:
         $GITHUB_WORKSPACE/scripts/cleanup_targets.sh
         echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
 
-    - name: Upload Firmware To Release
+    - name: 上传固件到 Release
       if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
       uses: ncipollo/release-action@main
       with:
@@ -230,7 +225,7 @@ jobs:
           -  🌿 源码分支: ${{ env.REPO_BRANCH }}
           -  ⚙️ 内核版本: ${{ env.KERNEL }}        
 
-    - name: Send Telegram Message
+    - name: 发送 Telegram 通知
       run: |
         CURRENT_DATE_TIME=$(TZ='Asia/Shanghai' date +'%Y/%m/%d %r')
         MESSAGE="${{ env.DEVICE_MODEL }} 固件编译完成
