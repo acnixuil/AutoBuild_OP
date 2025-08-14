@@ -71,7 +71,7 @@ jobs:
         if: ${{ matrix.run_this }}
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 4096
+          root-reserve-mb: 2048
           temp-reserve-mb: 100
           swap-size-mb: 1024
           remove-dotnet: 'true'
@@ -79,13 +79,6 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
           remove-docker-images: 'true'
-
-      - name: Move GitHub Actions temp to big disk
-        if: ${{ matrix.run_this }}
-        run: |
-          mkdir -p /home/runner/work/_temp
-          sudo rm -rf /home/runner/actions-runner/_work/_temp
-          sudo ln -s /home/runner/work/_temp /home/runner/actions-runner/_work/_temp
 
       - name: Initialization Environment
         if: ${{ matrix.run_this }}
@@ -250,6 +243,7 @@ jobs:
         with:
           name: OpenWrt_buildinfo
           path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
+          overwrite: true
 
       - name: ⬆️ 上传 Packages Artifact
         if: always()
@@ -257,6 +251,7 @@ jobs:
         with:
           name: OpenWrt_packages
           path: ${{ env.OPENWRT_PATH }}/artifact/*packages.tar.gz
+          overwrite: true
 
       - name: Upload Firmware To Artifact
         if: ${{ matrix.run_this }}
