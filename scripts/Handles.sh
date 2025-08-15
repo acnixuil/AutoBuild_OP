@@ -80,6 +80,7 @@ fi
 # momo
 if [ -d "./momo" ]; then
   section "处理 momo 插件"
+  mkdir -p ./momo/luci-app-momo/root/etc/momo/run
   ln -sf /etc/nikki/run/ui ./momo/luci-app-momo/root/etc/momo/run/ui
   log "momo 面板链接已创建"
   cd "$PKG_PATCH"
