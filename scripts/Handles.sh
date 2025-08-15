@@ -77,6 +77,14 @@ if [ -d "./nikki" ]; then
   cd "$PKG_PATCH"
 fi
 
+# momo
+if [ -d "./momo" ]; then
+  section "处理 momo 插件"
+  ln -sf /etc/nikki/run/ui ./momo/luci-app-momo/root/etc/momo/run/ui
+  log "momo 面板链接已创建"
+  cd "$PKG_PATCH"
+fi
+
 # AdGuardHome
 if [ -d "./luci-app-adguardhome" ]; then
   section "处理 AdGuardHome"
