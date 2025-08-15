@@ -148,6 +148,7 @@ jobs:
       run: |
         cd $OPENWRT_PATH
         ./scripts/feeds update -a
+        find ./ -name '*homeproxy*' -exec rm -rf {} +
         ./scripts/feeds install -a
 
     - name: 加载自定义配置和脚本
