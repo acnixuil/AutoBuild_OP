@@ -34,4 +34,6 @@ uci set dhcp.@dnsmasq[0].min_cache_ttl='600'
 uci set dhcp.@dnsmasq[0].max_cache_ttl='86400'
 uci commit dhcp
 
+grep -q "/etc/lucky/" /etc/sysupgrade.conf || echo "/etc/lucky/" >> /etc/sysupgrade.conf
+
 exit 0
