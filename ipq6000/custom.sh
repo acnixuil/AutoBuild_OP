@@ -7,10 +7,10 @@ sed -i "s/192\.168\.1\.[0-9]\{1,3\}/192.168.${SUBNET}.1/g" base-files/files/bin/
 # 修改ssid
 sed -i 's/LiBwrt/99Pass1/' ../target/linux/qualcommax/base-files/etc/uci-defaults/990_set-wireless.sh
 sed -i "s/ssid='.*'/ssid='99Pass1'/g" network/config/wifi-scripts/files/lib/wifi/mac80211.uc
-sed -i "s/disabled='0'/disabled='1'/" ../target/linux/qualcommax/base-files/etc/uci-defaults/990_set-wireless.sh
-sed -i "s/disabled='.*'/disabled='1'/g" network/config/wifi-scripts/files/lib/wifi/mac80211.uc
-sed -i "s/key='.*'/key='12345678'/g" network/config/wifi-scripts/files/lib/wifi/mac80211.uc
-sed -i "s/country='.*'/country='CN'/g" network/config/wifi-scripts/files/lib/wifi/mac80211.uc
+# sed -i "s/disabled='0'/disabled='1'/" ../target/linux/qualcommax/base-files/etc/uci-defaults/990_set-wireless.sh
+# sed -i "s/disabled='.*'/disabled='1'/g" network/config/wifi-scripts/files/lib/wifi/mac80211.uc
+sed -i "s/key='.*'/key='qwer1234'/g" network/config/wifi-scripts/files/lib/wifi/mac80211.uc
+# sed -i "s/country='.*'/country='CN'/g" network/config/wifi-scripts/files/lib/wifi/mac80211.uc
 
 # 设置ttyd免帐号登录
 sed -i 's/\/bin\/login/\/bin\/login -f root/' ../feeds/packages/utils/ttyd/files/ttyd.config

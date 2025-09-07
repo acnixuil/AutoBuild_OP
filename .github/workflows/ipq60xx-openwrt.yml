@@ -104,7 +104,7 @@ jobs:
           cd openwrt
           echo "OPENWRT_PATH=$PWD" >> $GITHUB_ENV
           # 固定到某个 commit（可根据需要修改）
-          git reset --hard 3d4e207b4cb3fb1cf0c66406650171f353477e01
+          # git reset --hard 3d4e207b4cb3fb1cf0c66406650171f353477e01
           echo -e "\e[32mCurrent commit: $(git rev-parse HEAD)\e[0m"
 
       - name: 区分型号
