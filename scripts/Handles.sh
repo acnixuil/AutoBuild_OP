@@ -16,7 +16,7 @@ section() {
 PKG_PATCH="$GITHUB_WORKSPACE/openwrt/package"
 
 # 通用配置
-UI_URL="https://github.com/Zephyruso/zashboard/releases/latest/download/dist-cdn-fonts.zip"
+UI_URL="https://github.com/Zephyruso/zashboard/releases/latest/download/dist-no-fonts.zip"
 GEO_IP="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip-lite.dat"
 GEO_SITE="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat"
 GEO_MMDB="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb"
