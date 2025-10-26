@@ -37,7 +37,6 @@ env:
   REPO_URL: https://github.com/LiBwrt/openwrt-6.x.git
   REPO_BRANCH: k6.12-nss
   CUSTOM_SCRIPT: ipq6000/custom.sh
-  CLASH_KERNEL: arm64
   TZ: Asia/Shanghai
 
 jobs:
