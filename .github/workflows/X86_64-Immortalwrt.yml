@@ -8,12 +8,12 @@ on:
         required: true
         default: "2"
       cache:
-        description: "使用缓存？"
+        description: "使用缓存"
         required: true
         type: boolean
         default: true
       release:
-        description: "上传到RELEASE？"
+        description: "上传到RELEASE"
         required: true
         type: boolean
         default: true
