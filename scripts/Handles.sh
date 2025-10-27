@@ -29,7 +29,7 @@ download_ui() {
   unzip -q "$tmp_dir/ui.zip" -d "$tmp_dir"
   rm -rf "$target_dir"/*
   mkdir -p "$target_dir"
-  cp -r "$tmp_dir"/dist/* "$target_dir"/
+  cp -r "$tmp_dir"/*/* "$target_dir"/
   rm -rf "$tmp_dir"
   echo "UI 资源已更新 -> $target_dir"
 }
