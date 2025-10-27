@@ -272,7 +272,6 @@ jobs:
 
       # 17. 发送 Telegram 通知
       - name: 发送 Telegram 通知
-        if: ${{ secrets.TELEGRAM_TOKEN != '' && secrets.TELEGRAM_CHAT_ID != '' }}
         run: |
           MESSAGE="${{ env.DEVICE_MODEL }} 固件编译完成
           发布时间：${{ env.DATE }}
