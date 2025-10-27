@@ -272,8 +272,7 @@ jobs:
           name: ${{ matrix.variant }}
           path: |
             ${{ env.OPENWRT_PATH }}/artifact/**
-            ${{ env.FIRMWARE_PATH }}/*squashfs-factory.ubi
-            ${{ env.FIRMWARE_PATH }}/*squashfs-sysupgrade.bin
+            ${{ env.FIRMWARE_PATH }}/*
           compression-level: 9
           if-no-files-found: ignore
           overwrite: true
