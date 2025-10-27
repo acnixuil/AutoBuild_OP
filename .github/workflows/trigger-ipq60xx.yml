@@ -40,13 +40,18 @@ env:
   TZ: Asia/Shanghai
 
 jobs:
-  call_build:
+  set_context:
+    # 新增一个 Job 来设置所有上下文变量，包括矩阵所需的变量
     runs-on: ubuntu-22.04
-    
+    outputs:
+      subnet_wifi: ${{ steps.set_vars.outputs.subnet_wifi }}
+      subnet_nowifi: ${{ steps.set_vars.outputs.subnet_nowifi }}
+      build_variant: ${{ steps.set_vars.outputs.build_variant }}
+      cache_enabled: ${{ steps.set_vars.outputs.cache_enabled }}
+      cache_key_date: ${{ steps.set_vars.outputs.cache_key_date }}
+      date: ${{ steps.set_vars.outputs.date }}
+      
     steps:
-      - name: 检出当前仓库 (用于获取编译脚本)
-        uses: actions/checkout@v4
-
       - name: 设置统一输入和时间变量
         id: set_vars
         run: |
@@ -59,28 +64,21 @@ jobs:
           SUBNET_NOWIFI="${{ github.event.inputs.subnet_nowifi || '3' }}"
           CACHE_INPUT="${{ github.event.inputs.cache }}"
           
-          # 3. 缓存启用状态: 只有手动选择禁用缓存时才为 false
+          # 3. 缓存逻辑
           if [ "$CACHE_INPUT" == "false" ]; then
               CACHE_ENABLED="false"
-              echo "INFO: 手动选择禁用缓存。"
           else
               CACHE_ENABLED="true"
-              echo "INFO: 启用缓存，将生成新缓存。"
           fi
 
           # 4. 缓存 Key 日期逻辑: 
           if [ "$IS_SCHEDULE" == "true" ] || [ "$CACHE_INPUT" == "false" ]; then
-              # 定时任务 (不读旧缓存但生成新缓存) 或 手动禁用缓存，使用最新日期作为 Key
               CACHE_KEY_DATE=$(TZ='Asia/Shanghai' date +'%Y%m%d') 
-              echo "INFO: 缓存 Key 使用最新日期 ($CACHE_KEY_DATE)。"
           else
-              # 手动触发且启用缓存，使用固定日期 (例如源码 Commit 的日期或较早的日期)
-              # 使用固定值 '20250223'，确保它能匹配到 restore-keys 中的 Key 前缀，实现读取旧缓存
               CACHE_KEY_DATE='20250223'
-              echo "INFO: 缓存 Key 使用固定日期 ($CACHE_KEY_DATE) 以尝试读取旧缓存。"
           fi
           
-          # 5. 格式化日期变量 (用于 Release Name 和通知)
+          # 5. 格式化日期变量
           DATE_TIME_SH=$(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M:%S') 
 
           echo "build_variant=$BUILD_VARIANT" >> $GITHUB_OUTPUT
@@ -89,8 +87,20 @@ jobs:
           echo "cache_enabled=$CACHE_ENABLED" >> $GITHUB_OUTPUT
           echo "cache_key_date=$CACHE_KEY_DATE" >> $GITHUB_OUTPUT
           echo "date=$DATE_TIME_SH" >> $GITHUB_OUTPUT 
-
-    # 调用核心编译 Workflow，并应用矩阵逻辑
+          
+  call_build:
+    needs: set_context # 依赖 set_context Job 获取输出变量
+    runs-on: ubuntu-22.04
+    
+    # 将 set_context 的输出变量提升为 Job 级的环境变量
+    env:
+      BUILD_VARIANT: ${{ needs.set_context.outputs.build_variant }}
+      SUBNET_WIFI: ${{ needs.set_context.outputs.subnet_wifi }}
+      SUBNET_NOWIFI: ${{ needs.set_context.outputs.subnet_nowifi }}
+      CACHE_ENABLED: ${{ needs.set_context.outputs.cache_enabled }}
+      CACHE_KEY_DATE: ${{ needs.set_context.outputs.cache_key_date }}
+      DATE: ${{ needs.set_context.outputs.date }}
+    
     strategy:
       matrix:
         include:
@@ -98,18 +108,21 @@ jobs:
           - variant: wifi
             config_file: ipq6000/k612_wifi_m2.config
             rename_prefix: ""
-            subnet: ${{ steps.set_vars.outputs.subnet_wifi }}
-            run_this: ${{ steps.set_vars.outputs.build_variant == 'both' || steps.set_vars.outputs.build_variant == 'wifi' }}
+            # 现在可以引用 Job 级环境变量
+            subnet: ${{ env.SUBNET_WIFI }}
+            # 条件判断也基于 Job 级环境变量
+            run_this: ${{ env.BUILD_VARIANT == 'both' || env.BUILD_VARIANT == 'wifi' }}
           # NOWIFI 变体
           - variant: nowifi
             config_file: ipq6000/k612_nowifi_m2.config
             rename_prefix: "nowifi-"
-            subnet: ${{ steps.set_vars.outputs.subnet_nowifi }}
-            run_this: ${{ steps.set_vars.outputs.build_variant == 'both' || steps.set_vars.outputs.build_variant == 'nowifi' }}
+            subnet: ${{ env.SUBNET_NOWIFI }}
+            run_this: ${{ env.BUILD_VARIANT == 'both' || env.BUILD_VARIANT == 'nowifi' }}
       fail-fast: false
       
-    if: ${{ matrix.run_this }}
+    if: ${{ matrix.run_this }} # L111 修正：这里对 matrix.run_this 的引用是正确的
     
+    # L113, L114, L133 修正：uses, with, secrets 必须直接在 job 下
     uses: ./.github/workflows/core-build-openwrt.yml
     with:
       # 传递通用配置
@@ -118,7 +131,8 @@ jobs:
       custom_script: ${{ env.CUSTOM_SCRIPT }}
       firmware_release: ${{ env.FIRMWARE_RELEASE }}
       tz: ${{ env.TZ }}
-      cache_enabled: ${{ steps.set_vars.outputs.cache_enabled }}
+      # 传递 set_context Job 的输出
+      cache_enabled: ${{ env.CACHE_ENABLED }}
       
       # 传递矩阵变量 (设备配置)
       variant: ${{ matrix.variant }}
@@ -127,7 +141,5 @@ jobs:
       rename_prefix: ${{ matrix.rename_prefix }}
       
       # 传递统一的时间戳和日期
-      cache_key_date: ${{ steps.set_vars.outputs.cache_key_date }}
-      date: ${{ steps.set_vars.outputs.date }}
-      
-    secrets: inherit
+      cache_key_date: ${{ env.CACHE_KEY_DATE }}
+      date: ${{ env.DATE }}

@@ -54,8 +54,6 @@ on:
       date: # 格式化日期时间 (SH)，用于 Release Name 和通知
         required: true
         type: string
-    # 继承调用方的所有 secrets
-    secrets: inherit 
 
 env:
   # 将输入参数提升为环境变量，便于在步骤中使用
