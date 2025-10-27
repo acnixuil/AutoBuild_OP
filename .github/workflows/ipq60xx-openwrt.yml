@@ -21,7 +21,7 @@ on:
         required: false
         default: "3"
       cache:
-        description: "使用缓存？"
+        description: "使用缓存"
         required: true
         type: boolean
         default: true
@@ -232,37 +232,51 @@ jobs:
           echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
           # $GITHUB_WORKSPACE/scripts/cleanup_targets.sh
           echo "KERNEL=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p')" >> $GITHUB_ENV
-          rename -v "s/^/R$(date +'%y.%m.%d')-${{ env.RENAME_PREFIX }}/" *.ubi
-          rename -v "s/^/R$(date +'%y.%m.%d')-${{ env.RENAME_PREFIX }}/" *.bin
-          
+          # rename -v "s/^/R$(date +'%y.%m.%d')-${{ env.RENAME_PREFIX }}/" *.ubi
+          # rename -v "s/^/R$(date +'%y.%m.%d')-${{ env.RENAME_PREFIX }}/" *.bin
+          # rename -v "s/^/${{ env.RENAME_PREFIX }}/" *.ubi
+          # rename -v "s/^/${{ env.RENAME_PREFIX }}/" *.bin          
           echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
           echo "DATE1=$(date +'%Y-%m-%d_%H-%M-%S')" >> $GITHUB_ENV
 
-      - name: 上传 Buildinfo Artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: OpenWrt_buildinfo
-          path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
-          overwrite: true
+      # - name: 上传 Buildinfo Artifact
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: OpenWrt_buildinfo
+      #     path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
+      #     overwrite: true
+      #
+      # - name: 上传 Packages 到 Artifact
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: OpenWrt_packages
+      #     path: ${{ env.OPENWRT_PATH }}/artifact/*packages.tar.gz
+      #     overwrite: true
+      #
+      # - name: 上传 Firmware 到 Artifact
+      #   if: ${{ matrix.run_this }}
+      #   continue-on-error: true
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ${{ env.RENAME_PREFIX }}-${{ env.DEVICE_MODEL }}-${{ env.DATE1 }}
+      #     path: |
+      #       ${{ env.FIRMWARE_PATH }}/*squashfs-factory.ubi
+      #       ${{ env.FIRMWARE_PATH }}/*squashfs-sysupgrade.bin
 
-      - name: 上传 Packages 到 Artifact
-        if: always()
+      - name: 上传所有产物到 Artifact
+        if: ${{ matrix.run_this && steps.compile.outputs.status == 'success' }}
         uses: actions/upload-artifact@v4
         with:
-          name: OpenWrt_packages
-          path: ${{ env.OPENWRT_PATH }}/artifact/*packages.tar.gz
-          overwrite: true
-
-      - name: 上传 Firmware 到 Artifact
-        if: ${{ matrix.run_this }}
-        continue-on-error: true
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.RENAME_PREFIX }}-${{ env.DEVICE_MODEL }}-${{ env.DATE1 }}
+          name: ${{ matrix.variant }}
           path: |
+            ${{ env.OPENWRT_PATH }}/artifact/**
             ${{ env.FIRMWARE_PATH }}/*squashfs-factory.ubi
             ${{ env.FIRMWARE_PATH }}/*squashfs-sysupgrade.bin
+          compression-level: 9
+          if-no-files-found: ignore
+          overwrite: true
 
       - name: 上传 Firmware 到 Release
         if: ${{ matrix.run_this && steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true' }}
