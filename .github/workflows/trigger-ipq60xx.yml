@@ -1,0 +1,133 @@
+name: 🧩 IPQ60xx 固件编译触发器
+
+on:
+  # 1. 定时触发器：北京时间周六早上 6 点 30 分 (UTC 22:30 Friday)
+  schedule:
+    - cron: '30 22 * * 5' 
+  # 2. 手动触发器
+  workflow_dispatch:
+    inputs:
+      build_variant:
+        description: "选择编译版本: wifi, nowifi, both"
+        required: false
+        default: "both"
+        type: choice
+        options:
+          - wifi
+          - nowifi
+          - both
+      subnet_wifi:
+        description: "WiFi版默认IP地址:192.168.(X).1 中的X值"
+        required: false
+        default: "2"
+        type: string
+      subnet_nowifi:
+        description: "非WiFi版默认IP地址:192.168.(X).1 中的X值"
+        required: false
+        default: "3"
+        type: string
+      cache:
+        description: "使用缓存 (定时触发时，强制不使用旧缓存但会生成新缓存)"
+        required: false
+        type: boolean
+        default: true
+
+env:
+  REPO_URL: https://github.com/LiBwrt/openwrt-6.x.git
+  REPO_BRANCH: k6.12-nss
+  CUSTOM_SCRIPT: ipq6000/custom.sh
+  FIRMWARE_RELEASE: true
+  TZ: Asia/Shanghai
+
+jobs:
+  call_build:
+    runs-on: ubuntu-22.04
+    
+    steps:
+      - name: 检出当前仓库 (用于获取编译脚本)
+        uses: actions/checkout@v4
+
+      - name: 设置统一输入和时间变量
+        id: set_vars
+        run: |
+          # 1. 确定触发方式
+          IS_SCHEDULE="${{ github.event_name == 'schedule' }}"
+          
+          # 2. 统一输入变量 (非手动触发时使用默认值)
+          BUILD_VARIANT="${{ github.event.inputs.build_variant || 'both' }}"
+          SUBNET_WIFI="${{ github.event.inputs.subnet_wifi || '2' }}"
+          SUBNET_NOWIFI="${{ github.event.inputs.subnet_nowifi || '3' }}"
+          CACHE_INPUT="${{ github.event.inputs.cache }}"
+          
+          # 3. 缓存启用状态: 只有手动选择禁用缓存时才为 false
+          if [ "$CACHE_INPUT" == "false" ]; then
+              CACHE_ENABLED="false"
+              echo "INFO: 手动选择禁用缓存。"
+          else
+              CACHE_ENABLED="true"
+              echo "INFO: 启用缓存，将生成新缓存。"
+          fi
+
+          # 4. 缓存 Key 日期逻辑: 
+          if [ "$IS_SCHEDULE" == "true" ] || [ "$CACHE_INPUT" == "false" ]; then
+              # 定时任务 (不读旧缓存但生成新缓存) 或 手动禁用缓存，使用最新日期作为 Key
+              CACHE_KEY_DATE=$(TZ='Asia/Shanghai' date +'%Y%m%d') 
+              echo "INFO: 缓存 Key 使用最新日期 ($CACHE_KEY_DATE)。"
+          else
+              # 手动触发且启用缓存，使用固定日期 (例如源码 Commit 的日期或较早的日期)
+              # 使用固定值 '20250223'，确保它能匹配到 restore-keys 中的 Key 前缀，实现读取旧缓存
+              CACHE_KEY_DATE='20250223'
+              echo "INFO: 缓存 Key 使用固定日期 ($CACHE_KEY_DATE) 以尝试读取旧缓存。"
+          fi
+          
+          # 5. 格式化日期变量 (用于 Release Name 和通知)
+          DATE_TIME_SH=$(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M:%S') 
+
+          echo "build_variant=$BUILD_VARIANT" >> $GITHUB_OUTPUT
+          echo "subnet_wifi=$SUBNET_WIFI" >> $GITHUB_OUTPUT
+          echo "subnet_nowifi=$SUBNET_NOWIFI" >> $GITHUB_OUTPUT
+          echo "cache_enabled=$CACHE_ENABLED" >> $GITHUB_OUTPUT
+          echo "cache_key_date=$CACHE_KEY_DATE" >> $GITHUB_OUTPUT
+          echo "date=$DATE_TIME_SH" >> $GITHUB_OUTPUT 
+
+    # 调用核心编译 Workflow，并应用矩阵逻辑
+    strategy:
+      matrix:
+        include:
+          # WIFI 变体
+          - variant: wifi
+            config_file: ipq6000/k612_wifi_m2.config
+            rename_prefix: ""
+            subnet: ${{ steps.set_vars.outputs.subnet_wifi }}
+            run_this: ${{ steps.set_vars.outputs.build_variant == 'both' || steps.set_vars.outputs.build_variant == 'wifi' }}
+          # NOWIFI 变体
+          - variant: nowifi
+            config_file: ipq6000/k612_nowifi_m2.config
+            rename_prefix: "nowifi-"
+            subnet: ${{ steps.set_vars.outputs.subnet_nowifi }}
+            run_this: ${{ steps.set_vars.outputs.build_variant == 'both' || steps.set_vars.outputs.build_variant == 'nowifi' }}
+      fail-fast: false
+      
+    if: ${{ matrix.run_this }}
+    
+    uses: ./.github/workflows/core-build-openwrt.yml
+    with:
+      # 传递通用配置
+      repo_url: ${{ env.REPO_URL }}
+      repo_branch: ${{ env.REPO_BRANCH }}
+      custom_script: ${{ env.CUSTOM_SCRIPT }}
+      firmware_release: ${{ env.FIRMWARE_RELEASE }}
+      tz: ${{ env.TZ }}
+      cache_enabled: ${{ steps.set_vars.outputs.cache_enabled }}
+      
+      # 传递矩阵变量 (设备配置)
+      variant: ${{ matrix.variant }}
+      subnet: ${{ matrix.subnet }}
+      config_file: ${{ matrix.config_file }} 
+      rename_prefix: ${{ matrix.rename_prefix }}
+      
+      # 传递统一的时间戳和日期
+      cache_key_date: ${{ steps.set_vars.outputs.cache_key_date }}
+      date: ${{ steps.set_vars.outputs.date }}
+      
+    secrets: inherit

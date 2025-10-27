@@ -1,121 +1,90 @@
-name: ipq60xx1
+name: ⚙️ OpenWrt 核心编译流程 (可复用)
 
 on:
-  workflow_dispatch:
+  # 仅通过 workflow_call 触发
+  workflow_call:
     inputs:
-      build_variant:
-        description: "选择编译版本: wifi, nowifi, both"
+      # OpenWrt 源码信息
+      repo_url:
         required: true
-        default: "both"
-        type: choice
-        options:
-          - wifi
-          - nowifi
-          - both
-      subnet_wifi:
-        description: "WiFi版默认IP地址:192.168.(X).1 中的X值"
-        required: false
-        default: "2"
-      subnet_nowifi:
-        description: "非WiFi版默认IP地址:192.168.(X).1 中的X值"
-        required: false
-        default: "3"
-      cache:
-        description: "使用缓存"
+        type: string
+        description: "OpenWrt 源码仓库 URL"
+      repo_branch:
+        required: true
+        type: string
+        description: "OpenWrt 源码分支"
+      custom_script:
+        required: true
+        type: string
+        description: "自定义配置脚本路径 (当前仓库相对路径)"
+      # 通用配置
+      firmware_release:
         required: true
         type: boolean
-        default: true
-      release:
-        description: "上传到RELEASE"
+        description: "是否上传到 GitHub Release"
+      tz:
+        required: true
+        type: string
+        description: "时区设置 (固定为 Asia/Shanghai)"
+      cache_enabled:
         required: true
         type: boolean
-        default: true
-  schedule:
-    - cron: '0 22 * * 5' # 每周六 6:00（北京时间）自动编译
+        description: "是否使用缓存"
+      # 当前编译任务的变体信息 (设备配置)
+      variant:
+        required: true
+        type: string
+        description: "当前编译的变体 (wifi 或 nowifi)"
+      subnet:
+        required: true
+        type: string
+        description: "当前变体的默认 IP 子网值"
+      config_file:
+        required: true
+        type: string
+        description: "设备配置文件的路径 (相对于触发器仓库)"
+      rename_prefix:
+        required: true
+        type: string
+        description: "固件名称的前缀 (例如: nowifi-)"
+      # 统一的时间戳和日期
+      cache_key_date: # 用于缓存Key的日期
+        required: true
+        type: string
+      date: # 格式化日期时间 (SH)，用于 Release Name 和通知
+        required: true
+        type: string
+    # 继承调用方的所有 secrets
+    secrets: inherit 
 
 env:
-  REPO_URL: https://github.com/LiBwrt/openwrt-6.x.git
-  REPO_BRANCH: k6.12-nss
-  CUSTOM_SCRIPT: ipq6000/custom.sh
-  TZ: Asia/Shanghai
+  # 将输入参数提升为环境变量，便于在步骤中使用
+  REPO_URL: ${{ inputs.repo_url }}
+  REPO_BRANCH: ${{ inputs.repo_branch }}
+  CUSTOM_SCRIPT: ${{ inputs.custom_script }}
+  FIRMWARE_RELEASE: ${{ inputs.firmware_release }}
+  TZ: ${{ inputs.tz }}
+  SUBNET: ${{ inputs.subnet }}
+  CONFIG_FILE: ${{ inputs.config_file }}
+  RENAME_PREFIX: ${{ inputs.rename_prefix }}
+  
+  CACHE_KEY_DATE: ${{ inputs.cache_key_date }}
+  DATE: ${{ inputs.date }} # 用于 Release Name/通知
+
+  CLASH_KERNEL: arm64
+  FIRMWARE_TAG: ipq6000 
 
 jobs:
   build:
     runs-on: ubuntu-22.04
-    env:
-      BUILD_VARIANT: ${{ github.event.inputs.build_variant || 'both' }}
-      SUBNET_WIFI: ${{ github.event.inputs.subnet_wifi || '2' }}
-      SUBNET_NOWIFI: ${{ github.event.inputs.subnet_nowifi || '3' }}
-      CACHE_ENABLED: ${{ github.event.inputs.cache || false }}
-      RELEASE_ENABLED: ${{ github.event.inputs.release || false }}
-      EVENT_NAME: ${{ github.event_name }}
-
-    strategy:
-      matrix:
-        include:
-          - variant: wifi
-            run_this: true
-          - variant: nowifi
-            run_this: true
-
+    
     steps:
-      - name: 调整默认参数（定时触发时禁用缓存与Release）
-        run: |
-          if [ "$EVENT_NAME" = "schedule" ]; then
-            echo "检测到定时触发，禁用缓存与Release"
-            echo "CACHE_ENABLED=false" >> $GITHUB_ENV
-            echo "RELEASE_ENABLED=false" >> $GITHUB_ENV
-            echo "BUILD_VARIANT=both" >> $GITHUB_ENV
-            echo "SUBNET_WIFI=2" >> $GITHUB_ENV
-            echo "SUBNET_NOWIFI=3" >> $GITHUB_ENV
-          else
-            echo "CACHE_ENABLED=${{ env.CACHE_ENABLED }}" >> $GITHUB_ENV
-            echo "RELEASE_ENABLED=${{ env.RELEASE_ENABLED }}" >> $GITHUB_ENV
-          fi
+      # 1. 检出当前仓库 (获取编译脚本)
+      - name: 检出当前仓库 (获取编译脚本)
+        uses: actions/checkout@v4
 
-      - name: 显示触发类型与参数
-        run: |
-          echo "触发类型: $EVENT_NAME"
-          echo "Build Variant: $BUILD_VARIANT"
-          echo "Subnet WiFi: $SUBNET_WIFI"
-          echo "Subnet NoWiFi: $SUBNET_NOWIFI"
-          echo "Cache Enabled: $CACHE_ENABLED"
-          echo "Release Enabled: $RELEASE_ENABLED"
-
-      - name: 根据 variant 设置环境变量
-        run: |
-          if [ "${{ matrix.variant }}" == "wifi" ]; then
-            echo "CONFIG_FILE=ipq6000/k612_wifi_m2.config" >> $GITHUB_ENV
-            echo "FIRMWARE_TAG=ipq6000" >> $GITHUB_ENV
-            echo "RENAME_PREFIX=" >> $GITHUB_ENV
-            echo "SUBNET=$SUBNET_WIFI" >> $GITHUB_ENV
-          else
-            echo "CONFIG_FILE=ipq6000/k612_nowifi_m2.config" >> $GITHUB_ENV
-            echo "FIRMWARE_TAG=ipq6000" >> $GITHUB_ENV
-            echo "RENAME_PREFIX=nowifi-" >> $GITHUB_ENV
-            echo "SUBNET=$SUBNET_NOWIFI" >> $GITHUB_ENV
-          fi
-
-      - name: 输出最终配置确认
-        run: |
-          echo "----------------------------------------"
-          echo "Variant: ${{ matrix.variant }}"
-          echo "CONFIG_FILE: $CONFIG_FILE"
-          echo "SUBNET: $SUBNET"
-          echo "CACHE_ENABLED: $CACHE_ENABLED"
-          echo "RELEASE_ENABLED: $RELEASE_ENABLED"
-          echo "----------------------------------------"
-
-      - name: 检查是否跳过该 variant
-        run: |
-          if [ "$BUILD_VARIANT" != "both" ] && [ "$BUILD_VARIANT" != "${{ matrix.variant }}" ]; then
-            echo "Skipping ${{ matrix.variant }} build (not selected in inputs)"
-            exit 0
-          fi
-          echo "Running build for ${{ matrix.variant }} variant."
-
+      # 2. 检查服务器性能
       - name: 检查服务器性能
-        if: ${{ matrix.run_this }}
         run: |
           echo "警告⚠"
           echo "分配的服务器性能有限，若选择的插件过多，务必注意CPU性能！"
@@ -129,8 +98,8 @@ jobs:
           echo "--------------------------硬盘信息--------------------------"
           echo "硬盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l)" && df -hT
 
+      # 3. 扩容空间
       - name: 扩容空间
-        if: ${{ matrix.run_this }}
         uses: easimon/maximize-build-space@master
         with:
           root-reserve-mb: 2048
@@ -142,8 +111,8 @@ jobs:
           remove-codeql: 'true'
           remove-docker-images: 'true'
 
+      # 4. 部署环境
       - name: 部署环境
-        if: ${{ matrix.run_this }}
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
@@ -154,12 +123,8 @@ jobs:
           sudo -E apt-get -y clean
           sudo timedatectl set-timezone "$TZ"
 
-      - name: 检出仓库
-        if: ${{ matrix.run_this }}
-        uses: actions/checkout@main
-
+      # 5. 克隆 OpenWrt 源码
       - name: 克隆 OpenWrt 源码
-        if: ${{ matrix.run_this }}
         run: |
           df -hT $GITHUB_WORKSPACE
           git clone --shallow-since=2025-02-23 -b $REPO_BRANCH $REPO_URL openwrt
@@ -167,31 +132,33 @@ jobs:
           echo "OPENWRT_PATH=$PWD" >> $GITHUB_ENV
           echo -e "\e[32mCurrent commit: $(git rev-parse HEAD)\e[0m"
 
-      - name: 生成设备变量
-        if: ${{ matrix.run_this }}
+      # 6. 生成设备变量
+      - name: 生成设备变量 (获取架构信息)
         run: |
           cp $CONFIG_FILE $OPENWRT_PATH/.config
           cd $OPENWRT_PATH
           make defconfig > /dev/null 2>&1
+          
           echo "SOURCE_REPO=$(echo $REPO_URL | awk -F '/' '{print $(NF)}')" >> $GITHUB_ENV
           echo "DEVICE_TARGET=$(grep CONFIG_TARGET_BOARD .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
           echo "DEVICE_SUBTARGET=$(grep CONFIG_TARGET_SUBTARGET .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
-          echo "DEVICE_ARCH=$(sed -n 's/^CONFIG_TARGET_ARCH_PACKAGES=\"\\([^"]*\\)\"/\\1/p' .config)" >> $GITHUB_ENV
-          echo "DEVICE_MODEL=$(sed -n 's/^CONFIG_TARGET_PROFILE=\"DEVICE_\\([^"]*\\)\"/\\1/p' .config)" >> $GITHUB_ENV
-          echo "CACHE_DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+          echo "DEVICE_ARCH=$(sed -n 's/^CONFIG_TARGET_ARCH_PACKAGES="\([^"]*\)"/\1/p' .config)" >> $GITHUB_ENV
+          echo "DEVICE_MODEL=$(sed -n 's/^CONFIG_TARGET_PROFILE="DEVICE_\([^"]*\)"/\1/p' .config)" >> $GITHUB_ENV
 
+      # 7. 缓存工具链
       - name: 缓存工具链
-        if: env.CACHE_ENABLED == 'true'
+        if: ${{ inputs.cache_enabled == true }}
         uses: actions/cache@v4
         id: cache-toolchain
         with:
-          key: ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-${{ env.CACHE_DATE }}
+          key: ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-${{ env.CACHE_KEY_DATE }}
           restore-keys: |
             ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-
           path: |
             ${{ env.OPENWRT_PATH }}/.ccache
             ${{ env.OPENWRT_PATH }}/staging_dir
 
+      # 8. 输出缓存结果
       - name: 输出缓存结果
         run: |
           echo "使用的缓存键: ${{ steps.cache-toolchain.outputs.cache-key }}"
@@ -199,46 +166,49 @@ jobs:
           du -sh ${{ env.OPENWRT_PATH }}/.ccache || echo ".ccache 目录不存在"
           du -sh ${{ env.OPENWRT_PATH }}/staging_dir || echo "staging_dir 目录不存在"
 
-      - name: 刷新缓存时间戳
+      # 9. 移除 stale toolchain stamps
+      - name: 移除 stale toolchain stamps
         run: |
-          if [ -d "$OPENWRT_PATH/staging_dir" ]; then
-            find "$OPENWRT_PATH/staging_dir" -type d -name "stamp" -not -path "*target*" | while read -r dir; do
-              find "$dir" -type f -exec touch {} +
-            done
-          fi
+          echo "移除 OpenWrt build stamps 以避免误用旧缓存"
+          find "$OPENWRT_PATH/staging_dir" -type d -name "stamp" -not -path "*target*" | xargs rm -rf 2>/dev/null || true
 
+      # 10. 更新并安装 feeds
       - name: 更新并安装 feeds
-        if: ${{ matrix.run_this }}
         run: |
           cd $OPENWRT_PATH
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
-
+          ./scripts/feeds update -a  
+          ./scripts/feeds install -a 
+        
+      # 11. 加载自定义配置和脚本
       - name: 加载自定义配置和脚本
-        if: ${{ matrix.run_this }}
         env:
           SUBNET: ${{ env.SUBNET }}
         run: |
+          # 确保配置文件被最终确认 (可删除，因步骤 6 已完成，但保留增加健壮性)
           if [ -f "$CONFIG_FILE" ]; then
-            mv $CONFIG_FILE $OPENWRT_PATH/.config
+            cp $CONFIG_FILE $OPENWRT_PATH/.config
           fi
+          
+          # 确保所有脚本可执行
           chmod +x $GITHUB_WORKSPACE/scripts/*.sh $CUSTOM_SCRIPT
+          
+          # 运行自定义脚本来修改源码或配置
           cd $OPENWRT_PATH/package/
           $GITHUB_WORKSPACE/scripts/Packages.sh
           $GITHUB_WORKSPACE/scripts/Handles.sh
           $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
           $GITHUB_WORKSPACE/scripts/patch-tailscale.sh
 
+      # 12. 下载依赖
       - name: 下载依赖
-        if: ${{ matrix.run_this }}
         run: |
           cd $OPENWRT_PATH
           make defconfig
           make download -j$(nproc)
           find dl -size -1024c -exec rm -f {} \;
 
+      # 13. 编译固件
       - name: 编译固件
-        if: ${{ matrix.run_this }}
         id: compile
         run: |
           cd $OPENWRT_PATH
@@ -247,29 +217,32 @@ jobs:
           cp $GITHUB_WORKSPACE/scripts/init-tailscale.sh files/etc/uci-defaults/99-init-tailscale
           make -j$(nproc) || make -j1 || make -j1 V=s
           echo "status=success" >> $GITHUB_OUTPUT
-
+          
+      # 14. 整理文件 (生成用于文件名的日期)
       - name: 整理文件
-        if: ${{ matrix.run_this && steps.compile.outputs.status == 'success' }}
-        run: |
+        if: ${{ steps.compile.outputs.status == 'success' }}
+        run: |          
           cd $OPENWRT_PATH
           mkdir -p ./artifact/package ./artifact/buildinfo
           find ./bin/packages/ -type f \( -name "*.ipk" -o -name "*.apk" \) -exec cp -f {} ./artifact/package/ \;
           find ./bin/targets/ -type f \( -name "*.buildinfo" -o -name "*.manifest" \) -exec cp -f {} ./artifact/buildinfo/ \;
           cd ./artifact
           tar --transform='s|^package/||' -zcf "${DEVICE_ARCH}_packages.tar.gz" package
+          
+          # 生成编译完成后的日期时间戳 (用于 Artifact Name)
+          DATE_TIME_FILENAME=$(TZ='${{ env.TZ }}' date +'%Y-%m-%d_%H-%M-%S')
+          echo "DATE_FILENAME=$DATE_TIME_FILENAME" >> $GITHUB_ENV
+          
           cd $OPENWRT_PATH/bin/targets/*/*
           echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
           echo "KERNEL=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p')" >> $GITHUB_ENV
-          rename -v "s/^/${{ env.RENAME_PREFIX }}/" *.ubi
-          rename -v "s/^/${{ env.RENAME_PREFIX }}/" *.bin
-          echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
-          echo "DATE1=$(date +'%Y-%m-%d_%H-%M-%S')" >> $GITHUB_ENV
-
+          
+      # 15. 上传所有产物到 Artifact
       - name: 上传所有产物到 Artifact
-        if: ${{ matrix.run_this && steps.compile.outputs.status == 'success' }}
+        if: ${{ steps.compile.outputs.status == 'success' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.variant }}
+          name: ${{ inputs.variant }}_${{ env.DATE_FILENAME }}
           path: |
             ${{ env.OPENWRT_PATH }}/artifact/**
             ${{ env.FIRMWARE_PATH }}/*squashfs-factory.ubi
@@ -278,11 +251,12 @@ jobs:
           if-no-files-found: ignore
           overwrite: true
 
+      # 16. 上传 Firmware 到 Release
       - name: 上传 Firmware 到 Release
-        if: ${{ matrix.run_this && steps.compile.outputs.status == 'success' && env.RELEASE_ENABLED == 'true' }}
+        if: ${{ steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == true }}
         uses: ncipollo/release-action@main
         with:
-          name: R${{ env.DATE }} for ${{ env.DEVICE_TARGET }}
+          name: R${{ env.DATE }} for ${{ env.DEVICE_TARGET }} # 使用传入的格式化日期
           allowUpdates: true
           replacesArtifacts: true
           tag: ${{ env.DEVICE_TARGET }}
@@ -293,33 +267,31 @@ jobs:
             ${{ env.FIRMWARE_PATH }}/*squashfs-sysupgrade.bin
           body: |
             ### 📋 固件信息
-            -  🔧 平台架构: ${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
-            -  📦 固件源码: ${{ env.REPO_URL }}
-            -  🌿 源码分支: ${{ env.REPO_BRANCH }}
-            -  ⚙️ 内核版本: ${{ env.KERNEL }}
+            - 🔧 平台架构: ${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
+            - 📦 固件源码: ${{ env.REPO_URL }}
+            - 🌿 源码分支: ${{ env.REPO_BRANCH }}
+            - ⚙️ 内核版本: ${{ env.KERNEL }}
 
+      # 17. 发送 Telegram 通知
       - name: 发送 Telegram 通知
-        if: ${{ matrix.variant == 'wifi' }}
+        if: ${{ secrets.TELEGRAM_TOKEN != '' && secrets.TELEGRAM_CHAT_ID != '' }}
         run: |
-          CURRENT_DATE_TIME=$(TZ='Asia/Shanghai' date +'%Y/%m/%d %r')
           MESSAGE="${{ env.DEVICE_MODEL }} 固件编译完成
-          发布时间：$CURRENT_DATE_TIME
-          发布页面：https://github.com/acnixuil/AutoBuild_OP/releases/tag/${{ env.DEVICE_TARGET }}"
+          发布时间：${{ env.DATE }}
+          发布页面：https://github.com/${{ github.repository }}/releases/tag/${{ env.DEVICE_TARGET }}"
           curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
             -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
             -d text="$MESSAGE"
 
+      # 18. 删除旧缓存
       - name: 删除旧缓存
-        if: always()
+        if: ${{ steps.compile.outputs.status == 'success' }}
         run: |
-          if ! command -v gh >/dev/null; then
-            echo "⚠️ 未安装 gh CLI，跳过删除缓存"
-            exit 0
-          fi
           echo "开始列出并删除旧缓存..."
           gh cache list --key ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}- --json key --jq '.[] | .key' | while read -r key; do
             echo "删除缓存：$key"
             gh cache delete "$key"
           done
-          du -sh ${{ env.OPENWRT_PATH }}/.ccache || true
-          du -sh ${{ env.OPENWRT_PATH }}/staging_dir || true
+          echo "当前缓存使用情况："
+          echo "ccache 目录大小: $(du -sh ${{ env.OPENWRT_PATH }}/.ccache | cut -f 1)"
+          echo "staging_dir 目录大小: $(du -sh ${{ env.OPENWRT_PATH }}/staging_dir | cut -f 1)"
