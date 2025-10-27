@@ -234,8 +234,8 @@ jobs:
           echo "KERNEL=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p')" >> $GITHUB_ENV
           # rename -v "s/^/R$(date +'%y.%m.%d')-${{ env.RENAME_PREFIX }}/" *.ubi
           # rename -v "s/^/R$(date +'%y.%m.%d')-${{ env.RENAME_PREFIX }}/" *.bin
-          # rename -v "s/^/${{ env.RENAME_PREFIX }}/" *.ubi
-          # rename -v "s/^/${{ env.RENAME_PREFIX }}/" *.bin          
+          rename -v "s/^/${{ env.RENAME_PREFIX }}/" *.ubi
+          rename -v "s/^/${{ env.RENAME_PREFIX }}/" *.bin          
           echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
           echo "DATE1=$(date +'%Y-%m-%d_%H-%M-%S')" >> $GITHUB_ENV
 
