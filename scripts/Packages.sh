@@ -14,17 +14,20 @@ rm -rf ../feeds/packages/lang/golang
 git clone https://github.com/sbwml/packages_lang_golang -b 25.x ../feeds/packages/lang/golang
 
 # Git稀疏克隆，只克隆指定目录到本地
-function git_sparse_clone() {
+# git_sparse_clone 分支名 仓库地址 需要下载的目录
+git_sparse_clone() {
   branch="$1" repourl="$2" && shift 2
-  git clone --depth=1 -b $branch --single-branch --filter=blob:none --sparse $repourl
-  repodir=$(echo $repourl | awk -F '/' '{print $(NF)}')
-  cd $repodir && git sparse-checkout set $@
-  mv -f $@ ../
-  cd .. && rm -rf $repodir
+  tmpdir="$(basename -s .git "$repourl")_tmp"
+  git clone --depth=1 -b "$branch" --single-branch --filter=blob:none --sparse "$repourl" "$tmpdir"
+  cd "$tmpdir" || exit 1
+  git sparse-checkout set "$@"
+  mv -f "$@" ../
+  cd .. && rm -rf "$tmpdir"
 }
 
 # openclash
 git_sparse_clone dev https://github.com/vernesong/OpenClash luci-app-openclash
+git_sparse_clone master https://github.com/Tokisaki-Galaxy/luci-app-tailscale-community.git luci-app-tailscale-community
 
 git clone --depth=1 --single-branch -b main https://github.com/xiaorouji/openwrt-passwall.git openwrt-passwall
 git clone --depth=1 --single-branch -b main https://github.com/xiaorouji/openwrt-passwall-packages.git openwrt-passwall-packages
