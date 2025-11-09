@@ -5,7 +5,7 @@ echo "${SUBNET}"
 sed -i "s/192\.168\.1\.[0-9]\{1,3\}/192.168.${SUBNET}.1/g" base-files/files/bin/config_generate
 
 # 修改ssid
-sed -i "/htbsscoex=\"1\"/{n; s/ssid=\".*\"/ssid=\"FERN_2.4G\"/}" mtk/applications/mtwifi-cfg/files/mtwifi.sh
+sed -i "/htbsscoex=\"1\"/{n; s/ssid=\".*\"/ssid=\"FERN-2.4G\"/}" mtk/applications/mtwifi-cfg/files/mtwifi.sh
 sed -i "/htbsscoex=\"0\"/{n; s/ssid=\".*\"/ssid=\"FERN\"/}" mtk/applications/mtwifi-cfg/files/mtwifi.sh
 
 # 设置ttyd免帐号登录
