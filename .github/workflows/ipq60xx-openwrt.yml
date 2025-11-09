@@ -160,6 +160,7 @@ jobs:
             ${{ env.OPENWRT_PATH }}/staging_dir
 
       - name: 输出缓存结果
+        if: github.event.inputs.cache == 'true'
         run: |
           echo "使用的缓存键: ${{ steps.cache-toolchain.outputs.cache-key }}"
           echo "缓存命中情况: ${{ steps.cache-toolchain.outputs.cache-hit }}"
@@ -168,6 +169,7 @@ jobs:
           du -sh ${{ env.OPENWRT_PATH }}/staging_dir || echo "staging_dir 目录不存在"
 
       - name: 刷新缓存时间戳
+        if: github.event.inputs.cache == 'true'
         run: |
           echo "开始刷新缓存时间戳..."
           if [ -d "$OPENWRT_PATH/staging_dir" ]; then
@@ -239,32 +241,6 @@ jobs:
           echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
           echo "DATE1=$(date +'%Y-%m-%d_%H-%M-%S')" >> $GITHUB_ENV
 
-      # - name: 上传 Buildinfo Artifact
-      #   if: always()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: OpenWrt_buildinfo
-      #     path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
-      #     overwrite: true
-      #
-      # - name: 上传 Packages 到 Artifact
-      #   if: always()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: OpenWrt_packages
-      #     path: ${{ env.OPENWRT_PATH }}/artifact/*packages.tar.gz
-      #     overwrite: true
-      #
-      # - name: 上传 Firmware 到 Artifact
-      #   if: ${{ matrix.run_this }}
-      #   continue-on-error: true
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: ${{ env.RENAME_PREFIX }}-${{ env.DEVICE_MODEL }}-${{ env.DATE1 }}
-      #     path: |
-      #       ${{ env.FIRMWARE_PATH }}/*squashfs-factory.ubi
-      #       ${{ env.FIRMWARE_PATH }}/*squashfs-sysupgrade.bin
-
       - name: 上传所有产物到 Artifact
         if: ${{ matrix.run_this && steps.compile.outputs.status == 'success' }}
         uses: actions/upload-artifact@v4
@@ -299,7 +275,7 @@ jobs:
             -  ⚙️ 内核版本: ${{ env.KERNEL }}
 
       - name: 发送 Telegram 通知
-        if: ${{ matrix.run_this }}
+        if: ${{ matrix.run_this && steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true' }}
         run: |
           CURRENT_DATE_TIME=$(TZ='Asia/Shanghai' date +'%Y/%m/%d %r')
           MESSAGE="${{ env.DEVICE_MODEL }} 固件编译完成
@@ -310,6 +286,7 @@ jobs:
             -d text="$MESSAGE"
 
       - name: 删除旧缓存
+        if: github.event.inputs.cache == 'true'
         run: |
           echo "开始列出并删除旧缓存..."
           gh cache list --key ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}- --json key --jq '.[] | .key' | while read -r key; do
