@@ -6,6 +6,11 @@ on:
         description: "默认IP地址:192.168.[].1"
         required: true
         default: "5"
+      cache_toolchain:
+        description: "使用缓存"
+        required: true
+        default: "false"
+        type: boolean
   schedule:
     - cron: '0 22 * * 5'  # 每周五 UTC 22:00，即每周六中国时间 6:00
 
@@ -15,7 +20,6 @@ env:
   CONFIG_FILE: mt798x/2410.config
   CUSTOM_SCRIPT: mt798x/custom.sh
   CLASH_KERNEL: arm64
-  CACHE_TOOLCHAIN: true
   FIRMWARE_RELEASE: true
   FIRMWARE_TAG: mt798x
   TZ: Asia/Shanghai
@@ -23,7 +27,6 @@ env:
 jobs:
   Build:
     runs-on: ubuntu-22.04
-
     steps:
 
     - name: 检查服务器性能
@@ -83,27 +86,15 @@ jobs:
           SUBNET="5"
         fi
         echo "SUBNET=$SUBNET" >> $GITHUB_ENV
-          
-        # 提取源码仓库名（例如 AutoBuild-OpenWrt）
         echo "SOURCE_REPO=$(echo $REPO_URL | awk -F '/' '{print $(NF)}')" >> $GITHUB_ENV
-
-        # 提取设备主架构（例如 x86、qualcommax）
         echo "DEVICE_TARGET=$(grep CONFIG_TARGET_BOARD .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
-
-        # 提取设备子架构（例如 64、ipq60xx）
         echo "DEVICE_SUBTARGET=$(grep CONFIG_TARGET_SUBTARGET .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
-
-        # 提取架构包名（例如 x86_64、aarch64_cortex-a53）
-        echo "DEVICE_ARCH=$(sed -n 's/^CONFIG_TARGET_ARCH_PACKAGES="\([^"]*\)"/\1/p' .config)" >> $GITHUB_ENV
-
-        # 提取设备型号（例如 generic、zn_m2）
-        echo "DEVICE_MODEL=$(sed -n 's/^CONFIG_TARGET_PROFILE="DEVICE_\([^"]*\)"/\1/p' .config)" >> $GITHUB_ENV
-        
-        # 写入缓存时间（20250813-只保留当天）
+        echo "DEVICE_ARCH=$(sed -n 's/^CONFIG_TARGET_ARCH_PACKAGES=\"\([^\"]*\)\"/\1/p' .config)" >> $GITHUB_ENV
+        echo "DEVICE_MODEL=$(sed -n 's/^CONFIG_TARGET_PROFILE=\"DEVICE_\([^\"]*\)\"/\1/p' .config)" >> $GITHUB_ENV
         echo "CACHE_DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
-        
+
     - name: 缓存工具链
-      if: env.CACHE_TOOLCHAIN == 'true'
+      if: ${{ github.event.inputs.cache_toolchain == 'true' }}
       uses: actions/cache@v4
       id: cache-toolchain
       with:
@@ -115,14 +106,15 @@ jobs:
           ${{ env.OPENWRT_PATH }}/staging_dir
 
     - name: 输出缓存结果
+      if: ${{ github.event.inputs.cache_toolchain == 'true' }}
       run: |
         echo "使用的缓存键: ${{ steps.cache-toolchain.outputs.cache-key }}"
         echo "缓存命中情况: ${{ steps.cache-toolchain.outputs.cache-hit }}"
-        echo "缓存目录大小："
         du -sh ${{ env.OPENWRT_PATH }}/.ccache || echo ".ccache 目录不存在"
         du -sh ${{ env.OPENWRT_PATH }}/staging_dir || echo "staging_dir 目录不存在"
 
     - name: 刷新缓存时间戳
+      if: ${{ github.event.inputs.cache_toolchain == 'true' }}
       run: |
         echo "开始刷新缓存时间戳..."
         if [ -d "$OPENWRT_PATH/staging_dir" ]; then
@@ -132,20 +124,10 @@ jobs:
         fi
         echo "缓存时间戳刷新完成。"
 
-    - name: 添加定时触发的值
-      run: |
-        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          SUBNET="${{ github.event.inputs.subnet }}"
-          [ -z "$SUBNET" ] && SUBNET="5"
-        else
-          SUBNET="5"
-        fi
-        echo "SUBNET=$SUBNET" >> $GITHUB_ENV
-
     - name: 更新并安装 feeds
       run: |
         cd $OPENWRT_PATH
-        ./scripts/feeds update -a               
+        ./scripts/feeds update -a
         ./scripts/feeds install -a
 
     - name: 加载自定义配置和脚本
@@ -163,7 +145,6 @@ jobs:
     - name: 下载依赖
       run: |
         cd $OPENWRT_PATH
-        
         make download -j8
         find dl -size -1024c -exec rm -f {} \;
 
@@ -182,6 +163,7 @@ jobs:
       run: df -hT
 
     - name: Prepare artifact
+      if: steps.compile.outputs.status == 'success'
       run: |
         cd $OPENWRT_PATH
         mkdir -p ./artifact/package ./artifact/buildinfo
@@ -189,12 +171,14 @@ jobs:
         find ./bin/targets/ -type f \( -name "*.buildinfo" -o -name "*.manifest" \) -exec cp -f {} ./artifact/buildinfo/ \;
 
     - name: 上传 Buildinfo Artifact
+      if: steps.compile.outputs.status == 'success'
       uses: actions/upload-artifact@v4
       with:
         name: OpenWrt_buildinfo
         path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
 
     - name: 上传 Packages Artifact
+      if: steps.compile.outputs.status == 'success'
       uses: actions/upload-artifact@v4
       with:
         name: ${{ env.DEVICE_ARCH }}_package
@@ -226,6 +210,7 @@ jobs:
           -  ⚙️ 内核版本: ${{ env.KERNEL }}        
 
     - name: 发送 Telegram 通知
+      if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
       run: |
         CURRENT_DATE_TIME=$(TZ='Asia/Shanghai' date +'%Y/%m/%d %r')
         MESSAGE="${{ env.DEVICE_MODEL }} 固件编译完成
@@ -236,6 +221,7 @@ jobs:
           -d text="$MESSAGE"
 
     - name: 删除旧缓存
+      if: ${{ github.event.inputs.cache_toolchain == 'true' }}
       run: |
         echo "开始列出并删除旧缓存..."
         gh cache list --key ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}- --json key --jq '.[] | .key' | while read -r key; do
