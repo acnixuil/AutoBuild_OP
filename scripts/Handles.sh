@@ -106,8 +106,8 @@ if [ -d "./luci-theme-argon" ]; then
   cp -f $GITHUB_WORKSPACE/images/bg1.jpg luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
 	sed -i "/font-weight:/ { /important/! { /\/\*/! s/:.*/: var(--font-weight);/ } }" $(find luci-theme-argon -type f -iname "*.css")
 	sed -i "s/primary '.*'/primary '#31a1a1'/; s/'0.2'/'0.5'/; s/'600'/'normal'/" luci-app-argon-config/root/etc/config/argon
-  sed -i '/<footer.*>/,/<\/footer>/d' luci-theme-argon/luasrc/view/themes/argon/footer.htm
-  sed -i '/<footer.*>/,/<\/footer>/d' luci-theme-argon/luasrc/view/themes/argon/footer_login.htm
+  # sed -i '/<footer.*>/,/<\/footer>/d' luci-theme-argon/luasrc/view/themes/argon/footer.htm
+  # sed -i '/<footer.*>/,/<\/footer>/d' luci-theme-argon/luasrc/view/themes/argon/footer_login.htm
   log "Argon 样式处理完成"
   cd "$PKG_PATCH"
 fi
