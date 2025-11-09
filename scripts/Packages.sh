@@ -44,9 +44,9 @@ git clone --depth=1 --single-branch -b master https://github.com/acnixuil/luci-a
 # git clone --depth=1 --single-branch -b main https://github.com/asvow/luci-app-tailscale luci-app-tailscale
 
 # smartdns
-find ../ -name '*smartdns*' -exec rm -rf {} +
-git clone --depth=1 --single-branch -b master https://github.com/pymumu/luci-app-smartdns ../feeds/luci/applications/luci-app-smartdns
-git clone --depth=1 --single-branch -b master https://github.com/pymumu/openwrt-smartdns ../feeds/packages/net/smartdns
+# find ../ -name '*smartdns*' -exec rm -rf {} +
+# git clone --depth=1 --single-branch -b master https://github.com/pymumu/luci-app-smartdns ../feeds/luci/applications/luci-app-smartdns
+# git clone --depth=1 --single-branch -b master https://github.com/pymumu/openwrt-smartdns ../feeds/packages/net/smartdns
 
 # lucky
 git clone --depth=1 --single-branch -b main https://github.com/sirpdboy/luci-app-lucky.git
@@ -58,7 +58,7 @@ git clone --depth=1 --single-branch -b master https://github.com/jerrykuku/luci-
 git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-nikki.git nikki
 git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-momo.git momo
 
-../scripts/feeds install -a
+# ../scripts/feeds install -a
 
 echo "========================="
 echo " 插件列表已更新"
