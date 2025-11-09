@@ -79,8 +79,8 @@ jobs:
       run: |
         cp $CONFIG_FILE $OPENWRT_PATH/.config
         cd $OPENWRT_PATH
-        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          SUBNET="${{ github.event.inputs.subnet }}"
+        if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+          SUBNET=$(jq -r '.inputs.subnet // empty' "$GITHUB_EVENT_PATH")
           [ -z "$SUBNET" ] && SUBNET="5"
         else
           SUBNET="5"

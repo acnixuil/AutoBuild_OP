@@ -138,8 +138,8 @@ jobs:
 
     - name: 添加定时触发的值
       run: |
-        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          SUBNET="${{ github.event.inputs.subnet }}"
+        if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+          SUBNET=$(jq -r '.inputs.subnet // empty' "$GITHUB_EVENT_PATH")
           [ -z "$SUBNET" ] && SUBNET="2"
         else
           SUBNET="2"
