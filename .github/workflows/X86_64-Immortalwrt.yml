@@ -227,6 +227,7 @@ jobs:
         artifacts: |
           ${{ env.FIRMWARE_PATH }}/*.tar.gz
           ${{ env.FIRMWARE_PATH }}/*combined-efi.img.gz
+          ${{ env.FIRMWARE_PATH }}/*combined.img.gz
           ${{ env.FIRMWARE_PATH }}/*.vmdk
           ${{ env.OPENWRT_PATH }}/artifact/*.tar.gz
         body: |
