@@ -41,7 +41,7 @@ git clone --depth=1 --single-branch -b master https://github.com/sbwml/v2ray-geo
 git clone --depth=1 --single-branch -b master https://github.com/acnixuil/luci-app-adguardhome.git luci-app-adguardhome
 
 # tailscale
-# git clone --depth=1 --single-branch -b main https://github.com/asvow/luci-app-tailscale luci-app-tailscale
+# git clone --depth=1 --single-branch -b main https://github.com/Tokisaki-Galaxy/luci-app-tailscale-community.git
 
 # smartdns
 # find ../ -name '*smartdns*' -exec rm -rf {} +
