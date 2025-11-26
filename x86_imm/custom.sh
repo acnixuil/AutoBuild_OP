@@ -6,7 +6,7 @@ echo "检查 config_generate 中 lan 默认 IP 是否修改："
 grep -oP 'lan\)\s+ipad=\${ipaddr:-"\K192\.168\.[0-9]{1,3}\.1(?=")' base-files/files/bin/config_generate
 
 # 主机名
-sed -i "s/\(set system.@system\[-1\].hostname=\).*/\1'Harune'/" base-files/files/bin/config_generate
+sed -i "s/\(set system.@system\[-1\].hostname=\).*/\1'OpenWrt'/" base-files/files/bin/config_generate
 echo "检查 config_generate 中默认主机名："
 grep -oP "set system.@system\[-1\].hostname='\K[^']+" base-files/files/bin/config_generate
 

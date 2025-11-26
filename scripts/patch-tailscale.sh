@@ -40,6 +40,6 @@ mkdir -p $INITD_PATH
 
 # 复制并设置权限
 cp -f $INIT_PATH/tailscale.init $INITD_PATH/tailscale
-sed -i 's/\(config_get port "settings" port \)[0-9]\+/\1 61422/' "$INITD_PATH/tailscale"
+# sed -i 's/\(config_get port "settings" port \)[0-9]\+/\1 61422/' "$INITD_PATH/tailscale"
 chmod +x $INITD_PATH/tailscale
 echo "已完成修补"
