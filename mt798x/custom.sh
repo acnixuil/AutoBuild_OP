@@ -16,6 +16,7 @@ sed -i "/htbsscoex=\"0\"/{n; s/ssid=\".*\"/ssid=\"FERN\"/}" mtk/applications/mtw
 
 # 设置ttyd免帐号登录
 sed -i 's/\/bin\/login/\/bin\/login -f root/' ../feeds/packages/utils/ttyd/files/ttyd.config
+sed -i "/option interface/d" ../feeds/packages/utils/ttyd/files/ttyd.config
 
 # 显示增加编译时间
 if [ "${REPO_BRANCH#*-}" = "23.05" ]; then

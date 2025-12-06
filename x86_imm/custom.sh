@@ -12,6 +12,7 @@ grep -oP "set system.@system\[-1\].hostname='\K[^']+" base-files/files/bin/confi
 
 # 设置ttyd免帐号登录
 sed -i 's/\/bin\/login/\/bin\/login -f root/' ../feeds/packages/utils/ttyd/files/ttyd.config
+sed -i "/option interface/d" ../feeds/packages/utils/ttyd/files/ttyd.config
 
 if [ "${REPO_BRANCH#*-}" = "23.05" ]; then
    sed -i "s/DISTRIB_DESCRIPTION=.*/DISTRIB_DESCRIPTION=\"OpenWrt R$(TZ=UTC-8 date +'%y.%-m.%-d') (By @COLDFISH build $(TZ=UTC-8 date '+%Y-%m-%d %H:%M'))\"/g" base-files/files/etc/openwrt_release
