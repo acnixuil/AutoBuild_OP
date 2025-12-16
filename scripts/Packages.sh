@@ -29,6 +29,7 @@ git_sparse_clone() {
 # openclash
 git_sparse_clone dev https://github.com/vernesong/OpenClash luci-app-openclash
 git_sparse_clone master https://github.com/Tokisaki-Galaxy/luci-app-tailscale-community.git luci-app-tailscale-community
+git_sparse_clone main https://github.com/stackia/rtp2httpd.git luci-app-tailscale-community openwrt-support
 
 git clone --depth=1 --single-branch -b main https://github.com/xiaorouji/openwrt-passwall.git openwrt-passwall
 git clone --depth=1 --single-branch -b main https://github.com/xiaorouji/openwrt-passwall-packages.git openwrt-passwall-packages
