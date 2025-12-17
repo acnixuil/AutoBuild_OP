@@ -30,8 +30,8 @@ git_sparse_clone() {
 git_sparse_clone dev https://github.com/vernesong/OpenClash luci-app-openclash
 git_sparse_clone master https://github.com/Tokisaki-Galaxy/luci-app-tailscale-community.git luci-app-tailscale-community
 
-git clone --depth=1 --single-branch -b main https://github.com/xiaorouji/openwrt-passwall.git openwrt-passwall
-git clone --depth=1 --single-branch -b main https://github.com/xiaorouji/openwrt-passwall-packages.git openwrt-passwall-packages
+# git clone --depth=1 --single-branch -b main https://github.com/xiaorouji/openwrt-passwall.git openwrt-passwall
+# git clone --depth=1 --single-branch -b main https://github.com/xiaorouji/openwrt-passwall-packages.git openwrt-passwall-packages
 
 # mosdns
 git clone --depth=1 --single-branch -b v5 https://github.com/sbwml/luci-app-mosdns.git luci-app-mosdns
@@ -39,9 +39,6 @@ git clone --depth=1 --single-branch -b master https://github.com/sbwml/v2ray-geo
 
 # adguardhome
 git clone --depth=1 --single-branch -b master https://github.com/acnixuil/luci-app-adguardhome.git luci-app-adguardhome
-
-# tailscale
-# git clone --depth=1 --single-branch -b main https://github.com/Tokisaki-Galaxy/luci-app-tailscale-community.git
 
 # smartdns
 # find ../ -name '*smartdns*' -exec rm -rf {} +

@@ -28,7 +28,7 @@ on:
 
 env:
   REPO_URL: https://github.com/LiBwrt/openwrt-6.x.git
-  REPO_BRANCH: k6.12-nss
+  REPO_BRANCH: 25.12-nss
   CUSTOM_SCRIPT: ipq6000/custom.sh
   CLASH_KERNEL: arm64
   FIRMWARE_RELEASE: true
@@ -181,9 +181,8 @@ jobs:
         run: |
           cd $OPENWRT_PATH
           sed -i '$a src-git rtp2httpd https://github.com/stackia/rtp2httpd.git' feeds.conf.default
-          ./scripts/feeds update -a  
-          ./scripts/feeds install -a       
-
+          ./scripts/feeds update -a && ./scripts/feeds install -a     
+            
       - name: 加载自定义配置和脚本
         if: ${{ matrix.run_this }}
         env:
