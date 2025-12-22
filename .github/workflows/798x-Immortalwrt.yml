@@ -1,230 +1,183 @@
 name: 798x
+
 on:
   workflow_dispatch:
     inputs:
       subnet:
-        description: "默认IP地址:192.168.[].1"
+        description: "默认IP地址: 192.168.[X].1"
         required: true
         default: "5"
       cache_toolchain:
-        description: "使用缓存"
+        description: "使用工具链缓存"
         required: true
-        default: "false"
+        default: true
         type: boolean
   schedule:
-    - cron: '0 22 * * 5'  # 每周五 UTC 22:00，即每周六中国时间 6:00
+    - cron: '0 22 * * 5'   # 每周六 06:00（北京时间）
 
 env:
-  REPO_URL: https://github.com/padavanonly/immortalwrt-mt798x-6.6.git  
+  REPO_URL: https://github.com/padavanonly/immortalwrt-mt798x-6.6.git
   REPO_BRANCH: openwrt-24.10-6.6
   CONFIG_FILE: mt798x/2410.config
   CUSTOM_SCRIPT: mt798x/custom.sh
-  CLASH_KERNEL: arm64
   FIRMWARE_RELEASE: true
-  FIRMWARE_TAG: mt798x
   TZ: Asia/Shanghai
 
 jobs:
-  Build:
+  build:
     runs-on: ubuntu-latest
+
     steps:
+      - name: 检查服务器性能
+        run: |
+          echo "CPU 核心数: $(nproc)"
+          echo "CPU 型号: $(awk -F: '/model name/ {print $2; exit}' /proc/cpuinfo)"
+          free -h
+          df -hT
 
-    - name: 检查服务器性能
-      run: |
-        echo "警告⚠"
-        echo "分配的服务器性能有限，若选择的插件过多，务必注意CPU性能！"
-        echo -e "已知CPU型号(降序): 7763，8370C，8272CL，8171M，E5-2673\n"
-        echo "--------------------------CPU信息--------------------------"
-        echo "CPU物理数量: $(nproc --all | grep -c '^')"
-        echo "CPU核心数量: $(nproc)"
-        echo -e "CPU型号信息:$(awk -F: '/model name/ {print $2; exit}' /proc/cpuinfo)\n"
-        echo "--------------------------内存信息--------------------------"
-        echo "已安装内存详细信息: $(sudo lshw -short -C memory | grep GiB)\n"
-        echo "--------------------------硬盘信息--------------------------"
-        echo "硬盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l)" && df -hT
+      - name: 初始化编译环境
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo bash -c 'bash <(curl -sL https://build-scripts.immortalwrt.org/init_build_environment.sh)'
+          sudo apt -yqq install dos2unix rename python3-setuptools libfuse-dev
+          sudo apt -yqq autoremove --purge
+          sudo apt -yqq clean
+          sudo timedatectl set-timezone "$TZ"
 
-    - name: 初始化环境
-      env:
-        DEBIAN_FRONTEND: noninteractive
-      run: |
-        sudo bash -c 'bash <(curl -sL https://build-scripts.immortalwrt.org/init_build_environment.sh)'
-        sudo -E apt -yqq install dos2unix rename python3-setuptools 
-        sudo -E apt -yqq install libfuse-dev
-        sudo -E apt -yqq autoremove --purge
-        sudo -E apt -yqq autoclean
-        sudo -E apt -yqq clean
-        sudo -E systemctl daemon-reload
-        sudo timedatectl set-timezone "$TZ"
+      - name: 扩容磁盘空间
+        uses: easimon/maximize-build-space@master
+        with:
+          swap-size-mb: 1024
+          root-reserve-mb: 1024
 
-    - name: 扩容空间
-      uses: easimon/maximize-build-space@master
-      with:
-        swap-size-mb: 1024
-        temp-reserve-mb: 100
-        root-reserve-mb: 1024
+      - name: 检出仓库
+        uses: actions/checkout@main
 
-    - name: 检出仓库
-      uses: actions/checkout@main
+      - name: 克隆 OpenWrt 源码
+        run: |
+          git clone --depth=1 -b $REPO_BRANCH $REPO_URL openwrt
+          echo "OPENWRT_PATH=$PWD/openwrt" >> $GITHUB_ENV
 
-    - name: 克隆 OpenWrt 源码
-      run: |
-        git clone --depth=1 -b $REPO_BRANCH $REPO_URL openwrt
-        cd openwrt
-        echo "OPENWRT_PATH=$PWD" >> $GITHUB_ENV
+      - name: 生成配置与设备变量
+        run: |
+          cp $CONFIG_FILE $OPENWRT_PATH/.config
+          cd $OPENWRT_PATH
+          make defconfig
 
-    - name: 生成设备变量
-      run: |
-        cp $CONFIG_FILE $OPENWRT_PATH/.config
-        cd $OPENWRT_PATH
-        if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
-          SUBNET=$(jq -r '.inputs.subnet // empty' "$GITHUB_EVENT_PATH")
-          [ -z "$SUBNET" ] && SUBNET="5"
-        else
-          SUBNET="5"
-        fi
-        echo "SUBNET=$SUBNET" >> $GITHUB_ENV
-        echo "SOURCE_REPO=$(echo $REPO_URL | awk -F '/' '{print $(NF)}')" >> $GITHUB_ENV
-        echo "DEVICE_TARGET=$(grep CONFIG_TARGET_BOARD .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
-        echo "DEVICE_SUBTARGET=$(grep CONFIG_TARGET_SUBTARGET .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
-        echo "DEVICE_ARCH=$(sed -n 's/^CONFIG_TARGET_ARCH_PACKAGES=\"\([^\"]*\)\"/\1/p' .config)" >> $GITHUB_ENV
-        echo "DEVICE_MODEL=$(sed -n 's/^CONFIG_TARGET_PROFILE=\"DEVICE_\([^\"]*\)\"/\1/p' .config)" >> $GITHUB_ENV
-        echo "CACHE_DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            SUBNET=$(jq -r '.inputs.subnet // empty' "$GITHUB_EVENT_PATH")
+            [ -z "$SUBNET" ] && SUBNET="5"
+          else
+            SUBNET="5"
+          fi
 
-    - name: 缓存工具链
-      if: ${{ github.event.inputs.cache_toolchain == 'true' }}
-      uses: actions/cache@v4
-      id: cache-toolchain
-      with:
-        key: ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-${{ env.CACHE_DATE }}
-        restore-keys: |
-          ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-
-        path: |
-          ${{ env.OPENWRT_PATH }}/.ccache
-          ${{ env.OPENWRT_PATH }}/staging_dir
+          echo "SUBNET=$SUBNET" >> $GITHUB_ENV
+          echo "DEVICE_TARGET=$(grep CONFIG_TARGET_BOARD .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
+          echo "DEVICE_SUBTARGET=$(grep CONFIG_TARGET_SUBTARGET .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
+          echo "DEVICE_MODEL=$(sed -n 's/^CONFIG_TARGET_PROFILE=\"DEVICE_\\([^\"]*\\)\"/\\1/p' .config)" >> $GITHUB_ENV
 
-    - name: 输出缓存结果
-      if: ${{ github.event.inputs.cache_toolchain == 'true' }}
-      run: |
-        echo "使用的缓存键: ${{ steps.cache-toolchain.outputs.cache-key }}"
-        echo "缓存命中情况: ${{ steps.cache-toolchain.outputs.cache-hit }}"
-        du -sh ${{ env.OPENWRT_PATH }}/.ccache || echo ".ccache 目录不存在"
-        du -sh ${{ env.OPENWRT_PATH }}/staging_dir || echo "staging_dir 目录不存在"
+      - name: 缓存工具链
+        if: ${{ github.event.inputs.cache_toolchain == 'true' }}
+        uses: HiGarfield/cachewrtbuild@main
+        with:
+          ccache: false
+          mixkey: ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
+          prefix: ${{ env.OPENWRT_PATH }}
 
-    - name: 刷新缓存时间戳
-      if: ${{ github.event.inputs.cache_toolchain == 'true' }}
-      run: |
-        echo "开始刷新缓存时间戳..."
-        if [ -d "$OPENWRT_PATH/staging_dir" ]; then
-          find "$OPENWRT_PATH/staging_dir" -type d -name "stamp" -not -path "*target*" | while read -r dir; do
-            find "$dir" -type f -exec touch {} +
-          done
-        fi
-        echo "缓存时间戳刷新完成。"
+      - name: 更新并安装 Feeds
+        run: |
+          cd $OPENWRT_PATH
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
 
-    - name: 更新并安装 feeds
-      run: |
-        cd $OPENWRT_PATH
-        ./scripts/feeds update -a
-        ./scripts/feeds install -a
+      - name: 下载第三方包
+        run: |
+          chmod +x $GITHUB_WORKSPACE/scripts/Packages.sh
+          cd $OPENWRT_PATH/package
+          $GITHUB_WORKSPACE/scripts/Packages.sh
 
-    - name: 加载自定义配置和脚本
-      env:
-        SUBNET: ${{ env.SUBNET }}
-      run: |
-        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE $OPENWRT_PATH/.config
-        chmod +x $GITHUB_WORKSPACE/scripts/*.sh $CUSTOM_SCRIPT
-        cd $OPENWRT_PATH/package/
-        $GITHUB_WORKSPACE/scripts/Packages.sh
-        $GITHUB_WORKSPACE/scripts/Handles.sh
-        $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
-        $GITHUB_WORKSPACE/scripts/patch-tailscale.sh        
+      - name: 加载自定义脚本
+        env:
+          SUBNET: ${{ env.SUBNET }}
+        run: |
+          chmod +x $GITHUB_WORKSPACE/scripts/*.sh $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
 
-    - name: 下载依赖
-      run: |
-        cd $OPENWRT_PATH
-        make download -j8
-        find dl -size -1024c -exec rm -f {} \;
+          cd $OPENWRT_PATH/package     
+          $GITHUB_WORKSPACE/scripts/Handles.sh
+          $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
+          $GITHUB_WORKSPACE/scripts/patch-tailscale.sh       
 
-    - name: 编译固件
-      id: compile
-      run: |
-        cd $OPENWRT_PATH
-        mkdir -p files/etc/uci-defaults
-        cp $GITHUB_WORKSPACE/scripts/init-settings.sh files/etc/uci-defaults/99-init-settings
-        cp $GITHUB_WORKSPACE/scripts/init-tailscale.sh files/etc/uci-defaults/99-init-tailscale
-        make -j$(nproc) || make -j1 || make -j1 V=s
-        echo "status=success" >> $GITHUB_OUTPUT
+      - name: 下载源码依赖
+        run: |
+          cp $CONFIG_FILE $OPENWRT_PATH/.config
+          cd $OPENWRT_PATH
+          make defconfig
+          make download -j8
+          find dl -size -1024c -delete
 
-    - name: 查看磁盘空间使用情况
-      if: (!cancelled())
-      run: df -hT
+      - name: 编译固件
+        id: compile
+        run: |
+          cd $OPENWRT_PATH
+          mkdir -p files/etc/uci-defaults
+          cp $GITHUB_WORKSPACE/scripts/init-settings.sh files/etc/uci-defaults/99-init-settings
+          cp $GITHUB_WORKSPACE/scripts/init-tailscale.sh files/etc/uci-defaults/99-init-tailscale
+          make -j$(nproc) || make -j1 || make -j1 V=s
+          echo "status=success" >> $GITHUB_OUTPUT
 
-    - name: Prepare artifact
-      if: steps.compile.outputs.status == 'success'
-      run: |
-        cd $OPENWRT_PATH
-        mkdir -p ./artifact/package ./artifact/buildinfo
-        find ./bin/packages/ -type f \( -name "*.ipk" -o -name "*.apk" \) -exec cp -f {} ./artifact/package/ \;
-        find ./bin/targets/ -type f \( -name "*.buildinfo" -o -name "*.manifest" \) -exec cp -f {} ./artifact/buildinfo/ \;
+      - name: 整理固件
+        if: steps.compile.outputs.status == 'success'
+        run: |
+          set -e
+          rm -rf $OPENWRT_PATH/artifact
+          mkdir -p $OPENWRT_PATH/artifact/{firmware,buildinfo,package}
+          cd $OPENWRT_PATH/bin/targets/*/*
+          echo "KERNEL=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p')" >> $GITHUB_ENV
+          echo "DATE=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
+          find . -name "*squashfs-sysupgrade.bin" -exec cp -f {} $OPENWRT_PATH/artifact/firmware/ \;
+          tar -czf $OPENWRT_PATH/artifact/buildinfo/buildinfo.tar.gz config.buildinfo feeds.buildinfo version.buildinfo *.manifest
+          cd $OPENWRT_PATH/bin/packages
+          find . -type f \( -name "*.ipk" -o -name "*.apk" \) -exec cp -f --parents {} $OPENWRT_PATH/artifact/package/ \;
+          cd $OPENWRT_PATH/artifact
+          tar -czf packages.tar.gz package
+          rm -rf package
 
-    - name: 上传 Buildinfo Artifact
-      if: steps.compile.outputs.status == 'success'
-      uses: actions/upload-artifact@v4
-      with:
-        name: OpenWrt_buildinfo
-        path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/
+      - name: 上传 Artifact
+        if: steps.compile.outputs.status == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mt798x_release
+          path: |
+            ${{ env.OPENWRT_PATH }}/artifact/**
 
-    - name: 上传 Packages Artifact
-      if: steps.compile.outputs.status == 'success'
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ env.DEVICE_ARCH }}_package
-        path: ${{ env.OPENWRT_PATH }}/artifact/package/
+      - name: 发布到 Release
+        if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
+        uses: ncipollo/release-action@main
+        with:
+          tag: ${{ env.DEVICE_TARGET }}
+          allowUpdates: true
+          replacesArtifacts: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: |
+            ${{ env.OPENWRT_PATH }}/artifact/firmware/*.bin
+            ${{ env.OPENWRT_PATH }}/artifact/buildinfo/*.tar.gz
+            ${{ env.OPENWRT_PATH }}/artifact/packages.tar.gz
+          body: |
+            ### 📋 固件信息
+            - 🔧 平台架构: ${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
+            - 🧩 设备型号: ${{ env.DEVICE_MODEL }}
+            - 📦 源码仓库: ${{ env.REPO_URL }}
+            - 🌿 源码分支: ${{ env.REPO_BRANCH }}
+            - ⚙️ 内核版本: ${{ env.KERNEL }}
 
-    - name: 整理
-      if: steps.compile.outputs.status == 'success'
-      run: |
-        cd $OPENWRT_PATH/bin/targets/*/*
-        echo "KERNEL=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p')" >> $GITHUB_ENV
-        echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
-        $GITHUB_WORKSPACE/scripts/cleanup_targets.sh
-        echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
-
-    - name: 上传固件到 Release
-      if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
-      uses: ncipollo/release-action@main
-      with:
-        name: R${{ env.DATE }} for ${{ env.DEVICE_TARGET }}
-        allowUpdates: true
-        tag: ${{ env.DEVICE_TARGET }}
-        token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: ${{ env.FIRMWARE_PATH }}/*
-        body: |
-          ### 📋 固件信息
-          -  🔧 平台架构: ${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
-          -  📦 固件源码: ${{ env.REPO_URL }}
-          -  🌿 源码分支: ${{ env.REPO_BRANCH }}
-          -  ⚙️ 内核版本: ${{ env.KERNEL }}        
-
-    - name: 发送 Telegram 通知
-      if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
-      run: |
-        CURRENT_DATE_TIME=$(TZ='Asia/Shanghai' date +'%Y/%m/%d %r')
-        MESSAGE="${{ env.DEVICE_MODEL }} 固件编译完成
-        发布时间：$CURRENT_DATE_TIME
-        发布页面：https://github.com/acnixuil/AutoBuild_OP/releases/tag/${{ env.DEVICE_TARGET }}"
-        curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
-          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-          -d text="$MESSAGE"
-
-    - name: 删除旧缓存
-      if: ${{ github.event.inputs.cache_toolchain == 'true' }}
-      run: |
-        echo "开始列出并删除旧缓存..."
-        gh cache list --key ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}- --json key --jq '.[] | .key' | while read -r key; do
-          echo "删除缓存：$key"
-          gh cache delete "$key"
-        done
-        echo "当前缓存使用情况："
-        echo "ccache 目录大小: $(du -sh ${{ env.OPENWRT_PATH }}/.ccache | cut -f 1)"
-        echo "staging_dir 目录大小: $(du -sh ${{ env.OPENWRT_PATH }}/staging_dir | cut -f 1)"
+      - name: Telegram 通知
+        if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
+        run: |
+          NOW=$(TZ='Asia/Shanghai' date +'%Y/%m/%d %H:%M')
+          MESSAGE="${{ env.DEVICE_MODEL }} 固件编译完成
+          时间：$NOW
+          发布页：https://github.com/acnixuil/AutoBuild_OP/releases/tag/${{ env.DEVICE_TARGET }}"
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d text="$MESSAGE"
