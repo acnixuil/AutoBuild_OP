@@ -27,6 +27,7 @@ env:
   CUSTOM_SCRIPT: x86_imm/custom.sh
   FIRMWARE_RELEASE: true
   FIRMWARE_TAG: X86_64
+  CLASH_KERNEL: amd64
   TZ: Asia/Shanghai
 
 jobs:

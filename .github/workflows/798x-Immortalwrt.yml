@@ -21,6 +21,7 @@ env:
   CONFIG_FILE: mt798x/2410.config
   CUSTOM_SCRIPT: mt798x/custom.sh
   FIRMWARE_RELEASE: true
+  CLASH_KERNEL: arm64
   TZ: Asia/Shanghai
 
 jobs:
