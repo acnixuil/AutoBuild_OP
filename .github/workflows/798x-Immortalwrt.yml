@@ -1,0 +1,184 @@
+name: 798x
+
+on:
+  workflow_dispatch:
+    inputs:
+      subnet:
+        description: "默认IP地址: 192.168.[X].1"
+        required: true
+        default: "5"
+      cache_toolchain:
+        description: "使用工具链缓存"
+        required: true
+        default: true
+        type: boolean
+  schedule:
+    - cron: '0 22 * * 5'   # 每周六 06:00（北京时间）
+
+env:
+  REPO_URL: https://github.com/padavanonly/immortalwrt-mt798x-6.6.git
+  REPO_BRANCH: openwrt-24.10-6.6
+  CONFIG_FILE: mt798x/2410.config
+  CUSTOM_SCRIPT: mt798x/custom.sh
+  FIRMWARE_RELEASE: true
+  CLASH_KERNEL: arm64
+  TZ: Asia/Shanghai
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检查服务器性能
+        run: |
+          echo "CPU 核心数: $(nproc)"
+          echo "CPU 型号: $(awk -F: '/model name/ {print $2; exit}' /proc/cpuinfo)"
+          free -h
+          df -hT
+
+      - name: 初始化编译环境
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo bash -c 'bash <(curl -sL https://build-scripts.immortalwrt.org/init_build_environment.sh)'
+          sudo apt -yqq install dos2unix rename python3-setuptools libfuse-dev
+          sudo apt -yqq autoremove --purge
+          sudo apt -yqq clean
+          sudo timedatectl set-timezone "$TZ"
+
+      - name: 扩容磁盘空间
+        uses: easimon/maximize-build-space@master
+        with:
+          swap-size-mb: 1024
+          root-reserve-mb: 1024
+
+      - name: 检出仓库
+        uses: actions/checkout@main
+
+      - name: 克隆 OpenWrt 源码
+        run: |
+          git clone --depth=1 -b $REPO_BRANCH $REPO_URL openwrt
+          echo "OPENWRT_PATH=$PWD/openwrt" >> $GITHUB_ENV
+
+      - name: 生成配置与设备变量
+        run: |
+          cp $CONFIG_FILE $OPENWRT_PATH/.config
+          cd $OPENWRT_PATH
+          make defconfig
+
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            SUBNET=$(jq -r '.inputs.subnet // empty' "$GITHUB_EVENT_PATH")
+            [ -z "$SUBNET" ] && SUBNET="5"
+          else
+            SUBNET="5"
+          fi
+
+          echo "SUBNET=$SUBNET" >> $GITHUB_ENV
+          echo "DEVICE_TARGET=$(grep CONFIG_TARGET_BOARD .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
+          echo "DEVICE_SUBTARGET=$(grep CONFIG_TARGET_SUBTARGET .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
+          echo "DEVICE_MODEL=$(sed -n 's/^CONFIG_TARGET_PROFILE=\"DEVICE_\\([^\"]*\\)\"/\\1/p' .config)" >> $GITHUB_ENV
+
+      - name: 缓存工具链
+        if: ${{ github.event.inputs.cache_toolchain == 'true' }}
+        uses: HiGarfield/cachewrtbuild@main
+        with:
+          ccache: false
+          mixkey: ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
+          prefix: ${{ env.OPENWRT_PATH }}
+
+      - name: 更新并安装 Feeds
+        run: |
+          cd $OPENWRT_PATH
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: 下载第三方包
+        run: |
+          chmod +x $GITHUB_WORKSPACE/scripts/Packages.sh
+          cd $OPENWRT_PATH/package
+          $GITHUB_WORKSPACE/scripts/Packages.sh
+
+      - name: 加载自定义脚本
+        env:
+          SUBNET: ${{ env.SUBNET }}
+        run: |
+          chmod +x $GITHUB_WORKSPACE/scripts/*.sh $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
+
+          cd $OPENWRT_PATH/package     
+          $GITHUB_WORKSPACE/scripts/Handles.sh
+          $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
+          $GITHUB_WORKSPACE/scripts/patch-tailscale.sh       
+
+      - name: 下载源码依赖
+        run: |
+          cp $CONFIG_FILE $OPENWRT_PATH/.config
+          cd $OPENWRT_PATH
+          make defconfig
+          make download -j8
+          find dl -size -1024c -delete
+
+      - name: 编译固件
+        id: compile
+        run: |
+          cd $OPENWRT_PATH
+          mkdir -p files/etc/uci-defaults
+          cp $GITHUB_WORKSPACE/scripts/init-settings.sh files/etc/uci-defaults/99-init-settings
+          cp $GITHUB_WORKSPACE/scripts/init-tailscale.sh files/etc/uci-defaults/99-init-tailscale
+          make -j$(nproc) || make -j1 || make -j1 V=s
+          echo "status=success" >> $GITHUB_OUTPUT
+
+      - name: 整理固件
+        if: steps.compile.outputs.status == 'success'
+        run: |
+          set -e
+          rm -rf $OPENWRT_PATH/artifact
+          mkdir -p $OPENWRT_PATH/artifact/{firmware,buildinfo,package}
+          cd $OPENWRT_PATH/bin/targets/*/*
+          echo "KERNEL=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p')" >> $GITHUB_ENV
+          echo "DATE=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
+          find . -name "*squashfs-sysupgrade.bin" -exec cp -f {} $OPENWRT_PATH/artifact/firmware/ \;
+          tar -czf $OPENWRT_PATH/artifact/buildinfo/buildinfo.tar.gz config.buildinfo feeds.buildinfo version.buildinfo *.manifest
+          cd $OPENWRT_PATH/bin/packages
+          find . -type f \( -name "*.ipk" -o -name "*.apk" \) -exec cp -f --parents {} $OPENWRT_PATH/artifact/package/ \;
+          cd $OPENWRT_PATH/artifact
+          tar -czf packages.tar.gz package
+          rm -rf package
+
+      - name: 上传 Artifact
+        if: steps.compile.outputs.status == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mt798x_release
+          path: |
+            ${{ env.OPENWRT_PATH }}/artifact/**
+
+      - name: 发布到 Release
+        if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
+        uses: ncipollo/release-action@main
+        with:
+          tag: ${{ env.DEVICE_TARGET }}
+          allowUpdates: true
+          replacesArtifacts: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: |
+            ${{ env.OPENWRT_PATH }}/artifact/firmware/*.bin
+            ${{ env.OPENWRT_PATH }}/artifact/buildinfo/*.tar.gz
+            ${{ env.OPENWRT_PATH }}/artifact/packages.tar.gz
+          body: |
+            ### 📋 固件信息
+            - 🔧 平台架构: ${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
+            - 🧩 设备型号: ${{ env.DEVICE_MODEL }}
+            - 📦 源码仓库: ${{ env.REPO_URL }}
+            - 🌿 源码分支: ${{ env.REPO_BRANCH }}
+            - ⚙️ 内核版本: ${{ env.KERNEL }}
+
+      - name: Telegram 通知
+        if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
+        run: |
+          NOW=$(TZ='Asia/Shanghai' date +'%Y/%m/%d %H:%M')
+          MESSAGE="${{ env.DEVICE_MODEL }} 固件编译完成
+          时间：$NOW
+          发布页：https://github.com/acnixuil/AutoBuild_OP/releases/tag/${{ env.DEVICE_TARGET }}"
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d text="$MESSAGE"
