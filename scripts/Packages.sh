@@ -55,6 +55,70 @@ git clone --depth=1 --single-branch -b master https://github.com/jerrykuku/luci-
 git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-nikki.git nikki
 git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-momo.git momo
 
+echo "正在配置自定义 Sing-box..."
+echo "当前设定架构 (CLASH_KERNEL): $CLASH_KERNEL"
+
+rm -rf ../feeds/packages/net/sing-box
+mkdir -p ../package/sing-box
+
+# 3.3 写入自定义 Makefile (分两段写入，中间插入变量)
+
+# --- 第一部分：头部定义 ---
+cat > ../package/sing-box/Makefile << 'EOF'
+include $(TOPDIR)/rules.mk
+
+PKG_NAME:=sing-box
+PKG_VERSION:=custom
+PKG_RELEASE:=$(shell date +%Y%m%d)
+
+include $(INCLUDE_DIR)/package.mk
+
+define Package/sing-box
+  SECTION:=net
+  CATEGORY:=Network
+  TITLE:=Sing-box (Custom Binary from CF Pages)
+  DEPENDS:=+ca-bundle +kmod-tun
+  CONFLICTS:=sing-box
+endef
+
+define Package/sing-box/description
+  Downloads pre-compiled sing-box binary from Cloudflare Pages.
+endef
+
+# 直接使用环境变量定义架构
+EOF
+
+# --- 中间部分：注入 CLASH_KERNEL 变量 ---
+# 这里直接把脚本运行时的环境变量值写入 Makefile
+echo "DOWNLOAD_ARCH:=${CLASH_KERNEL}" >> ../package/sing-box/Makefile
+
+# --- 第三部分：构建逻辑 ---
+cat >> ../package/sing-box/Makefile << 'EOF'
+
+define Build/Prepare
+	mkdir -p $(PKG_BUILD_DIR)
+endef
+
+define Build/Compile
+	# 直接引用上面定义的 DOWNLOAD_ARCH 变量
+	echo "Downloading sing-box for $(DOWNLOAD_ARCH)..."
+	curl -L -k -o $(PKG_BUILD_DIR)/sing-box.tar.gz "https://singbox-custom-dl.pages.dev/sing-box-$(DOWNLOAD_ARCH).tar.gz"
+	
+	# 解压
+	tar -xzvf $(PKG_BUILD_DIR)/sing-box.tar.gz -C $(PKG_BUILD_DIR)
+endef
+
+define Package/sing-box/install
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/sing-box $(1)/usr/bin/sing-box
+endef
+
+$(eval $(call BuildPackage,sing-box))
+EOF
+
+echo "========================="
+echo " 插件列表与自定义 sing-box ($CLASH_KERNEL) 已配置完成"
+
 # ../scripts/feeds install -a
 
 echo "========================="
