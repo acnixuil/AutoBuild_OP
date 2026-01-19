@@ -78,7 +78,6 @@ define Package/sing-box
   CATEGORY:=Network
   TITLE:=Sing-box (Custom Binary from CF Pages)
   DEPENDS:=+ca-bundle +kmod-tun
-  CONFLICTS:=sing-box
 endef
 
 define Package/sing-box/description
