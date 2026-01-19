@@ -184,4 +184,4 @@ jobs:
               -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
               -d "parse_mode=HTML" \
               -d "disable_web_page_preview=true" \
-              --data-urlencode "text=$MSG
+              --data-urlencode "text=$MSG"

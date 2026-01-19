@@ -68,7 +68,7 @@ cat > ../package/sing-box/Makefile << 'EOF'
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sing-box
-PKG_VERSION:=custom
+PKG_VERSION:=1.0.0
 PKG_RELEASE:=$(shell date +%Y%m%d)
 
 include $(INCLUDE_DIR)/package.mk
@@ -84,7 +84,6 @@ define Package/sing-box/description
   Downloads pre-compiled sing-box binary from Cloudflare Pages.
 endef
 
-# 直接使用环境变量定义架构
 EOF
 
 # --- 中间部分：注入 CLASH_KERNEL 变量 ---

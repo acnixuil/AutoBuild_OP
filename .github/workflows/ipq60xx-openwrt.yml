@@ -283,7 +283,7 @@ jobs:
               -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
               -d "parse_mode=HTML" \
               -d "disable_web_page_preview=true" \
-              --data-urlencode "text=$MSG
+              --data-urlencode "text=$MSG"
 
       - name: 删除旧缓存
         if: github.event.inputs.cache == 'true'
