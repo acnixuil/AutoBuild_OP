@@ -241,13 +241,16 @@ jobs:
     - name: 发送 Telegram 通知
       if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
       run: |
-        TIME=$(TZ='Asia/Shanghai' date '+%Y/%m/%d %H:%M')
-        MESSAGE="${{ env.DEVICE_MODEL }} 编译完成
-        发布时间: $TIME
-        发布页面: https://github.com/${{ github.repository }}/releases/tag/${{ env.DEVICE_TARGET }}"
-        curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
-          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-          -d text="$MESSAGE"
+        TIME=$(TZ='Asia/Shanghai' date '+%m/%d %H:%M')
+        URL="https://github.com/${{ github.repository }}/releases/tag/${{ env.DEVICE_TARGET }}"
+        MSG="构建完成: ${{ env.DEVICE_MODEL }}
+        时间: $TIME
+        下载: $URL"
+        curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
+            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d "parse_mode=HTML" \
+            -d "disable_web_page_preview=true" \
+            --data-urlencode "text=$MSG
 
     - name: 删除旧缓存
       if: github.event.inputs.cache == 'true'
