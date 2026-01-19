@@ -175,13 +175,25 @@ jobs:
       - name: Telegram 通知
         if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
         run: |
-          TIME=$(TZ='Asia/Shanghai' date '+%m/%d %H:%M')
-          URL="https://github.com/${{ github.repository }}/releases/tag/${{ env.DEVICE_TARGET }}"
-          MSG="构建完成: ${{ env.DEVICE_MODEL }}
-          时间: $TIME
-          下载: $URL"
+          DT=$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M')
+          DL_LINK="https://github.com/${{ github.repository }}/releases/tag/${{ env.DEVICE_TARGET }}"
+          
+          MSG="<b>🎉 OpenWrt 固件构建成功</b>
+          
+          <b>设备信息</b>
+          ━━━━━━━━━━━━━━━━━━
+          <b>设备型号:</b> <code>${{ env.DEVICE_MODEL }}</code>
+          <b>系统架构:</b> ${{ env.DEVICE_TARGET }} / ${{ env.DEVICE_SUBTARGET }}
+          <b>内核版本:</b> ${{ env.KERNEL }}
+          <b>源码分支:</b> ${{ env.REPO_BRANCH }}
+          
+          <b>📦 发布详情</b>
+          ━━━━━━━━━━━━━━━━━━
+          <b>编译时间:</b> $DT
+          <a href='$DL_LINK'><b>点击此处跳转下载页面</b></a>"
+
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
-              -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
-              -d "parse_mode=HTML" \
-              -d "disable_web_page_preview=true" \
-              --data-urlencode "text=$MSG"
+            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d "parse_mode=HTML" \
+            -d "disable_web_page_preview=true" \
+            --data-urlencode "text=$MSG"
