@@ -7,13 +7,17 @@ on:
         description: "默认IP地址: 192.168.[X].1"
         required: true
         default: "5"
-      cache_toolchain:
+      cache:
         description: "使用工具链缓存"
         required: true
         default: true
         type: boolean
   schedule:
     - cron: '0 22 * * 5'   # 每周六 06:00（北京时间）
+
+permissions:
+  contents: write
+  actions: write
 
 env:
   REPO_URL: https://github.com/padavanonly/immortalwrt-mt798x-6.6.git
@@ -77,14 +81,43 @@ jobs:
           echo "DEVICE_TARGET=$(grep CONFIG_TARGET_BOARD .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
           echo "DEVICE_SUBTARGET=$(grep CONFIG_TARGET_SUBTARGET .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
           echo "DEVICE_MODEL=$(sed -n 's/^CONFIG_TARGET_PROFILE=\"DEVICE_\\([^\"]*\\)\"/\\1/p' .config)" >> $GITHUB_ENV
+          
+          # 【新增】生成周数 Key，例如 2026-w05
+          echo "CACHE_DATE=$(date +'%Y-w%V')" >> $GITHUB_ENV
 
       - name: 缓存工具链
-        if: ${{ github.event.inputs.cache_toolchain == 'true' }}
-        uses: HiGarfield/cachewrtbuild@main
+        # 仅在“手动触发”且“开启缓存”时运行。周六定时任务不运行此步（全新编译）。
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.cache == 'true'
+        uses: actions/cache@v4
+        id: cache-toolchain
         with:
-          ccache: false
-          mixkey: ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
-          prefix: ${{ env.OPENWRT_PATH }}
+          # 使用周数作为 Key，实现一周内复用同一份缓存
+          key: ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-${{ env.CACHE_DATE }}
+          restore-keys: |
+            ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-
+          path: |
+            ${{ env.OPENWRT_PATH }}/.ccache
+            ${{ env.OPENWRT_PATH }}/staging_dir
+
+      - name: 输出缓存结果
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.cache == 'true'
+        run: |
+          echo "使用的缓存键: ${{ steps.cache-toolchain.outputs.cache-key }}"
+          echo "缓存命中情况: ${{ steps.cache-toolchain.outputs.cache-hit }}"
+          echo "缓存目录大小："
+          du -sh ${{ env.OPENWRT_PATH }}/.ccache || echo ".ccache 目录不存在"
+          du -sh ${{ env.OPENWRT_PATH }}/staging_dir || echo "staging_dir 目录不存在"
+
+      - name: 刷新缓存时间戳
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.cache == 'true'
+        run: |
+          echo "开始刷新缓存时间戳..."
+          if [ -d "$OPENWRT_PATH/staging_dir" ]; then
+            find "$OPENWRT_PATH/staging_dir" -type d -name "stamp" -not -path "*target*" | while read -r dir; do
+              find "$dir" -type f -exec touch {} +
+            done
+          fi
+          echo "缓存时间戳刷新完成。"
 
       - name: 更新并安装 Feeds
         run: |
@@ -104,10 +137,10 @@ jobs:
         run: |
           chmod +x $GITHUB_WORKSPACE/scripts/*.sh $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
 
-          cd $OPENWRT_PATH/package     
+          cd $OPENWRT_PATH/package      
           $GITHUB_WORKSPACE/scripts/Handles.sh
           $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
-          $GITHUB_WORKSPACE/scripts/patch-tailscale.sh       
+          $GITHUB_WORKSPACE/scripts/patch-tailscale.sh        
 
       - name: 下载源码依赖
         run: |
@@ -197,3 +230,14 @@ jobs:
             -d "parse_mode=HTML" \
             -d "disable_web_page_preview=true" \
             --data-urlencode "text=$MSG"
+
+      - name: 删除旧缓存 (仅定时任务运行)
+        # 仅在周六定时任务时清理旧缓存，配合 actions/cache 自动保存新缓存，实现每周一更
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        run: |
+          echo "检测到定时构建，准备清理旧缓存以生成新的一周主缓存..."
+          gh cache list --key ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}- --json key --jq '.[] | .key' | while read -r key; do
+            echo "删除旧缓存: $key"
+            gh cache delete "$key" || true
+          done

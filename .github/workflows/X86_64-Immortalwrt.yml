@@ -20,12 +20,15 @@ on:
   schedule:
     - cron: '0 22 * * 5' # 每周六 6:00（北京时间）自动编译
 
+permissions:
+  contents: write
+  actions: write
+
 env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
   REPO_BRANCH: master
   CONFIG_FILE: x86_imm/x86.config
   CUSTOM_SCRIPT: x86_imm/custom.sh
-  FIRMWARE_RELEASE: true
   FIRMWARE_TAG: X86_64
   CLASH_KERNEL: amd64
   TZ: Asia/Shanghai
@@ -84,26 +87,23 @@ jobs:
         cd $OPENWRT_PATH
         make defconfig > /dev/null 2>&1
         
-        # 提取源码仓库名（例如 AutoBuild-OpenWrt）
+        # 提取源码仓库名
         echo "SOURCE_REPO=$(echo $REPO_URL | awk -F '/' '{print $(NF)}')" >> $GITHUB_ENV
-
-        # 提取设备主架构（例如 x86、qualcommax）
+        # 提取设备主架构
         echo "DEVICE_TARGET=$(grep CONFIG_TARGET_BOARD .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
-
-        # 提取设备子架构（例如 64、ipq60xx）
+        # 提取设备子架构
         echo "DEVICE_SUBTARGET=$(grep CONFIG_TARGET_SUBTARGET .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
-
-        # 提取架构包名（例如 x86_64、aarch64_cortex-a53）
+        # 提取架构包名
         echo "DEVICE_ARCH=$(sed -n 's/^CONFIG_TARGET_ARCH_PACKAGES="\([^"]*\)"/\1/p' .config)" >> $GITHUB_ENV
-        
-        # 提取设备型号（例如 generic、zn_m2）
+        # 提取设备型号
         echo "DEVICE_MODEL=$(sed -n 's/^CONFIG_TARGET_PROFILE="DEVICE_\([^"]*\)"/\1/p' .config)" >> $GITHUB_ENV
         
-        # 写入缓存时间（20250813-只保留当天）
-        echo "CACHE_DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV  
+        # 写入缓存时间 (按周计算：2026-w05)
+        echo "CACHE_DATE=$(date +'%Y-w%V')" >> $GITHUB_ENV
 
     - name: 缓存工具链
-      if: github.event.inputs.cache == 'true'
+      # 仅在 手动触发 且 cache=true 时读取
+      if: github.event_name == 'workflow_dispatch' && github.event.inputs.cache == 'true'
       uses: actions/cache@v4
       id: cache-toolchain
       with:
@@ -134,15 +134,14 @@ jobs:
         fi
         echo "缓存时间戳刷新完成。"
 
-    - name: 添加定时触发的值
+    - name: 设置 Subnet (IP地址)
       run: |
+        # 优化后的逻辑：如果是手动触发，使用 inputs；如果是定时，使用默认值 "2"
         if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
-          SUBNET=$(jq -r '.inputs.subnet // empty' "$GITHUB_EVENT_PATH")
-          [ -z "$SUBNET" ] && SUBNET="2"
+          echo "SUBNET=${{ github.event.inputs.subnet }}" >> $GITHUB_ENV
         else
-          SUBNET="2"
+          echo "SUBNET=2" >> $GITHUB_ENV
         fi
-        echo "SUBNET=$SUBNET" >> $GITHUB_ENV
 
     - name: 更新并安装 feeds
       run: |
@@ -193,7 +192,6 @@ jobs:
         cd $OPENWRT_PATH/bin/targets/*/*
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
         ls -l
-        # echo "KERNEL=$(grep ^kernel *.manifest | cut -d- -f2-3 | tr -d ' ')" >> $GITHUB_ENV
         echo "KERNEL=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p')" >> $GITHUB_ENV
         cd $OPENWRT_PATH
         mkdir -p ./artifact/package ./artifact/buildinfo
@@ -218,7 +216,8 @@ jobs:
         path: ${{ env.OPENWRT_PATH }}/artifact/*packages.tar.gz
 
     - name: 上传固件到 Release
-      if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
+      # 修复点：同时检查 1. 编译成功 2. (手动且勾选了release) 或 (定时任务)
+      if: steps.compile.outputs.status == 'success' && (github.event.inputs.release == 'true' || github.event_name == 'schedule')
       uses: ncipollo/release-action@main
       with:
         name: R${{ env.DATE }} for ${{ env.DEVICE_TARGET }}
@@ -239,12 +238,12 @@ jobs:
           -  ⚙️ 内核版本: ${{ env.KERNEL }}
 
     - name: 发送 Telegram 通知
-      if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
+      # 修复点：条件同上
+      if: steps.compile.outputs.status == 'success' && (github.event.inputs.release == 'true' || github.event_name == 'schedule')
       run: |
         DT=$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M')
         DL_LINK="https://github.com/${{ github.repository }}/releases/tag/${{ env.DEVICE_TARGET }}"
         
-        # 注意：下面的文本尽量顶格写，防止包含多余缩进
         MSG="<b>🎉 OpenWrt 固件构建成功</b>
         
         <b>设备信息</b>
@@ -265,14 +264,12 @@ jobs:
           -d "disable_web_page_preview=true" \
           --data-urlencode "text=$MSG"
 
-    - name: 删除旧缓存
-      if: github.event.inputs.cache == 'true'
+    - name: 删除旧缓存 (仅定时任务运行)
+      if: github.event_name == 'schedule'
+      continue-on-error: true
       run: |
-        echo "开始列出并删除旧缓存..."
+        echo "检测到定时构建，准备清理旧缓存以生成新的一周主缓存..."
         gh cache list --key ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}- --json key --jq '.[] | .key' | while read -r key; do
-          echo "删除缓存：$key"
-          gh cache delete "$key"
+          echo "删除旧缓存: $key"
+          gh cache delete "$key" || true
         done
-        echo "当前缓存使用情况："
-        echo "ccache 目录大小: $(du -sh ${{ env.OPENWRT_PATH }}/.ccache | cut -f 1)"
-        echo "staging_dir 目录大小: $(du -sh ${{ env.OPENWRT_PATH }}/staging_dir | cut -f 1)"
