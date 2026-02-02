@@ -1,14 +1,16 @@
 #!/bin/sh
 
 mkdir -p /etc/tailscale
+touch /etc/config/tailscale
 
-cat > /etc/config/tailscale <<EOF
-config tailscale 'settings'
-	option log_stderr '1'
-	option log_stdout '1'
-	option port '61422'
-	option state_file '/etc/tailscale/tailscaled.state'
-	option fw_mode 'nftables'
+uci -q batch <<EOF
+set tailscale.settings=tailscale
+set tailscale.settings.port='61422'
+set tailscale.settings.state_file='/etc/tailscale/tailscaled.state'
+set tailscale.settings.fw_mode='nftables'
+set tailscale.settings.log_stderr='1'
+set tailscale.settings.log_stdout='1'
+commit tailscale
 EOF
 
 cat <<EOT > /etc/firewall.user
@@ -24,14 +26,14 @@ uci set firewall.custom_user_script.path='/etc/firewall.user'
 uci set firewall.custom_user_script.type='script'
 uci set firewall.custom_user_script.fw4_compatible='1'
 
-if ! uci get network.tailscale >/dev/null 2>&1; then
+if ! uci show network | grep -q "network.tailscale="; then
     uci set network.tailscale='interface'
     uci set network.tailscale.proto='none'
     uci set network.tailscale.device='tailscale0'
     uci commit network
 fi
 
-if ! uci get firewall.@zone[-1].name | grep -q "tailscale"; then
+if ! uci show firewall | grep -q "name='tailscale'"; then
     uci add firewall zone
     uci set firewall.@zone[-1].name='tailscale'
     uci set firewall.@zone[-1].input='ACCEPT'
@@ -42,12 +44,14 @@ if ! uci get firewall.@zone[-1].name | grep -q "tailscale"; then
     uci add_list firewall.@zone[-1].network='tailscale'
 
     uci add firewall forwarding
-    uci set firewall.@forwarding[-1].src='tailscale'
-    uci set firewall.@forwarding[-1].dest='lan'
-
-    uci add firewall forwarding
     uci set firewall.@forwarding[-1].src='lan'
     uci set firewall.@forwarding[-1].dest='tailscale'
+
+    uci add firewall forwarding
+    uci set firewall.@forwarding[-1].src='tailscale'
+    uci set firewall.@forwarding[-1].dest='lan'
+    
+    uci commit firewall
 fi
 
 uci commit firewall

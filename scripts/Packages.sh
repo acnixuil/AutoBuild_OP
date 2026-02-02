@@ -52,7 +52,7 @@ git clone --depth=1 --single-branch -b master https://github.com/jerrykuku/luci-
 git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-nikki.git nikki
 git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-momo.git momo
 
-git clone --depth=1 --single-branch -b master https://github.com/Tokisaki-Galaxy/luci-app-tailscale-community.git luci-app-tailscale-community
+# git clone --depth=1 --single-branch -b master https://github.com/Tokisaki-Galaxy/luci-app-tailscale-community.git luci-app-tailscale-community
 
 section "检查 Tailscale 核心更新"
 
