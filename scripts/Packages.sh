@@ -52,14 +52,7 @@ git clone --depth=1 --single-branch -b master https://github.com/jerrykuku/luci-
 git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-nikki.git nikki
 git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-momo.git momo
 
-section "集成 WOL-plus"
-
-log "Applying WOL-plus patches..."
-git clone --depth=1 https://github.com/leeyeel/WOL-plus.git wolplus_tmp
-cp -f wolplus_tmp/openwrt/wol.js ../feeds/luci/applications/luci-app-wol/htdocs/luci-static/resources/view/wol.js
-mkdir -p ../feeds/luci/applications/luci-app-wol/po/zh_Hans
-cp -f wolplus_tmp/openwrt/wol.po ../feeds/luci/applications/luci-app-wol/po/zh_Hans/wol.po
-rm -rf wolplus_tmp
+git clone --depth=1 --single-branch -b master https://github.com/Tokisaki-Galaxy/luci-app-tailscale-community.git luci-app-tailscale-community
 
 section "检查 Tailscale 核心更新"
 
