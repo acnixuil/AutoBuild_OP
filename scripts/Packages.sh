@@ -1,6 +1,20 @@
 #!/bin/bash
 
-# 移除要替换的包
+# --- 样式定义 ---
+GREEN="\033[0;32m"
+YELLOW="\033[1;33m"
+BLUE="\033[1;34m"
+RESET="\033[0m"
+
+log() {
+  echo -e "${BLUE}==>${RESET} $1"
+}
+
+section() {
+  echo -e "\n${GREEN}==== $1 ====${RESET}"
+}
+
+# --- 1. 清理旧包 ---
 find ../ -name '*v2ray-geodata*' -exec rm -rf {} +
 find ../ -name '*mosdns*' -exec rm -rf {} +
 find ../feeds/luci/ -name '*passwall*' | xargs rm -rf
@@ -9,13 +23,12 @@ find ../feeds/luci/ -name '*openclash*' | xargs rm -rf
 find ../feeds/luci/ -name '*lucky*' | xargs rm -rf
 find ../feeds/luci/ -name '*adguardhome*' | xargs rm -rf
 find ../feeds/luci/ -name '*argon*' | xargs rm -rf
-find ../feeds/luci/ -name '*luci-app-tailscale-community*' | xargs rm -rf
 
+log "Updating Golang to 25.x..."
 rm -rf ../feeds/packages/lang/golang
 git clone https://github.com/sbwml/packages_lang_golang -b 25.x ../feeds/packages/lang/golang
 
-# Git稀疏克隆，只克隆指定目录到本地
-# git_sparse_clone 分支名 仓库地址 需要下载的目录
+section "下载/更新插件"
 git_sparse_clone() {
   branch="$1" repourl="$2" && shift 2
   tmpdir="$(basename -s .git "$repourl")_tmp"
@@ -26,98 +39,58 @@ git_sparse_clone() {
   cd .. && rm -rf "$tmpdir"
 }
 
-# openclash
 git_sparse_clone dev https://github.com/vernesong/OpenClash luci-app-openclash
-git_sparse_clone master https://github.com/Tokisaki-Galaxy/luci-app-tailscale-community.git luci-app-tailscale-community
 
-# git clone --depth=1 --single-branch -b main https://github.com/xiaorouji/openwrt-passwall.git openwrt-passwall
-# git clone --depth=1 --single-branch -b main https://github.com/xiaorouji/openwrt-passwall-packages.git openwrt-passwall-packages
-
-# mosdns
 git clone --depth=1 --single-branch -b v5 https://github.com/sbwml/luci-app-mosdns.git luci-app-mosdns
 git clone --depth=1 --single-branch -b master https://github.com/sbwml/v2ray-geodata.git v2ray-geodata
 
-# adguardhome
 git clone --depth=1 --single-branch -b master https://github.com/acnixuil/luci-app-adguardhome.git luci-app-adguardhome
-
-# smartdns
-# find ../ -name '*smartdns*' -exec rm -rf {} +
-# git clone --depth=1 --single-branch -b master https://github.com/pymumu/luci-app-smartdns ../feeds/luci/applications/luci-app-smartdns
-# git clone --depth=1 --single-branch -b master https://github.com/pymumu/openwrt-smartdns ../feeds/packages/net/smartdns
-
-# lucky
 git clone --depth=1 --single-branch -b main https://github.com/sirpdboy/luci-app-lucky.git
 
-# 主题
 git clone --depth=1 --single-branch -b master https://github.com/yhl452493373/luci-theme-argon luci-theme-argon
 git clone --depth=1 --single-branch -b master https://github.com/jerrykuku/luci-app-argon-config.git luci-app-argon-config
-
 git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-nikki.git nikki
 git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-momo.git momo
 
-echo "正在配置自定义 Sing-box..."
-echo "当前设定架构 (CLASH_KERNEL): $CLASH_KERNEL"
+section "集成 WOL-plus"
 
-rm -rf ../feeds/packages/net/sing-box
-mkdir -p ../package/sing-box
+log "Applying WOL-plus patches..."
+git clone --depth=1 https://github.com/leeyeel/WOL-plus.git wolplus_tmp
+cp -f wolplus_tmp/openwrt/wol.js ../feeds/luci/applications/luci-app-wol/htdocs/luci-static/resources/view/wol.js
+mkdir -p ../feeds/luci/applications/luci-app-wol/po/zh_Hans
+cp -f wolplus_tmp/openwrt/wol.po ../feeds/luci/applications/luci-app-wol/po/zh_Hans/wol.po
+rm -rf wolplus_tmp
 
-# 3.3 写入自定义 Makefile (分两段写入，中间插入变量)
+section "检查 Tailscale 核心更新"
 
-# --- 第一部分：头部定义 ---
-cat > ../package/sing-box/Makefile << 'EOF'
-include $(TOPDIR)/rules.mk
+TS_PATH="../feeds/packages/net/tailscale"
+TS_REPO="https://github.com/immortalwrt/packages.git"
 
-PKG_NAME:=sing-box
-PKG_VERSION:=1.0.0
-PKG_RELEASE:=$(shell date +%Y%m%d)
+# 获取版本号
+LOCAL_VER=$(grep -oP '(?<=PKG_VERSION:=)\S+' "$TS_PATH/Makefile" 2>/dev/null)
+REMOTE_VER=$(curl -s https://raw.githubusercontent.com/immortalwrt/packages/master/net/tailscale/Makefile | grep -oP '(?<=PKG_VERSION:=)\S+' | head -n 1)
 
-include $(INCLUDE_DIR)/package.mk
+log "本地版本: ${LOCAL_VER:-未知}"
+log "远程版本: ${REMOTE_VER:-未知}"
 
-define Package/sing-box
-  SECTION:=net
-  CATEGORY:=Network
-  TITLE:=Sing-box (Custom Binary from CF Pages)
-  DEPENDS:=+ca-bundle +kmod-tun
-endef
+if [ -n "$REMOTE_VER" ] && [ "$LOCAL_VER" != "$REMOTE_VER" ]; then
+    log "发现新版本，正在从 ImmortalWrt 更新..."
+    
+    rm -rf ts_tmp
+    git clone --depth=1 --branch openwrt-24.10 --filter=blob:none --sparse $TS_REPO ts_tmp
+    
+    cd ts_tmp || exit 1
+    git sparse-checkout set net/tailscale
+    
+    # 替换旧的 package
+    rm -rf "$TS_PATH"
+    mv net/tailscale "$TS_PATH"
+    
+    cd ..
+    rm -rf ts_tmp
+    log "Tailscale 源码更新完成"
+else
+    log "版本一致，无需更新"
+fi
 
-define Package/sing-box/description
-  Downloads pre-compiled sing-box binary from Cloudflare Pages.
-endef
-
-EOF
-
-# --- 中间部分：注入 CLASH_KERNEL 变量 ---
-# 这里直接把脚本运行时的环境变量值写入 Makefile
-echo "DOWNLOAD_ARCH:=${CLASH_KERNEL}" >> ../package/sing-box/Makefile
-
-# --- 第三部分：构建逻辑 ---
-cat >> ../package/sing-box/Makefile << 'EOF'
-
-define Build/Prepare
-	mkdir -p $(PKG_BUILD_DIR)
-endef
-
-define Build/Compile
-	# 直接引用上面定义的 DOWNLOAD_ARCH 变量
-	echo "Downloading sing-box for $(DOWNLOAD_ARCH)..."
-	curl -L -k -o $(PKG_BUILD_DIR)/sing-box.tar.gz "https://singbox-custom-dl.pages.dev/sing-box-$(DOWNLOAD_ARCH).tar.gz"
-	
-	# 解压
-	tar -xzvf $(PKG_BUILD_DIR)/sing-box.tar.gz -C $(PKG_BUILD_DIR)
-endef
-
-define Package/sing-box/install
-	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/sing-box $(1)/usr/bin/sing-box
-endef
-
-$(eval $(call BuildPackage,sing-box))
-EOF
-
-echo "========================="
-echo " 插件列表与自定义 sing-box ($CLASH_KERNEL) 已配置完成"
-
-# ../scripts/feeds install -a
-
-echo "========================="
-echo " 插件列表已更新"
+section "插件列表与更新处理完毕"

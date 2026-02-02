@@ -156,7 +156,6 @@ jobs:
           $GITHUB_WORKSPACE/scripts/Packages.sh
           $GITHUB_WORKSPACE/scripts/Handles.sh
           $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
-          $GITHUB_WORKSPACE/scripts/patch-tailscale.sh
 
       - name: 下载依赖
         run: |

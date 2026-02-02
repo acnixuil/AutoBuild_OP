@@ -10,10 +10,14 @@ log() {
 }
 
 section() {
-  echo -e "\n${GREEN}==== $1 ====${RESET}"
+  echo "" 
+  echo -e "${GREEN}==== $1 ====${RESET}"
 }
 
 PKG_PATCH="$GITHUB_WORKSPACE/openwrt/package"
+
+# 确保进入 package 目录
+cd "$PKG_PATCH" || exit 1
 
 # 通用配置
 UI_URL="https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages-misans-only.zip"
@@ -100,12 +104,62 @@ if [ -d "./luci-app-adguardhome" ]; then
   cd "$PKG_PATCH"
 fi
 
+# Custom Sing-box
+section "配置 Custom Sing-box"
+rm -rf ../feeds/packages/net/sing-box
+mkdir -p ./sing-box
+
+log "Generating Sing-box Makefile for arch: ${CLASH_KERNEL}"
+
+# 生成 Makefile
+cat > ./sing-box/Makefile << EOF
+include \$(TOPDIR)/rules.mk
+
+PKG_NAME:=sing-box
+PKG_VERSION:=1.0.0
+PKG_RELEASE:=\$(shell date +%Y%m%d)
+
+include \$(INCLUDE_DIR)/package.mk
+
+define Package/sing-box
+  SECTION:=net
+  CATEGORY:=Network
+  TITLE:=Sing-box (Custom Binary from CF Pages)
+  DEPENDS:=+ca-bundle +kmod-tun
+endef
+
+define Package/sing-box/description
+  Downloads pre-compiled sing-box binary from Cloudflare Pages.
+endef
+
+DOWNLOAD_ARCH:=${CLASH_KERNEL}
+
+define Build/Prepare
+	mkdir -p \$(PKG_BUILD_DIR)
+endef
+
+define Build/Compile
+	echo "Downloading sing-box for \$(DOWNLOAD_ARCH)..."
+	curl -L -k -o \$(PKG_BUILD_DIR)/sing-box.tar.gz "https://singbox-custom-dl.pages.dev/sing-box-\$(DOWNLOAD_ARCH).tar.gz"
+	tar -xzvf \$(PKG_BUILD_DIR)/sing-box.tar.gz -C \$(PKG_BUILD_DIR)
+endef
+
+define Package/sing-box/install
+	\$(INSTALL_DIR) \$(1)/usr/bin
+	\$(INSTALL_BIN) \$(PKG_BUILD_DIR)/sing-box \$(1)/usr/bin/sing-box
+endef
+
+\$(eval \$(call BuildPackage,sing-box))
+EOF
+log "Sing-box 配置完成"
+cd "$PKG_PATCH"
+
 # 替换 Argon 壁纸
 if [ -d "./luci-theme-argon" ]; then
   section "替换 Argon 背景与样式"
   cp -f $GITHUB_WORKSPACE/images/bg1.jpg luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
-	sed -i "/font-weight:/ { /important/! { /\/\*/! s/:.*/: var(--font-weight);/ } }" $(find luci-theme-argon -type f -iname "*.css")
-	sed -i "s/primary '.*'/primary '#31a1a1'/; s/'0.2'/'0.5'/; s/'600'/'normal'/" luci-app-argon-config/root/etc/config/argon
+  sed -i "/font-weight:/ { /important/! { /\/\*/! s/:.*/: var(--font-weight);/ } }" $(find luci-theme-argon -type f -iname "*.css")
+  sed -i "s/primary '.*'/primary '#31a1a1'/; s/'0.2'/'0.5'/; s/'600'/'normal'/" luci-app-argon-config/root/etc/config/argon
   # sed -i '/<footer.*>/,/<\/footer>/d' luci-theme-argon/luasrc/view/themes/argon/footer.htm
   # sed -i '/<footer.*>/,/<\/footer>/d' luci-theme-argon/luasrc/view/themes/argon/footer_login.htm
   log "Argon 样式处理完成"
@@ -124,7 +178,6 @@ fi
 # 其他补丁和重命名
 section "修补系统配置"
 cd $GITHUB_WORKSPACE/openwrt/
-sed -i '/\/etc\/init\.d\/tailscale/d;/\/etc\/config\/tailscale/d;' feeds/packages/net/tailscale/Makefile
 sed -i 's/vpn/services/g' feeds/luci/applications/luci-app-zerotier/root/usr/share/luci/menu.d/luci-app-zerotier.json
 sed -i 's/msgstr "UPnP IGD 和 PCP\/NAT-PMP"/msgstr "UPnP"/' feeds/luci/applications/luci-app-upnp/po/zh_Hans/upnp.po
 

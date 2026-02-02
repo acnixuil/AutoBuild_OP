@@ -139,8 +139,7 @@ jobs:
 
           cd $OPENWRT_PATH/package      
           $GITHUB_WORKSPACE/scripts/Handles.sh
-          $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
-          $GITHUB_WORKSPACE/scripts/patch-tailscale.sh        
+          $GITHUB_WORKSPACE/$CUSTOM_SCRIPT       
 
       - name: 下载源码依赖
         run: |
