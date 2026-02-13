@@ -194,9 +194,9 @@ jobs:
         with:
           name: nn6000v2
           path: |
-            ${{ env.OPENWRT_PATH }}/artifact/**
-            ${{ env.FIRMWARE_PATH }}/*squashfs-factory.ubi
-            ${{ env.FIRMWARE_PATH }}/*squashfs-sysupgrade.bin
+            ${{ env.OPENWRT_PATH }}/artifact/*.tar.gz
+            ${{ env.FIRMWARE_PATH }}/*sysupgrade*
+            ${{ env.FIRMWARE_PATH }}/*factory*
           compression-level: 9
           if-no-files-found: ignore
           overwrite: true
@@ -212,8 +212,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           artifacts: |
             ${{ env.OPENWRT_PATH }}/artifact/*.tar.gz
-            ${{ env.FIRMWARE_PATH }}/*squashfs-factory.ubi
-            ${{ env.FIRMWARE_PATH }}/*squashfs-sysupgrade.bin
+            ${{ env.FIRMWARE_PATH }}/*sysupgrade*
+            ${{ env.FIRMWARE_PATH }}/*factory*
           body: |
             ### 📋 固件信息
             -  🔧 平台架构: ${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
