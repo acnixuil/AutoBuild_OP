@@ -46,7 +46,7 @@ git clone --depth=1 --single-branch -b master https://github.com/sbwml/v2ray-geo
 
 git clone --depth=1 --single-branch -b master https://github.com/acnixuil/luci-app-adguardhome.git luci-app-adguardhome
 git clone --depth=1 --single-branch -b main https://github.com/sirpdboy/luci-app-lucky.git
-
+git clone --depth=1 --single-branch -b main https://github.com/EasyTier/luci-app-easytier.git
 git clone --depth=1 --single-branch -b master https://github.com/yhl452493373/luci-theme-argon luci-theme-argon
 git clone --depth=1 --single-branch -b master https://github.com/jerrykuku/luci-app-argon-config.git luci-app-argon-config
 git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-nikki.git nikki
