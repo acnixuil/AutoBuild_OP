@@ -66,10 +66,6 @@ jobs:
 
       - name: 生成配置与设备变量
         run: |
-          cp $CONFIG_FILE $OPENWRT_PATH/.config
-          cd $OPENWRT_PATH
-          make defconfig
-
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
             SUBNET=$(jq -r '.inputs.subnet // empty' "$GITHUB_EVENT_PATH")
             [ -z "$SUBNET" ] && SUBNET="5"
@@ -78,11 +74,9 @@ jobs:
           fi
 
           echo "SUBNET=$SUBNET" >> $GITHUB_ENV
-          echo "DEVICE_TARGET=$(grep CONFIG_TARGET_BOARD .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
-          echo "DEVICE_SUBTARGET=$(grep CONFIG_TARGET_SUBTARGET .config | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
-          echo "DEVICE_MODEL=$(sed -n 's/^CONFIG_TARGET_PROFILE=\"DEVICE_\\([^\"]*\\)\"/\\1/p' .config)" >> $GITHUB_ENV
-          
-          # 【新增】生成周数 Key，例如 2026-w05
+          echo "DEVICE_TARGET=$(grep '^CONFIG_TARGET_BOARD=' $CONFIG_FILE | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
+          echo "DEVICE_SUBTARGET=$(grep '^CONFIG_TARGET_SUBTARGET=' $CONFIG_FILE | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
+          echo "DEVICE_MODEL=$(sed -n 's/^CONFIG_TARGET_PROFILE=\"DEVICE_\([^\"]*\)\"/\1/p' $CONFIG_FILE)" >> $GITHUB_ENV
           echo "CACHE_DATE=$(date +'%Y-w%V')" >> $GITHUB_ENV
 
       - name: 缓存工具链
@@ -145,7 +139,7 @@ jobs:
         run: |
           cp $CONFIG_FILE $OPENWRT_PATH/.config
           cd $OPENWRT_PATH
-          # make defconfig
+          make defconfig
           make download -j8
           find dl -size -1024c -delete
 
