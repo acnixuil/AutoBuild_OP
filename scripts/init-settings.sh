@@ -15,6 +15,7 @@ uci set nikki.proxy.proxy_udp_dport='123 443 8443'
 uci set nikki.mixin.dns_mode='redir-host'
 uci set nikki.mixin.tun_stack='system'
 uci set nikki.mixin.ui_url='https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages-misans-only.zip'
+uci -q delete nikki.mixin.api_tls_listen
 uci commit nikki
 
 # momo
