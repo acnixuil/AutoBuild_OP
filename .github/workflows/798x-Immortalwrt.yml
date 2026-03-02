@@ -162,7 +162,8 @@ jobs:
           cd $OPENWRT_PATH/bin/targets/*/*
           echo "KERNEL=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p')" >> $GITHUB_ENV
           echo "DATE=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
-          find . -name "*squashfs-sysupgrade.bin" -exec cp -f {} $OPENWRT_PATH/artifact/firmware/ \;
+          find . -maxdepth 1 -type f \( -name "*sysupgrade*" -o -name "*factory*" \) -exec cp -f {} $OPENWRT_PATH/artifact/firmware/ \;
+          
           tar -czf $OPENWRT_PATH/artifact/buildinfo/buildinfo.tar.gz config.buildinfo feeds.buildinfo version.buildinfo *.manifest
           cd $OPENWRT_PATH/bin/packages
           find . -type f \( -name "*.ipk" -o -name "*.apk" \) -exec cp -f --parents {} $OPENWRT_PATH/artifact/package/ \;
@@ -187,7 +188,7 @@ jobs:
           replacesArtifacts: true
           token: ${{ secrets.GITHUB_TOKEN }}
           artifacts: |
-            ${{ env.OPENWRT_PATH }}/artifact/firmware/*.bin
+            ${{ env.OPENWRT_PATH }}/artifact/firmware/*
             ${{ env.OPENWRT_PATH }}/artifact/buildinfo/*.tar.gz
             ${{ env.OPENWRT_PATH }}/artifact/packages.tar.gz
           body: |
