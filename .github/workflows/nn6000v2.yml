@@ -205,7 +205,7 @@ jobs:
         if: ${{ steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true' }}
         uses: ncipollo/release-action@main
         with:
-          name: R${{ env.DATE }} for ${{ env.DEVICE_TARGET }}
+          name: ${{ env.DEVICE_TARGET }}
           allowUpdates: true
           replacesArtifacts: true
           tag: ${{ env.DEVICE_TARGET }}
