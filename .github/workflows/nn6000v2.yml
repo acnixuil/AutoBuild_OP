@@ -177,13 +177,15 @@ jobs:
         if: ${{ steps.compile.outputs.status == 'success' }}
         run: |          
           cd $OPENWRT_PATH
-          mkdir -p ./artifact/package ./artifact/buildinfo
+          mkdir -p $OPENWRT_PATH/artifact/{firmware,buildinfo,package}
           find ./bin/packages/ -type f \( -name "*.ipk" -o -name "*.apk" \) -exec cp -f {} ./artifact/package/ \;
           find ./bin/targets/ -type f \( -name "*.buildinfo" -o -name "*.manifest" \) -exec cp -f {} ./artifact/buildinfo/ \;
+          
           cd ./artifact
           tar --transform='s|^package/||' -zcf "${DEVICE_ARCH}_packages.tar.gz" package
           
           cd $OPENWRT_PATH/bin/targets/*/*
+          find . -maxdepth 1 -type f \( -name "*sysupgrade*" -o -name "*factory*" \) -exec cp -f {} $OPENWRT_PATH/artifact/firmware/ \;
           echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
           echo "KERNEL=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p')" >> $GITHUB_ENV  
           echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
@@ -194,9 +196,7 @@ jobs:
         with:
           name: nn6000v2
           path: |
-            ${{ env.OPENWRT_PATH }}/artifact/**
-            ${{ env.FIRMWARE_PATH }}/*squashfs-factory.ubi
-            ${{ env.FIRMWARE_PATH }}/*squashfs-sysupgrade.bin
+            ${{ env.OPENWRT_PATH }}/artifact/firmware/*
           compression-level: 9
           if-no-files-found: ignore
           overwrite: true
@@ -211,9 +211,7 @@ jobs:
           tag: ${{ env.DEVICE_TARGET }}
           token: ${{ secrets.GITHUB_TOKEN }}
           artifacts: |
-            ${{ env.OPENWRT_PATH }}/artifact/*.tar.gz
-            ${{ env.FIRMWARE_PATH }}/*squashfs-factory.ubi
-            ${{ env.FIRMWARE_PATH }}/*squashfs-sysupgrade.bin
+            ${{ env.OPENWRT_PATH }}/artifact/firmware/*
           body: |
             ### 📋 固件信息
             -  🔧 平台架构: ${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
