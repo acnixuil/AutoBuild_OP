@@ -176,32 +176,51 @@ jobs:
 
       - name: 整理文件
         if: ${{ steps.compile.outputs.status == 'success' }}
-        run: |          
-          cd $OPENWRT_PATH
-          mkdir -p ./artifact/package ./artifact/buildinfo
-          find ./bin/packages/ -type f \( -name "*.ipk" -o -name "*.apk" \) -exec cp -f {} ./artifact/package/ \;
-          find ./bin/targets/ -type f \( -name "*.buildinfo" -o -name "*.manifest" \) -exec cp -f {} ./artifact/buildinfo/ \;
-          cd ./artifact
-          tar --transform='s|^package/||' -zcf "${DEVICE_ARCH}_packages.tar.gz" package
-          
+        run: |
           cd $OPENWRT_PATH/bin/targets/*/*
-          echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
-          echo "KERNEL=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p')" >> $GITHUB_ENV
+          KERNEL_VER=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p' | head -n 1)
+          echo "KERNEL=$KERNEL_VER" >> $GITHUB_ENV
           
-          # 重命名 (RENAME_PREFIX 在 env 中定义，wifi版为空)
-          rename -v "s/^/${{ env.RENAME_PREFIX }}/" *.ubi
-          rename -v "s/^/${{ env.RENAME_PREFIX }}/" *.bin          
+          if [ -n "${{ env.RENAME_PREFIX }}" ]; then
+            rename -v "s/^/${{ env.RENAME_PREFIX }}/" *.ubi 2>/dev/null || true
+            rename -v "s/^/${{ env.RENAME_PREFIX }}/" *.bin 2>/dev/null || true
+          fi
+          
           echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
 
-      - name: 上传所有产物到 Artifact
+          cd $OPENWRT_PATH
+          mkdir -p artifact/firmware artifact/buildinfo artifact/package
+          
+          find ./bin/packages/ -type f \( -name "*.ipk" -o -name "*.apk" \) -exec cp -f {} ./artifact/package/ \;
+          find ./bin/targets/ -type f \( -name "*.buildinfo" -o -name "*.manifest" \) -exec cp -f {} ./artifact/buildinfo/ \;
+          find ./bin/targets/ -type f \( -name "*sysupgrade*" -o -name "*factory*" -o -name "*.ubi" -o -name "*.bin" \) -exec cp -f {} ./artifact/firmware/ \;
+
+      - name: 上传固件到 Artifact
         if: ${{ steps.compile.outputs.status == 'success' }}
         uses: actions/upload-artifact@v4
         with:
-          name: wifi_build
-          path: |
-            ${{ env.OPENWRT_PATH }}/artifact/**
-            ${{ env.FIRMWARE_PATH }}/*squashfs-factory.ubi
-            ${{ env.FIRMWARE_PATH }}/*squashfs-sysupgrade.bin
+          name: ${{ env.RENAME_PREFIX }}-${{ env.DEVICE_MODEL }}-firmware
+          path: ${{ env.OPENWRT_PATH }}/artifact/firmware/**
+          compression-level: 9
+          if-no-files-found: ignore
+          overwrite: true
+
+      - name: 上传版本文件到 Artifact
+        if: ${{ steps.compile.outputs.status == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.RENAME_PREFIX }}-${{ env.DEVICE_MODEL }}-buildinfo
+          path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/**
+          compression-level: 9
+          if-no-files-found: ignore
+          overwrite: true
+
+      - name: 上传包到 Artifact
+        if: ${{ steps.compile.outputs.status == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.RENAME_PREFIX }}-${{ env.DEVICE_MODEL }}-package
+          path: ${{ env.OPENWRT_PATH }}/artifact/package/**
           compression-level: 9
           if-no-files-found: ignore
           overwrite: true
@@ -215,10 +234,7 @@ jobs:
           replacesArtifacts: true
           tag: ${{ env.DEVICE_TARGET }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          artifacts: |
-            ${{ env.OPENWRT_PATH }}/artifact/*.tar.gz
-            ${{ env.FIRMWARE_PATH }}/*squashfs-factory.ubi
-            ${{ env.FIRMWARE_PATH }}/*squashfs-sysupgrade.bin
+          artifacts: ${{ env.OPENWRT_PATH }}/artifact/firmware/*
           body: |
             ### 📋 固件信息
             -  🔧 平台架构: ${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
