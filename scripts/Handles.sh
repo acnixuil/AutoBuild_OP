@@ -140,7 +140,7 @@ endef
 
 define Build/Compile
 	echo "Downloading sing-box for \$(DOWNLOAD_ARCH)..."
-	curl -L -k -o \$(PKG_BUILD_DIR)/sing-box.tar.gz "https://singbox-custom-dl.pages.dev/sing-box-\$(DOWNLOAD_ARCH).tar.gz"
+	curl -L -k -o \$(PKG_BUILD_DIR)/sing-box.tar.gz "https://singbox-custom-dl.pages.dev/sing-box-reF1nd-stable-\$(DOWNLOAD_ARCH).tar.gz"
 	tar -xzvf \$(PKG_BUILD_DIR)/sing-box.tar.gz -C \$(PKG_BUILD_DIR)
 endef
 
