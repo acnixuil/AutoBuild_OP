@@ -12,41 +12,38 @@ jobs:
   process-binaries:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Environment
+      - name: Setup Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y jq curl tar gzip xz-utils
-          curl -L -k -o upx.tar.xz "https://github.com/upx/upx/releases/download/v4.2.4/upx-4.2.4-amd64_linux.tar.xz"
-          tar -xf upx.tar.xz
-          sudo cp upx-4.2.4-amd64_linux/upx /usr/local/bin/
+          sudo apt-get install -y jq curl tar gzip
+
+      - name: Setup UPX
+        uses: crazy-max/ghaction-upx@v4
+        with:
+          install-only: true
 
       - name: Process Lucky Stable
         run: |
           mkdir -p workspace/lucky
           cd workspace/lucky
           
-          LUCKY_VER=$(curl -s https://api.github.com/repos/gdy666/lucky/releases/latest | jq -r .tag_name)
+          LUCKY_JSON=$(curl -s https://api.github.com/repos/gdy666/lucky/releases/latest)
+          LUCKY_VER=$(echo "$LUCKY_JSON" | jq -r .tag_name)
           echo "LUCKY_VERSION=$LUCKY_VER" >> $GITHUB_ENV
           
-          URL_AMD64="https://github.com/gdy666/lucky/releases/download/${LUCKY_VER}/lucky_${LUCKY_VER#v}_Linux_x86_64.tar.gz"
+          URL_AMD64=$(echo "$LUCKY_JSON" | jq -r '.assets[].browser_download_url' | grep -iE 'linux_x86_64\.tar\.gz' | head -n 1)
           curl -L -k -o lucky_amd64.tar.gz "$URL_AMD64"
-          mkdir -p ext_amd64
-          tar -xzf lucky_amd64.tar.gz -C ext_amd64
-          find ext_amd64 -type f -name "lucky" -exec mv {} lucky-amd64 \;
-          upx --best lucky-amd64 || true
-          mv lucky-amd64 lucky
+          tar -xzf lucky_amd64.tar.gz lucky
+          upx --best lucky || true
           tar -czf lucky-${LUCKY_VER}-amd64-upx.tar.gz lucky
-          rm -rf lucky ext_amd64 lucky_amd64.tar.gz
+          rm lucky lucky_amd64.tar.gz
           
-          URL_ARM64="https://github.com/gdy666/lucky/releases/download/${LUCKY_VER}/lucky_${LUCKY_VER#v}_Linux_aarch64.tar.gz"
+          URL_ARM64=$(echo "$LUCKY_JSON" | jq -r '.assets[].browser_download_url' | grep -iE 'linux_arm64\.tar\.gz' | head -n 1)
           curl -L -k -o lucky_arm64.tar.gz "$URL_ARM64"
-          mkdir -p ext_arm64
-          tar -xzf lucky_arm64.tar.gz -C ext_arm64
-          find ext_arm64 -type f -name "lucky" -exec mv {} lucky-arm64 \;
-          upx --best lucky-arm64 || true
-          mv lucky-arm64 lucky
+          tar -xzf lucky_arm64.tar.gz lucky
+          upx --best lucky || true
           tar -czf lucky-${LUCKY_VER}-arm64-upx.tar.gz lucky
-          rm -rf lucky ext_arm64 lucky_arm64.tar.gz
+          rm lucky lucky_arm64.tar.gz
 
       - name: Process Mihomo Stable
         run: |
