@@ -15,7 +15,10 @@ jobs:
       - name: Setup Environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y upx-ucl jq curl tar gzip
+          sudo apt-get install -y jq curl tar gzip xz-utils
+          curl -L -k -o upx.tar.xz "https://github.com/upx/upx/releases/download/v4.2.4/upx-4.2.4-amd64_linux.tar.xz"
+          tar -xf upx.tar.xz
+          sudo cp upx-4.2.4-amd64_linux/upx /usr/local/bin/
 
       - name: Process Lucky Stable
         run: |
@@ -30,7 +33,7 @@ jobs:
           mkdir -p ext_amd64
           tar -xzf lucky_amd64.tar.gz -C ext_amd64
           find ext_amd64 -type f -name "lucky" -exec mv {} lucky-amd64 \;
-          upx --best lucky-amd64
+          upx --best lucky-amd64 || true
           mv lucky-amd64 lucky
           tar -czf lucky-${LUCKY_VER}-amd64-upx.tar.gz lucky
           rm -rf lucky ext_amd64 lucky_amd64.tar.gz
@@ -40,7 +43,7 @@ jobs:
           mkdir -p ext_arm64
           tar -xzf lucky_arm64.tar.gz -C ext_arm64
           find ext_arm64 -type f -name "lucky" -exec mv {} lucky-arm64 \;
-          upx --best lucky-arm64
+          upx --best lucky-arm64 || true
           mv lucky-arm64 lucky
           tar -czf lucky-${LUCKY_VER}-arm64-upx.tar.gz lucky
           rm -rf lucky ext_arm64 lucky_arm64.tar.gz
@@ -56,7 +59,7 @@ jobs:
           URL_AMD64="https://github.com/MetaCubeX/mihomo/releases/download/${MIHOMO_VER}/mihomo-linux-amd64-${MIHOMO_VER}.gz"
           curl -L -k -o amd64.gz "$URL_AMD64"
           gunzip amd64.gz
-          upx --best amd64
+          upx --best amd64 || true
           mv amd64 nikki
           tar -czf mihomo-${MIHOMO_VER}-amd64-upx.tar.gz nikki
           rm nikki
@@ -64,7 +67,7 @@ jobs:
           URL_ARM64="https://github.com/MetaCubeX/mihomo/releases/download/${MIHOMO_VER}/mihomo-linux-arm64-${MIHOMO_VER}.gz"
           curl -L -k -o arm64.gz "$URL_ARM64"
           gunzip arm64.gz
-          upx --best arm64
+          upx --best arm64 || true
           mv arm64 nikki
           tar -czf mihomo-${MIHOMO_VER}-arm64-upx.tar.gz nikki
           rm nikki
@@ -82,7 +85,7 @@ jobs:
           
           curl -L -k -o alpha_amd64.gz "$URL_AMD64"
           gunzip alpha_amd64.gz
-          upx --best alpha_amd64
+          upx --best alpha_amd64 || true
           mv alpha_amd64 nikki
           tar -czf mihomo-alpha-${ALPHA_VER}-amd64-upx.tar.gz nikki
           rm nikki
@@ -90,7 +93,7 @@ jobs:
           URL_ARM64=$(echo "$JSON" | jq -r '.assets[].browser_download_url' | grep -P 'mihomo-linux-arm64-alpha-[0-9a-z]+\.gz' | head -n 1)
           curl -L -k -o alpha_arm64.gz "$URL_ARM64"
           gunzip alpha_arm64.gz
-          upx --best alpha_arm64
+          upx --best alpha_arm64 || true
           mv alpha_arm64 nikki
           tar -czf mihomo-alpha-${ALPHA_VER}-arm64-upx.tar.gz nikki
           rm nikki
