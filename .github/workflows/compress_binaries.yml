@@ -1,0 +1,134 @@
+name: Compress Binaries
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 22 * * 5'
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  process-binaries:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y upx-ucl jq curl tar gzip
+
+      - name: Process Lucky Stable
+        run: |
+          mkdir -p workspace/lucky
+          cd workspace/lucky
+          
+          LUCKY_VER=$(curl -s https://api.github.com/repos/gdy666/lucky/releases/latest | jq -r .tag_name)
+          echo "LUCKY_VERSION=$LUCKY_VER" >> $GITHUB_ENV
+          
+          URL_AMD64="https://github.com/gdy666/lucky/releases/download/${LUCKY_VER}/lucky_${LUCKY_VER#v}_Linux_x86_64.tar.gz"
+          curl -L -k -o lucky_amd64.tar.gz "$URL_AMD64"
+          tar -xzf lucky_amd64.tar.gz
+          mv lucky_${LUCKY_VER#v}_Linux_x86_64/lucky lucky-amd64
+          upx --best lucky-amd64
+          mv lucky-amd64 lucky
+          tar -czf lucky-${LUCKY_VER}-amd64-upx.tar.gz lucky
+          rm lucky
+          
+          URL_ARM64="https://github.com/gdy666/lucky/releases/download/${LUCKY_VER}/lucky_${LUCKY_VER#v}_Linux_aarch64.tar.gz"
+          curl -L -k -o lucky_arm64.tar.gz "$URL_ARM64"
+          tar -xzf lucky_arm64.tar.gz
+          mv lucky_${LUCKY_VER#v}_Linux_aarch64/lucky lucky-arm64
+          upx --best lucky-arm64
+          mv lucky-arm64 lucky
+          tar -czf lucky-${LUCKY_VER}-arm64-upx.tar.gz lucky
+          rm lucky
+
+      - name: Process Mihomo Stable
+        run: |
+          mkdir -p workspace/mihomo
+          cd workspace/mihomo
+          
+          MIHOMO_VER=$(curl -s https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r .tag_name)
+          echo "MIHOMO_STABLE_VERSION=$MIHOMO_VER" >> $GITHUB_ENV
+          
+          URL_AMD64="https://github.com/MetaCubeX/mihomo/releases/download/${MIHOMO_VER}/mihomo-linux-amd64-${MIHOMO_VER}.gz"
+          curl -L -k -o amd64.gz "$URL_AMD64"
+          gunzip amd64.gz
+          upx --best amd64
+          mv amd64 nikki
+          tar -czf mihomo-${MIHOMO_VER}-amd64-upx.tar.gz nikki
+          rm nikki
+          
+          URL_ARM64="https://github.com/MetaCubeX/mihomo/releases/download/${MIHOMO_VER}/mihomo-linux-arm64-${MIHOMO_VER}.gz"
+          curl -L -k -o arm64.gz "$URL_ARM64"
+          gunzip arm64.gz
+          upx --best arm64
+          mv arm64 nikki
+          tar -czf mihomo-${MIHOMO_VER}-arm64-upx.tar.gz nikki
+          rm nikki
+
+      - name: Process Mihomo Alpha
+        run: |
+          cd workspace/mihomo
+          
+          JSON=$(curl -s https://api.github.com/repos/MetaCubeX/mihomo/releases/tags/Prerelease-Alpha)
+          
+          URL_AMD64=$(echo "$JSON" | jq -r '.assets[].browser_download_url' | grep -P 'mihomo-linux-amd64-alpha-[0-9a-z]+\.gz' | head -n 1)
+          FILE_AMD64=$(basename "$URL_AMD64")
+          ALPHA_VER=$(echo "$FILE_AMD64" | grep -oP 'alpha-\K[0-9a-z]+(?=\.gz)')
+          echo "MIHOMO_ALPHA_VERSION=$ALPHA_VER" >> $GITHUB_ENV
+          
+          curl -L -k -o alpha_amd64.gz "$URL_AMD64"
+          gunzip alpha_amd64.gz
+          upx --best alpha_amd64
+          mv alpha_amd64 nikki
+          tar -czf mihomo-alpha-${ALPHA_VER}-amd64-upx.tar.gz nikki
+          rm nikki
+          
+          URL_ARM64=$(echo "$JSON" | jq -r '.assets[].browser_download_url' | grep -P 'mihomo-linux-arm64-alpha-[0-9a-z]+\.gz' | head -n 1)
+          curl -L -k -o alpha_arm64.gz "$URL_ARM64"
+          gunzip alpha_arm64.gz
+          upx --best alpha_arm64
+          mv alpha_arm64 nikki
+          tar -czf mihomo-alpha-${ALPHA_VER}-arm64-upx.tar.gz nikki
+          rm nikki
+
+      - name: Upload Lucky Artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: lucky-artifacts
+          path: workspace/lucky/*.tar.gz
+          retention-days: 1
+          
+      - name: Upload Mihomo Artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: mihomo-artifacts
+          path: workspace/mihomo/*.tar.gz
+          retention-days: 1
+
+      - name: Publish Release
+        uses: ncipollo/release-action@main
+        with:
+          tag: upx-binary
+          name: upx-binary
+          allowUpdates: true
+          replacesArtifacts: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: "workspace/lucky/*.tar.gz,workspace/mihomo/*.tar.gz"
+          body: |
+            Mihomo-Stable Vesion: ${{ env.MIHOMO_STABLE_VERSION }}
+            Mihomo-Alpha Vesion: ${{ env.MIHOMO_ALPHA_VERSION }}
+            Lucky Vesion: ${{ env.LUCKY_VERSION }}
+
+      - name: Delete workflow runs
+        if: always()
+        uses: Mattraks/delete-workflow-runs@main
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 0
+          keep_minimum_runs: 1
+          delete_workflow_pattern: "${{ github.workflow }}"
+          delete_workflow_by_state_pattern: "active"
+          delete_run_by_conclusion_pattern: "success, failure, cancelled, skipped"

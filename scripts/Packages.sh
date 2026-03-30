@@ -54,36 +54,46 @@ git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/Op
 
 # git clone --depth=1 --single-branch -b master https://github.com/Tokisaki-Galaxy/luci-app-tailscale-community.git luci-app-tailscale-community
 
-section "检查 Tailscale 核心更新"
+section "配置 Custom Tailscale (预编译精简版)"
 
-TS_PATH="../feeds/packages/net/tailscale"
-TS_REPO="https://github.com/immortalwrt/packages.git"
+TS_MAKEFILE="../feeds/packages/net/tailscale/Makefile"
 
-# 获取版本号
-LOCAL_VER=$(grep -oP '(?<=PKG_VERSION:=)\S+' "$TS_PATH/Makefile" 2>/dev/null)
-REMOTE_VER=$(curl -s https://raw.githubusercontent.com/immortalwrt/packages/master/net/tailscale/Makefile | grep -oP '(?<=PKG_VERSION:=)\S+' | head -n 1)
+TS_LATEST_JSON=$(curl -s https://api.github.com/repos/admonstrator/glinet-tailscale-updater/releases/latest)
+TS_VERSION=$(echo "$TS_LATEST_JSON" | grep -oP '"tag_name": "\K.*?(?=")')
 
-log "本地版本: ${LOCAL_VER:-未知}"
-log "远程版本: ${REMOTE_VER:-未知}"
+log "获取到 Tailscale 精简版最新版本: ${TS_VERSION}"
+log "当前设备架构: ${TARGET_ARCH}"
 
-if [ -n "$REMOTE_VER" ] && [ "$LOCAL_VER" != "$REMOTE_VER" ]; then
-    log "发现新版本，正在从 ImmortalWrt 更新..."
-    
-    rm -rf ts_tmp
-    git clone --depth=1 --branch openwrt-24.10 --filter=blob:none --sparse $TS_REPO ts_tmp
-    
-    cd ts_tmp || exit 1
-    git sparse-checkout set net/tailscale
-    
-    # 替换旧的 package
-    rm -rf "$TS_PATH"
-    mv net/tailscale "$TS_PATH"
-    
-    cd ..
-    rm -rf ts_tmp
-    log "Tailscale 源码更新完成"
-else
-    log "版本一致，无需更新"
-fi
+TS_URL="https://github.com/admonstrator/glinet-tailscale-updater/releases/download/${TS_VERSION}/tailscaled-linux-${TARGET_ARCH}"
+
+log "目标下载地址: ${TS_URL}"
+
+sed -i "s/PKG_VERSION:=.*/PKG_VERSION:=${TS_VERSION#v}/g" "$TS_MAKEFILE"
+sed -i '/PKG_HASH:=/d' "$TS_MAKEFILE"
+
+sed -i '/include ..\/..\/lang\/golang\/golang-package.mk/d' "$TS_MAKEFILE"
+sed -i '/GO_PKG/d' "$TS_MAKEFILE"
+
+sed -i '/define Build\/Compile/,$d' "$TS_MAKEFILE"
+
+cat >> "$TS_MAKEFILE" << EOF
+define Build/Compile
+	echo "Downloading pre-compiled tailscale from ${TS_URL}"
+	curl -L -k -o \$(PKG_BUILD_DIR)/tailscaled "${TS_URL}"
+	chmod +x \$(PKG_BUILD_DIR)/tailscaled
+endef
+
+define Package/tailscale/install
+	\$(INSTALL_DIR) \$(1)/usr/sbin \$(1)/etc/init.d \$(1)/etc/config
+	\$(INSTALL_BIN) \$(PKG_BUILD_DIR)/tailscaled \$(1)/usr/sbin/tailscaled
+	\$(LN) tailscaled \$(1)/usr/sbin/tailscale
+	\$(INSTALL_BIN) ./files/tailscale.init \$(1)/etc/init.d/tailscale
+	\$(INSTALL_DATA) ./files/tailscale.conf \$(1)/etc/config/tailscale
+endef
+
+\$(eval \$(call BuildPackage,tailscale))
+EOF
+
+log "Tailscale Makefile 修改完成"
 
 section "插件列表与更新处理完毕"

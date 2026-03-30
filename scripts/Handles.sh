@@ -47,7 +47,7 @@ download_geo_files() {
 # OpenClash
 if [ -d "./luci-app-openclash" ]; then
   section "处理 OpenClash 数据"
-  CORE_TYPE=$CLASH_KERNEL
+  CORE_TYPE=$TARGET_ARCH
   CORE_META="https://github.com/vernesong/OpenClash/raw/core/dev/meta/clash-linux-$CORE_TYPE.tar.gz"
 
   download_ui "./luci-app-openclash/root/usr/share/openclash/ui/metacubexd"
@@ -96,7 +96,7 @@ if [ -d "./luci-app-adguardhome" ]; then
   AGH_PATCH="luci-app-adguardhome/root/usr/bin/AdGuardHome"
   mkdir -p ./$AGH_PATCH
 
-  AGH_CORE=$(curl -sL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | grep /AdGuardHome_linux_${CLASH_KERNEL} | awk -F '"' '{print $4}')
+  AGH_CORE=$(curl -sL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | grep /AdGuardHome_linux_${TARGET_ARCH} | awk -F '"' '{print $4}')
   wget -qO- $AGH_CORE | tar xOvz > ./$AGH_PATCH/AdGuardHome
 
   chmod +x ./$AGH_PATCH/AdGuardHome
@@ -104,14 +104,19 @@ if [ -d "./luci-app-adguardhome" ]; then
   cd "$PKG_PATCH"
 fi
 
-# Custom Sing-box
 section "配置 Custom Sing-box"
 rm -rf ../feeds/packages/net/sing-box
 mkdir -p ./sing-box
 
-log "Generating Sing-box Makefile for arch: ${CLASH_KERNEL}"
+log "正在修改${TARGET_ARCH}架构的singbox核心"
 
-# 生成 Makefile
+if [ "$TARGET_ARCH" = "arm64" ]; then
+    SINGBOX_URL="https://singbox-custom-dl.pages.dev/sing-box-reF1nd-stable-arm64-upx.tar.gz"
+    log "检测到arm64，替换singbox内核为upx压缩版本"
+else
+    SINGBOX_URL="https://singbox-custom-dl.pages.dev/sing-box-reF1nd-stable-${TARGET_ARCH}.tar.gz"
+fi
+
 cat > ./sing-box/Makefile << EOF
 include \$(TOPDIR)/rules.mk
 
@@ -132,15 +137,13 @@ define Package/sing-box/description
   Downloads pre-compiled sing-box binary from Cloudflare Pages.
 endef
 
-DOWNLOAD_ARCH:=${CLASH_KERNEL}
-
 define Build/Prepare
 	mkdir -p \$(PKG_BUILD_DIR)
 endef
 
 define Build/Compile
-	echo "Downloading sing-box for \$(DOWNLOAD_ARCH)..."
-	curl -L -k -o \$(PKG_BUILD_DIR)/sing-box.tar.gz "https://singbox-custom-dl.pages.dev/sing-box-reF1nd-stable-\$(DOWNLOAD_ARCH).tar.gz"
+	echo "Downloading sing-box from ${SINGBOX_URL}..."
+	curl -L -k -o \$(PKG_BUILD_DIR)/sing-box.tar.gz "${SINGBOX_URL}"
 	tar -xzvf \$(PKG_BUILD_DIR)/sing-box.tar.gz -C \$(PKG_BUILD_DIR)
 endef
 
@@ -151,7 +154,9 @@ endef
 
 \$(eval \$(call BuildPackage,sing-box))
 EOF
-log "Sing-box 配置完成"
+
+log "完成替换singbox核心"
+
 cd "$PKG_PATCH"
 
 # 替换 Argon 壁纸
