@@ -27,21 +27,23 @@ jobs:
           
           URL_AMD64="https://github.com/gdy666/lucky/releases/download/${LUCKY_VER}/lucky_${LUCKY_VER#v}_Linux_x86_64.tar.gz"
           curl -L -k -o lucky_amd64.tar.gz "$URL_AMD64"
-          tar -xzf lucky_amd64.tar.gz
-          mv lucky_${LUCKY_VER#v}_Linux_x86_64/lucky lucky-amd64
+          mkdir -p ext_amd64
+          tar -xzf lucky_amd64.tar.gz -C ext_amd64
+          find ext_amd64 -type f -name "lucky" -exec mv {} lucky-amd64 \;
           upx --best lucky-amd64
           mv lucky-amd64 lucky
           tar -czf lucky-${LUCKY_VER}-amd64-upx.tar.gz lucky
-          rm lucky
+          rm -rf lucky ext_amd64 lucky_amd64.tar.gz
           
           URL_ARM64="https://github.com/gdy666/lucky/releases/download/${LUCKY_VER}/lucky_${LUCKY_VER#v}_Linux_aarch64.tar.gz"
           curl -L -k -o lucky_arm64.tar.gz "$URL_ARM64"
-          tar -xzf lucky_arm64.tar.gz
-          mv lucky_${LUCKY_VER#v}_Linux_aarch64/lucky lucky-arm64
+          mkdir -p ext_arm64
+          tar -xzf lucky_arm64.tar.gz -C ext_arm64
+          find ext_arm64 -type f -name "lucky" -exec mv {} lucky-arm64 \;
           upx --best lucky-arm64
           mv lucky-arm64 lucky
           tar -czf lucky-${LUCKY_VER}-arm64-upx.tar.gz lucky
-          rm lucky
+          rm -rf lucky ext_arm64 lucky_arm64.tar.gz
 
       - name: Process Mihomo Stable
         run: |
