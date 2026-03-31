@@ -3,10 +3,10 @@ name: Compress Binaries
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 22 * * 5'
-  # push:
-  #   branches:
-  #     - 'main'
+    - cron: '0 16 * * *'
+  push:
+    branches:
+      - 'main'
 
 jobs:
   process-binaries:
@@ -84,14 +84,14 @@ jobs:
         run: |
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
             -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d text="$MSG"
+            -d text="🌵 upx处理完成辣！%0A>>>：%0A稳定版: ${{ env.MIHOMO_STABLE_VERSION }}%0A测试版: ${{ env.MIHOMO_ALPHA_VERSION }}"
 
       - name: TG Notification Failure
         if: failure()
         run: |
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
             -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d text="upx处理完成"
+            -d text="🥀 upx处理失败..."
 
       - name: Delete workflow runs
         if: always()
