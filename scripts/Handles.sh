@@ -5,6 +5,9 @@ YELLOW="\033[1;33m"
 BLUE="\033[1;34m"
 RESET="\033[0m"
 
+# 全局变量优先声明，确保所有函数都能正确读取
+PKG_PATCH="$GITHUB_WORKSPACE/openwrt/package"
+
 log() {
   echo -e "${BLUE}==>${RESET} $1"
 }
@@ -12,10 +15,11 @@ log() {
 section() {
   echo "" 
   echo -e "${GREEN}==== $1 ====${RESET}"
+  # 每个区块开始前，防御性复位一次基准路径
+  cd "$PKG_PATCH" || exit 1
 }
 
-PKG_PATCH="$GITHUB_WORKSPACE/openwrt/package"
-
+# 首次进入基准路径
 cd "$PKG_PATCH" || exit 1
 
 UI_URL="https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages-misans-only.zip"
@@ -107,21 +111,16 @@ if [ -d "./luci-app-adguardhome" ]; then
   AGH_DIR="luci-app-adguardhome/root/usr/bin"
   mkdir -p "./$AGH_DIR"
 
-  # 抓取对应架构的下载链接
   AGH_CORE=$(curl -sL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | grep "browser_download_url" | grep -oE "https://[^\"]*AdGuardHome_linux_${ARCH}\.tar\.gz" | head -n 1)
 
   if [ -n "$AGH_CORE" ]; then
     log "正在下载 AdGuardHome 核心: $AGH_CORE"
     TMP_DIR=$(mktemp -d)
     
-    # 将压缩包完整解压到临时目录，不使用容易报错的 strip-components
     if curl -sL "$AGH_CORE" | tar -xzf - -C "$TMP_DIR"; then
-      
-      # 使用 find 命令在临时目录中寻找名为 AdGuardHome 的文件（无视它的目录层级）
       AGH_BIN=$(find "$TMP_DIR" -type f -name "AdGuardHome" | head -n 1)
       
       if [ -n "$AGH_BIN" ] && [ -f "$AGH_BIN" ]; then
-        # 找到文件后，移动到目标目录并赋予执行权限
         mv -f "$AGH_BIN" "./$AGH_DIR/AdGuardHome"
         chmod +x "./$AGH_DIR/AdGuardHome"
         log "AdGuardHome 数据已更新 ✔"
@@ -131,13 +130,10 @@ if [ -d "./luci-app-adguardhome" ]; then
     else
       log "❌ 错误: AdGuardHome 核心下载或解压过程失败"
     fi
-    
-    # 清理临时目录
     rm -rf "$TMP_DIR"
   else
     log "❌ 错误: 未能抓取到对应架构 (${ARCH}) 的 AdGuardHome 下载链接，请检查变量是否匹配"
   fi
-  
   cd "$PKG_PATCH"
 fi
 
@@ -246,11 +242,58 @@ else
 fi
 cd "$PKG_PATCH"
 
+section "配置 Custom Tailscale (预编译精简版)"
+TS_MAKEFILE="../feeds/packages/net/tailscale/Makefile"
+
+if [ -f "$TS_MAKEFILE" ]; then
+  log "正在获取 Tailscale 最新版本信息..."
+  
+  TS_VERSION=$(curl -sL https://api.github.com/repos/admonstrator/glinet-tailscale-updater/releases/latest | grep '"tag_name":' | head -n 1 | awk -F '"' '{print $4}')
+
+  if [ -n "$TS_VERSION" ]; then
+    log "获取到 Tailscale 精简版最新版本: ${TS_VERSION}"
+    log "当前设备架构: ${ARCH}"
+
+    TS_URL="https://github.com/admonstrator/glinet-tailscale-updater/releases/download/${TS_VERSION}/tailscaled-linux-${ARCH}"
+    log "目标下载地址: ${TS_URL}"
+
+    sed -i "s/PKG_VERSION:=.*/PKG_VERSION:=${TS_VERSION#v}/g" "$TS_MAKEFILE"
+    sed -i '/PKG_HASH:=/d' "$TS_MAKEFILE"
+    sed -i '/golang-package.mk/d' "$TS_MAKEFILE"
+    sed -i '/GO_PKG/d' "$TS_MAKEFILE"
+    
+    sed -i '/define Build\/Compile/,$d' "$TS_MAKEFILE"
+
+    cat >> "$TS_MAKEFILE" << EOF
+define Build/Compile
+	echo "Downloading pre-compiled tailscale from ${TS_URL}"
+	curl -L -k -o \$(PKG_BUILD_DIR)/tailscaled "${TS_URL}"
+	chmod +x \$(PKG_BUILD_DIR)/tailscaled
+endef
+
+define Package/tailscale/install
+	\$(INSTALL_DIR) \$(1)/usr/sbin \$(1)/etc/init.d \$(1)/etc/config
+	\$(INSTALL_BIN) \$(PKG_BUILD_DIR)/tailscaled \$(1)/usr/sbin/tailscaled
+	\$(LN) tailscaled \$(1)/usr/sbin/tailscale
+	\$(INSTALL_BIN) ./files/tailscale.init \$(1)/etc/init.d/tailscale
+	\$(INSTALL_DATA) ./files/tailscale.conf \$(1)/etc/config/tailscale
+endef
+
+\$(eval \$(call BuildPackage,tailscale))
+EOF
+    log "Tailscale Makefile 修改完成 ✔"
+  else
+    log "❌ 错误: 未能获取到 Tailscale 最新版本号，请检查网络或 GitHub API 速率限制"
+  fi
+else
+  log "❌ 错误: 未找到 Tailscale Makefile ($TS_MAKEFILE)，请检查 feeds 是否已正确更新"
+fi
+cd "$PKG_PATCH"
+
 if [ -d "./luci-theme-argon" ]; then
   section "替换 Argon 背景与样式"
   cp -f $GITHUB_WORKSPACE/images/bg1.jpg luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
   
-  # 加入 find 是否找到文件的保护
   CSS_FILES=$(find luci-theme-argon -type f -iname "*.css")
   if [ -n "$CSS_FILES" ]; then
     sed -i "/font-weight:/ { /important/! { /\/\*/! s/:.*/: var(--font-weight);/ } }" $CSS_FILES
@@ -279,58 +322,8 @@ if [ -f "$UPNP_PO" ]; then
   log "UPnP 翻译已修补 ✔"
 fi
 
-section "配置 Custom Tailscale (预编译精简版)"
-
-TS_MAKEFILE="../feeds/packages/net/tailscale/Makefile"
-
-if [ -f "$TS_MAKEFILE" ]; then
-  log "正在获取 Tailscale 最新版本信息..."
-  
-  # 使用兼容性更好的 awk 方式提取 JSON 中的 tag_name
-  TS_VERSION=$(curl -sL https://api.github.com/repos/admonstrator/glinet-tailscale-updater/releases/latest | grep '"tag_name":' | head -n 1 | awk -F '"' '{print $4}')
-
-  if [ -n "$TS_VERSION" ]; then
-    log "获取到 Tailscale 精简版最新版本: ${TS_VERSION}"
-    log "当前设备架构: ${ARCH}"
-
-    TS_URL="https://github.com/admonstrator/glinet-tailscale-updater/releases/download/${TS_VERSION}/tailscaled-linux-${ARCH}"
-    log "目标下载地址: ${TS_URL}"
-
-    # 执行替换前，确保删除逻辑涵盖了原版 Makefile 中的所有 Go 语言编译特征
-    sed -i "s/PKG_VERSION:=.*/PKG_VERSION:=${TS_VERSION#v}/g" "$TS_MAKEFILE"
-    sed -i '/PKG_HASH:=/d' "$TS_MAKEFILE"
-    sed -i '/golang-package.mk/d' "$TS_MAKEFILE"
-    sed -i '/GO_PKG/d' "$TS_MAKEFILE"
-    
-    # 截断 Build/Compile 及其后的所有内容
-    sed -i '/define Build\/Compile/,$d' "$TS_MAKEFILE"
-
-    # 注入自定义的下载与安装逻辑
-    cat >> "$TS_MAKEFILE" << EOF
-define Build/Compile
-	echo "Downloading pre-compiled tailscale from ${TS_URL}"
-	curl -L -k -o \$(PKG_BUILD_DIR)/tailscaled "${TS_URL}"
-	chmod +x \$(PKG_BUILD_DIR)/tailscaled
-endef
-
-define Package/tailscale/install
-	\$(INSTALL_DIR) \$(1)/usr/sbin \$(1)/etc/init.d \$(1)/etc/config
-	\$(INSTALL_BIN) \$(PKG_BUILD_DIR)/tailscaled \$(1)/usr/sbin/tailscaled
-	\$(LN) tailscaled \$(1)/usr/sbin/tailscale
-	\$(INSTALL_BIN) ./files/tailscale.init \$(1)/etc/init.d/tailscale
-	\$(INSTALL_DATA) ./files/tailscale.conf \$(1)/etc/config/tailscale
-endef
-
-\$(eval \$(call BuildPackage,tailscale))
-EOF
-
-    log "Tailscale Makefile 修改完成 ✔"
-  else
-    log "❌ 错误: 未能获取到 Tailscale 最新版本号，请检查网络或 GitHub API 速率限制"
-  fi
-else
-  log "❌ 错误: 未找到 Tailscale Makefile ($TS_MAKEFILE)，请检查 feeds 是否已正确更新"
-fi
+# 保持脚本执行完毕后路径整洁
+cd "$PKG_PATCH" || exit 1
 
 section "脚本处理完成"
 log "所有数据和配置处理已完成 ✔"
