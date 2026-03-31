@@ -243,12 +243,13 @@ fi
 cd "$PKG_PATCH"
 
 section "配置 Custom Tailscale (预编译精简版)"
+
 TS_MAKEFILE="../feeds/packages/net/tailscale/Makefile"
 
 if [ -f "$TS_MAKEFILE" ]; then
   log "正在获取 Tailscale 最新版本信息..."
   
-  TS_VERSION=$(curl -sL https://api.github.com/repos/admonstrator/glinet-tailscale-updater/releases/latest | grep '"tag_name":' | head -n 1 | awk -F '"' '{print $4}')
+  TS_VERSION=$(curl -sL https://api.github.com/repos/admonstrator/glinet-tailscale-updater/releases/latest | grep '"tag_name":' | head -n 1 | awk -F '"' '{print $4}' || true)
 
   if [ -n "$TS_VERSION" ]; then
     log "获取到 Tailscale 精简版最新版本: ${TS_VERSION}"
@@ -257,14 +258,37 @@ if [ -f "$TS_MAKEFILE" ]; then
     TS_URL="https://github.com/admonstrator/glinet-tailscale-updater/releases/download/${TS_VERSION}/tailscaled-linux-${ARCH}"
     log "目标下载地址: ${TS_URL}"
 
-    sed -i "s/PKG_VERSION:=.*/PKG_VERSION:=${TS_VERSION#v}/g" "$TS_MAKEFILE"
-    sed -i '/PKG_HASH:=/d' "$TS_MAKEFILE"
-    sed -i '/golang-package.mk/d' "$TS_MAKEFILE"
-    sed -i '/GO_PKG/d' "$TS_MAKEFILE"
-    
-    sed -i '/define Build\/Compile/,$d' "$TS_MAKEFILE"
+    cat > "$TS_MAKEFILE" << EOF
+include \$(TOPDIR)/rules.mk
 
-    cat >> "$TS_MAKEFILE" << EOF
+PKG_NAME:=tailscale
+PKG_VERSION:=${TS_VERSION#v}
+PKG_RELEASE:=1
+
+include \$(INCLUDE_DIR)/package.mk
+
+define Package/tailscale
+  SECTION:=net
+  CATEGORY:=Network
+  TITLE:=Zero config VPN (Pre-compiled)
+  URL:=https://tailscale.com
+  DEPENDS:=+ca-bundle +kmod-tun
+  PROVIDES:=tailscaled
+endef
+
+define Package/tailscale/description
+  Tailscale is a zero config virtual private network. (Custom Pre-compiled minimal version)
+endef
+
+define Package/tailscale/conffiles
+/etc/config/tailscale
+/etc/tailscale/
+endef
+
+define Build/Prepare
+	mkdir -p \$(PKG_BUILD_DIR)
+endef
+
 define Build/Compile
 	echo "Downloading pre-compiled tailscale from ${TS_URL}"
 	curl -L -k -o \$(PKG_BUILD_DIR)/tailscaled "${TS_URL}"
@@ -281,14 +305,16 @@ endef
 
 \$(eval \$(call BuildPackage,tailscale))
 EOF
-    log "Tailscale Makefile 修改完成 ✔"
+
+    log "Tailscale Makefile 重写完成 ✔"
   else
     log "❌ 错误: 未能获取到 Tailscale 最新版本号，请检查网络或 GitHub API 速率限制"
   fi
 else
   log "❌ 错误: 未找到 Tailscale Makefile ($TS_MAKEFILE)，请检查 feeds 是否已正确更新"
 fi
-cd "$PKG_PATCH"
+
+cd "$PKG_PATCH" || exit 1
 
 if [ -d "./luci-theme-argon" ]; then
   section "替换 Argon 背景与样式"
