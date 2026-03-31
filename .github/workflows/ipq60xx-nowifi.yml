@@ -197,9 +197,9 @@ jobs:
 
       - name: 上传固件到 Artifact
         if: ${{ steps.compile.outputs.status == 'success' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.RENAME_PREFIX }}-${{ env.DEVICE_MODEL }}-firmware
+          name: ${{ env.RENAME_PREFIX }}${{ env.DEVICE_MODEL }}-firmware
           path: ${{ env.OPENWRT_PATH }}/artifact/firmware/**
           compression-level: 9
           if-no-files-found: ignore
@@ -207,9 +207,9 @@ jobs:
 
       - name: 上传版本文件到 Artifact
         if: ${{ steps.compile.outputs.status == 'success' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.RENAME_PREFIX }}-${{ env.DEVICE_MODEL }}-buildinfo
+          name: ${{ env.RENAME_PREFIX }}${{ env.DEVICE_MODEL }}-buildinfo
           path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/**
           compression-level: 9
           if-no-files-found: ignore
@@ -217,9 +217,9 @@ jobs:
 
       - name: 上传包到 Artifact
         if: ${{ steps.compile.outputs.status == 'success' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.RENAME_PREFIX }}-${{ env.DEVICE_MODEL }}-package
+          name: ${{ env.RENAME_PREFIX }}${{ env.DEVICE_MODEL }}-package
           path: ${{ env.OPENWRT_PATH }}/artifact/package/**
           compression-level: 9
           if-no-files-found: ignore

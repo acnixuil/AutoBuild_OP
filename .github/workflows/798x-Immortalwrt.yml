@@ -173,7 +173,7 @@ jobs:
 
       - name: 上传 Artifact
         if: steps.compile.outputs.status == 'success'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: mt798x_release
           path: |
