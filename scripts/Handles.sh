@@ -16,10 +16,8 @@ section() {
 
 PKG_PATCH="$GITHUB_WORKSPACE/openwrt/package"
 
-# 确保进入 package 目录
 cd "$PKG_PATCH" || exit 1
 
-# 通用配置
 UI_URL="https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages-misans-only.zip"
 GEO_IP="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip-lite.dat"
 GEO_SITE="https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat"
@@ -44,10 +42,9 @@ download_geo_files() {
   curl -sL -o Country.mmdb "$GEO_MMDB" && log "Country.mmdb 已下载"
 }
 
-# OpenClash
 if [ -d "./luci-app-openclash" ]; then
   section "处理 OpenClash 数据"
-  CORE_TYPE=$CLASH_KERNEL
+  CORE_TYPE=$TARGET_ARCH
   CORE_META="https://github.com/vernesong/OpenClash/raw/core/dev/meta/clash-linux-$CORE_TYPE.tar.gz"
 
   download_ui "./luci-app-openclash/root/usr/share/openclash/ui/metacubexd"
@@ -55,14 +52,13 @@ if [ -d "./luci-app-openclash" ]; then
   cd ./luci-app-openclash/root/etc/openclash/
   download_geo_files
 
-  mkdir ./core && cd ./core
+  mkdir -p ./core && cd ./core
   curl -sL -o meta.tar.gz "$CORE_META" && tar -zxf meta.tar.gz && mv -f clash clash_meta && log "核心 meta 已完成"
   chmod +x ./* && rm -f ./*.gz
   log "OpenClash 数据已更新"
   cd "$PKG_PATCH"
 fi
 
-# nikki
 if [ -d "./nikki" ]; then
   section "处理 nikki 插件"
   UI_TARGET="./nikki/luci-app-nikki/root/etc/nikki/run/ui"
@@ -81,7 +77,6 @@ if [ -d "./nikki" ]; then
   cd "$PKG_PATCH"
 fi
 
-# momo
 if [ -d "./momo" ]; then
   section "处理 momo 插件"
   mkdir -p ./momo/luci-app-momo/root/etc/momo/run
@@ -90,28 +85,32 @@ if [ -d "./momo" ]; then
   cd "$PKG_PATCH"
 fi
 
-# AdGuardHome
 if [ -d "./luci-app-adguardhome" ]; then
   section "处理 AdGuardHome"
-  AGH_PATCH="luci-app-adguardhome/root/usr/bin/AdGuardHome"
-  mkdir -p ./$AGH_PATCH
+  AGH_DIR="luci-app-adguardhome/root/usr/bin"
+  mkdir -p ./$AGH_DIR
 
-  AGH_CORE=$(curl -sL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | grep /AdGuardHome_linux_${CLASH_KERNEL} | awk -F '"' '{print $4}')
-  wget -qO- $AGH_CORE | tar xOvz > ./$AGH_PATCH/AdGuardHome
+  AGH_CORE=$(curl -sL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | grep "browser_download_url" | grep "AdGuardHome_linux_${TARGET_ARCH}\.tar\.gz" | head -n 1 | cut -d '"' -f 4)
+  curl -sL "$AGH_CORE" | tar -xzf - -C ./$AGH_DIR --strip-components=1 AdGuardHome/AdGuardHome
 
-  chmod +x ./$AGH_PATCH/AdGuardHome
+  chmod +x ./$AGH_DIR/AdGuardHome
   log "AdGuardHome 数据已更新"
   cd "$PKG_PATCH"
 fi
 
-# Custom Sing-box
 section "配置 Custom Sing-box"
 rm -rf ../feeds/packages/net/sing-box
 mkdir -p ./sing-box
 
-log "Generating Sing-box Makefile for arch: ${CLASH_KERNEL}"
+log "正在修改${TARGET_ARCH}架构的singbox核心"
 
-# 生成 Makefile
+if [ "$TARGET_ARCH" = "arm64" ]; then
+    SINGBOX_URL="https://singbox-custom-dl.pages.dev/sing-box-reF1nd-stable-arm64-upx.tar.gz"
+    log "检测到arm64，替换singbox内核为upx压缩版本"
+else
+    SINGBOX_URL="https://singbox-custom-dl.pages.dev/sing-box-reF1nd-stable-${TARGET_ARCH}.tar.gz"
+fi
+
 cat > ./sing-box/Makefile << EOF
 include \$(TOPDIR)/rules.mk
 
@@ -132,15 +131,13 @@ define Package/sing-box/description
   Downloads pre-compiled sing-box binary from Cloudflare Pages.
 endef
 
-DOWNLOAD_ARCH:=${CLASH_KERNEL}
-
 define Build/Prepare
 	mkdir -p \$(PKG_BUILD_DIR)
 endef
 
 define Build/Compile
-	echo "Downloading sing-box for \$(DOWNLOAD_ARCH)..."
-	curl -L -k -o \$(PKG_BUILD_DIR)/sing-box.tar.gz "https://singbox-custom-dl.pages.dev/sing-box-reF1nd-stable-\$(DOWNLOAD_ARCH).tar.gz"
+	echo "Downloading sing-box from ${SINGBOX_URL}..."
+	curl -L -k -o \$(PKG_BUILD_DIR)/sing-box.tar.gz "${SINGBOX_URL}"
 	tar -xzvf \$(PKG_BUILD_DIR)/sing-box.tar.gz -C \$(PKG_BUILD_DIR)
 endef
 
@@ -151,31 +148,64 @@ endef
 
 \$(eval \$(call BuildPackage,sing-box))
 EOF
-log "Sing-box 配置完成"
+
+log "完成替换singbox核心"
+
 cd "$PKG_PATCH"
 
-# 替换 Argon 壁纸
+if [ "$TARGET_ARCH" = "arm64" ]; then
+    MIHOMO_URL=$(curl -sL "https://api.github.com/repos/acnixuil/AutoBuild_OP/releases/tags/upx-binary" | grep -oE "https://[^\"]*mihomo-stable[^\"]*linux-arm64-upx\.tar\.gz" | head -n 1)
+    if [ -n "$MIHOMO_URL" ]; then
+        MAKEFILE_PATH="./nikki/nikki/Makefile"
+        if [ ! -f "$MAKEFILE_PATH" ]; then
+            MAKEFILE_PATH="./nikki/nikki/makefile"
+        fi
+        
+        if [ -f "$MAKEFILE_PATH" ]; then
+            sed -i \
+                -e '/^PKG_SOURCE/d' \
+                -e '/^PKG_MIRROR_HASH/d' \
+                -e '/^PKG_BUILD_/d' \
+                -e '/^GO_PKG/d' \
+                -e '/golang-package.mk/d' \
+                -e '/GoBinPackage/d' \
+                -e '/GoPackage\/Package\/Install\/Bin/d' \
+                -e 's|\$(PKG_INSTALL_DIR)/usr/bin/mihomo|\$(PKG_BUILD_DIR)/mihomo|g' \
+                -e '/define Build\/Prepare/,/endef/d' \
+                -e '/\$(eval \$(call BuildPackage,nikki))/d' \
+                "$MAKEFILE_PATH"
+
+            cat >> "$MAKEFILE_PATH" << EOF
+
+define Build/Prepare
+	mkdir -p \$(PKG_BUILD_DIR)
+endef
+
+define Build/Compile
+	echo "Downloading mihomo from $MIHOMO_URL..."
+	curl -L -k -o \$(PKG_BUILD_DIR)/mihomo.tar.gz "$MIHOMO_URL"
+	tar -xzvf \$(PKG_BUILD_DIR)/mihomo.tar.gz -C \$(PKG_BUILD_DIR)
+	mv \$(PKG_BUILD_DIR)/nikki \$(PKG_BUILD_DIR)/mihomo
+	chmod +x \$(PKG_BUILD_DIR)/mihomo
+endef
+
+\$(eval \$(call BuildPackage,nikki))
+EOF
+            log "完成替换nikki核心"
+        fi
+    fi
+fi
+cd "$PKG_PATCH"
+
 if [ -d "./luci-theme-argon" ]; then
   section "替换 Argon 背景与样式"
   cp -f $GITHUB_WORKSPACE/images/bg1.jpg luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
   sed -i "/font-weight:/ { /important/! { /\/\*/! s/:.*/: var(--font-weight);/ } }" $(find luci-theme-argon -type f -iname "*.css")
   sed -i "s/primary '.*'/primary '#31a1a1'/; s/'0.2'/'0.5'/; s/'600'/'normal'/" luci-app-argon-config/root/etc/config/argon
-  # sed -i '/<footer.*>/,/<\/footer>/d' luci-theme-argon/luasrc/view/themes/argon/footer.htm
-  # sed -i '/<footer.*>/,/<\/footer>/d' luci-theme-argon/luasrc/view/themes/argon/footer_login.htm
   log "Argon 样式处理完成"
   cd "$PKG_PATCH"
 fi
 
-# 修改 amlogic 配置
-if [ -d "./luci-app-amlogic" ]; then
-  section "处理 Amlogic 配置"
-  CONFIG_FILE="./luci-app-amlogic/luci-app-amlogic/root/etc/config/amlogic"
-  sed -i "s/ARMv8/ARMv8/g" "$CONFIG_FILE"
-  log "Amlogic 配置已更新"
-  cd "$PKG_PATCH"
-fi
-
-# 其他补丁和重命名
 section "修补系统配置"
 cd $GITHUB_WORKSPACE/openwrt/
 sed -i 's/vpn/services/g' feeds/luci/applications/luci-app-zerotier/root/usr/share/luci/menu.d/luci-app-zerotier.json

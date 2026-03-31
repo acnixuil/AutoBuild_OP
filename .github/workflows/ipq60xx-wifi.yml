@@ -23,7 +23,7 @@ env:
   REPO_URL: https://github.com/LiBwrt/openwrt-6.x.git
   REPO_BRANCH: 25.12-nss
   CUSTOM_SCRIPT: ipq6000/custom.sh
-  CLASH_KERNEL: arm64
+  TARGET_ARCH: arm64
   FIRMWARE_RELEASE: true
   TZ: Asia/Shanghai
   # WiFi版特定变量
@@ -197,7 +197,7 @@ jobs:
 
       - name: 上传固件到 Artifact
         if: ${{ steps.compile.outputs.status == 'success' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.RENAME_PREFIX }}-${{ env.DEVICE_MODEL }}-firmware
           path: ${{ env.OPENWRT_PATH }}/artifact/firmware/**
@@ -207,7 +207,7 @@ jobs:
 
       - name: 上传版本文件到 Artifact
         if: ${{ steps.compile.outputs.status == 'success' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.RENAME_PREFIX }}-${{ env.DEVICE_MODEL }}-buildinfo
           path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/**
@@ -217,7 +217,7 @@ jobs:
 
       - name: 上传包到 Artifact
         if: ${{ steps.compile.outputs.status == 'success' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.RENAME_PREFIX }}-${{ env.DEVICE_MODEL }}-package
           path: ${{ env.OPENWRT_PATH }}/artifact/package/**
