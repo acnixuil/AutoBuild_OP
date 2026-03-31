@@ -216,7 +216,6 @@ jobs:
         path: ${{ env.OPENWRT_PATH }}/artifact/*packages.tar.gz
 
     - name: 上传固件到 Release
-      # 修复点：同时检查 1. 编译成功 2. (手动且勾选了release) 或 (定时任务)
       if: steps.compile.outputs.status == 'success' && (github.event.inputs.release == 'true' || github.event_name == 'schedule')
       uses: ncipollo/release-action@main
       with:
