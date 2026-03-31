@@ -139,13 +139,25 @@ fi
 
 # Custom Sing-box
 section "配置 Custom Sing-box"
-rm -rf ../feeds/packages/net/sing-box
-mkdir -p ./sing-box
 
-log "Generating Sing-box Makefile for arch: ${ARCH}"
+# 判断架构是否在支持列表中 (arm64 或 amd64)
+if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "amd64" ]; then
+  rm -rf ../feeds/packages/net/sing-box
+  mkdir -p ./sing-box
 
-# 生成 Makefile
-cat > ./sing-box/Makefile << EOF
+  log "Generating Sing-box Makefile for arch: ${ARCH}"
+
+  # 根据架构动态匹配下载链接
+  if [ "$ARCH" = "arm64" ]; then
+    SINGBOX_URL="https://singbox-custom-dl.pages.dev/sing-box-reF1nd-stable-${ARCH}-upx.tar.gz"
+    log "检测到 arm64，使用带有 -upx 尾缀的极限压缩内核"
+  elif [ "$ARCH" = "amd64" ]; then
+    SINGBOX_URL="https://singbox-custom-dl.pages.dev/sing-box-reF1nd-stable-${ARCH}.tar.gz"
+    log "检测到 amd64，使用无压缩的原版内核"
+  fi
+
+  # 生成 Makefile，直接利用外层 Shell 的 ${ARCH} 和 ${SINGBOX_URL} 变量注入
+  cat > ./sing-box/Makefile << EOF
 include \$(TOPDIR)/rules.mk
 
 PKG_NAME:=sing-box
@@ -165,16 +177,19 @@ define Package/sing-box/description
   Downloads pre-compiled sing-box binary from Cloudflare Pages.
 endef
 
-DOWNLOAD_ARCH:=${ARCH}
-
 define Build/Prepare
 	mkdir -p \$(PKG_BUILD_DIR)
 endef
 
 define Build/Compile
-	echo "Downloading sing-box for \$(DOWNLOAD_ARCH)..."
-	curl -L -k -o \$(PKG_BUILD_DIR)/sing-box.tar.gz "https://singbox-custom-dl.pages.dev/sing-box-reF1nd-stable-\$(DOWNLOAD_ARCH)-upx.tar.gz"
+	echo "Downloading sing-box for ${ARCH}..."
+	curl -L -k -o \$(PKG_BUILD_DIR)/sing-box.tar.gz "${SINGBOX_URL}"
 	tar -xzvf \$(PKG_BUILD_DIR)/sing-box.tar.gz -C \$(PKG_BUILD_DIR)
+	# 清理压缩包并智能重命名为 sing-box，防止后续 install 找不到文件
+	rm -f \$(PKG_BUILD_DIR)/sing-box.tar.gz
+	SB_BIN=\$\$(find \$(PKG_BUILD_DIR) -type f -iname "*sing*box*" | head -n 1); \\
+	[ -n "\$\$SB_BIN" ] && mv -f "\$\$SB_BIN" \$(PKG_BUILD_DIR)/sing-box || true
+	chmod +x \$(PKG_BUILD_DIR)/sing-box
 endef
 
 define Package/sing-box/install
@@ -184,12 +199,19 @@ endef
 
 \$(eval \$(call BuildPackage,sing-box))
 EOF
-log "Sing-box 配置完成"
-cd "$PKG_PATCH"
+
+  log "Sing-box 配置完成 ✔"
+else
+  # 如果既不是 arm64 也不是 amd64，跳过执行
+  log "跳过 Sing-box 配置 (当前架构 $ARCH 不匹配预设规则)"
+fi
+
+# 无论上述执行与否，最后统一安全退回基础路径
+cd "$PKG_PATCH" || exit 1
 
 section "处理 mihomo 核心"
 if [ "$ARCH" = "arm64" ]; then
-    MIHOMO_URL=$(curl -sL "https://api.github.com/repos/acnixuil/AutoBuild_OP/releases/tags/upx-binary" | grep -oE "https://[^\"]*mihomo-stable[^\"]*linux-arm64-upx\.tar\.gz" | head -n 1)
+    MIHOMO_URL=$(curl -sL "https://api.github.com/repos/acnixuil/AutoBuild_OP/releases/tags/upx-binary" | grep -oE "https://[^\"]*mihomo-alpha[^\"]*linux-arm64-upx\.tar\.gz" | head -n 1)
     if [ -n "$MIHOMO_URL" ]; then
         MAKEFILE_PATH="./nikki/nikki/Makefile"
         if [ ! -f "$MAKEFILE_PATH" ]; then
@@ -231,7 +253,7 @@ EOF
             log "❌ 错误: 未能在路径找到 nikki Makefile"
         fi
     else
-        log "❌ 错误: 未能抓取到 mihomo-stable 下载链接"
+        log "❌ 错误: 未能抓取到 mihomo 下载链接"
     fi
 else
     log "跳过 mihomo 核心替换 (非 arm64 架构)"
