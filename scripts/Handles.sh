@@ -137,19 +137,14 @@ if [ -d "./luci-app-adguardhome" ]; then
   cd "$PKG_PATCH"
 fi
 
-section "处理 singbox 核心"
+# Custom Sing-box
+section "配置 Custom Sing-box"
 rm -rf ../feeds/packages/net/sing-box
 mkdir -p ./sing-box
 
-log "正在配置 ${ARCH} 架构的 singbox Makefile"
+log "Generating Sing-box Makefile for arch: ${ARCH}"
 
-if [ "$ARCH" = "arm64" ]; then
-    SINGBOX_URL="https://singbox-custom-dl.pages.dev/sing-box-reF1nd-stable-arm64-upx.tar.gz"
-    log "检测到 arm64，替换 singbox 内核为 upx 压缩版本"
-else
-    SINGBOX_URL="https://singbox-custom-dl.pages.dev/sing-box-reF1nd-stable-${ARCH}.tar.gz"
-fi
-
+# 生成 Makefile
 cat > ./sing-box/Makefile << EOF
 include \$(TOPDIR)/rules.mk
 
@@ -170,20 +165,16 @@ define Package/sing-box/description
   Downloads pre-compiled sing-box binary from Cloudflare Pages.
 endef
 
+DOWNLOAD_ARCH:=${ARCH}
+
 define Build/Prepare
 	mkdir -p \$(PKG_BUILD_DIR)
 endef
 
 define Build/Compile
-	echo "Downloading sing-box from ${SINGBOX_URL}..."
-	curl -L -k -o \$(PKG_BUILD_DIR)/sing-box.tar.gz "${SINGBOX_URL}"
+	echo "Downloading sing-box for \$(DOWNLOAD_ARCH)..."
+	curl -L -k -o \$(PKG_BUILD_DIR)/sing-box.tar.gz "https://singbox-custom-dl.pages.dev/sing-box-reF1nd-stable-\$(DOWNLOAD_ARCH)-upx.tar.gz"
 	tar -xzvf \$(PKG_BUILD_DIR)/sing-box.tar.gz -C \$(PKG_BUILD_DIR)
-	# 1. 核心步骤：先删掉压缩包，防止干扰 find 查找
-	rm -f \$(PKG_BUILD_DIR)/sing-box.tar.gz
-	# 2. 智能查找并重命名：无视大小写和前后缀，抓到唯一的二进制文件
-	SB_BIN=\$\$(find \$(PKG_BUILD_DIR) -type f -iname "*sing*box*" | head -n 1); \\
-	[ -n "\$\$SB_BIN" ] && mv -f "\$\$SB_BIN" \$(PKG_BUILD_DIR)/sing-box || true
-	chmod +x \$(PKG_BUILD_DIR)/sing-box
 endef
 
 define Package/sing-box/install
@@ -193,9 +184,8 @@ endef
 
 \$(eval \$(call BuildPackage,sing-box))
 EOF
-
-log "完成 singbox Makefile 生成 ✔"
-cd "$PKG_PATCH" || exit 1
+log "Sing-box 配置完成"
+cd "$PKG_PATCH"
 
 section "处理 mihomo 核心"
 if [ "$ARCH" = "arm64" ]; then
