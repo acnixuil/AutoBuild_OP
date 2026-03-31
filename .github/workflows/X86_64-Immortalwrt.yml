@@ -264,6 +264,13 @@ jobs:
           -d "disable_web_page_preview=true" \
           --data-urlencode "text=$MSG"
 
+    - name: TG Notification Failure
+      if: failure()
+      run: |
+        curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
+          -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+          -d text="❌ 警告！%0A仓库: ${{ github.repository }}%0A任务: ${{ github.workflow }} 运行失败，请及时检查！"
+
     - name: 删除旧缓存 (仅定时任务运行)
       if: github.event_name == 'schedule'
       continue-on-error: true
