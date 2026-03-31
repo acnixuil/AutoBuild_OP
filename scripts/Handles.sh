@@ -178,6 +178,12 @@ define Build/Compile
 	echo "Downloading sing-box from ${SINGBOX_URL}..."
 	curl -L -k -o \$(PKG_BUILD_DIR)/sing-box.tar.gz "${SINGBOX_URL}"
 	tar -xzvf \$(PKG_BUILD_DIR)/sing-box.tar.gz -C \$(PKG_BUILD_DIR)
+	# 1. 核心步骤：先删掉压缩包，防止干扰 find 查找
+	rm -f \$(PKG_BUILD_DIR)/sing-box.tar.gz
+	# 2. 智能查找并重命名：无视大小写和前后缀，抓到唯一的二进制文件
+	SB_BIN=\$\$(find \$(PKG_BUILD_DIR) -type f -iname "*sing*box*" | head -n 1); \\
+	[ -n "\$\$SB_BIN" ] && mv -f "\$\$SB_BIN" \$(PKG_BUILD_DIR)/sing-box || true
+	chmod +x \$(PKG_BUILD_DIR)/sing-box
 endef
 
 define Package/sing-box/install
@@ -189,7 +195,7 @@ endef
 EOF
 
 log "完成 singbox Makefile 生成 ✔"
-cd "$PKG_PATCH"
+cd "$PKG_PATCH" || exit 1
 
 section "处理 mihomo 核心"
 if [ "$ARCH" = "arm64" ]; then
