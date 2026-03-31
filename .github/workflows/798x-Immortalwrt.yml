@@ -25,7 +25,7 @@ env:
   CONFIG_FILE: mt798x/2410.config
   CUSTOM_SCRIPT: mt798x/custom.sh
   FIRMWARE_RELEASE: true
-  TARGET_ARCH: arm64
+  ARCH: arm64
   TZ: Asia/Shanghai
 
 jobs:

@@ -30,7 +30,7 @@ env:
   CONFIG_FILE: x86_imm/x86.config
   CUSTOM_SCRIPT: x86_imm/custom.sh
   FIRMWARE_TAG: X86_64
-  TARGET_ARCH: amd64
+  ARCH: amd64
   TZ: Asia/Shanghai
 
 jobs:

@@ -44,7 +44,7 @@ download_geo_files() {
 
 if [ -d "./luci-app-openclash" ]; then
   section "处理 OpenClash 数据"
-  CORE_TYPE=$TARGET_ARCH
+  CORE_TYPE=$ARCH
   CORE_META="https://github.com/vernesong/OpenClash/raw/core/dev/meta/clash-linux-$CORE_TYPE.tar.gz"
 
   download_ui "./luci-app-openclash/root/usr/share/openclash/ui/metacubexd"
@@ -90,7 +90,7 @@ if [ -d "./luci-app-adguardhome" ]; then
   AGH_DIR="luci-app-adguardhome/root/usr/bin"
   mkdir -p ./$AGH_DIR
 
-  AGH_CORE=$(curl -sL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | grep "browser_download_url" | grep "AdGuardHome_linux_${TARGET_ARCH}\.tar\.gz" | head -n 1 | cut -d '"' -f 4)
+  AGH_CORE=$(curl -sL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | grep "browser_download_url" | grep "AdGuardHome_linux_${ARCH}\.tar\.gz" | head -n 1 | cut -d '"' -f 4)
   curl -sL "$AGH_CORE" | tar -xzf - -C ./$AGH_DIR --strip-components=1 AdGuardHome/AdGuardHome
 
   chmod +x ./$AGH_DIR/AdGuardHome
@@ -102,13 +102,13 @@ section "配置 Custom Sing-box"
 rm -rf ../feeds/packages/net/sing-box
 mkdir -p ./sing-box
 
-log "正在修改${TARGET_ARCH}架构的singbox核心"
+log "正在修改${ARCH}架构的singbox核心"
 
-if [ "$TARGET_ARCH" = "arm64" ]; then
+if [ "$ARCH" = "arm64" ]; then
     SINGBOX_URL="https://singbox-custom-dl.pages.dev/sing-box-reF1nd-stable-arm64-upx.tar.gz"
     log "检测到arm64，替换singbox内核为upx压缩版本"
 else
-    SINGBOX_URL="https://singbox-custom-dl.pages.dev/sing-box-reF1nd-stable-${TARGET_ARCH}.tar.gz"
+    SINGBOX_URL="https://singbox-custom-dl.pages.dev/sing-box-reF1nd-stable-${ARCH}.tar.gz"
 fi
 
 cat > ./sing-box/Makefile << EOF
@@ -153,7 +153,7 @@ log "完成替换singbox核心"
 
 cd "$PKG_PATCH"
 
-if [ "$TARGET_ARCH" = "arm64" ]; then
+if [ "$ARCH" = "arm64" ]; then
     MIHOMO_URL=$(curl -sL "https://api.github.com/repos/acnixuil/AutoBuild_OP/releases/tags/upx-binary" | grep -oE "https://[^\"]*mihomo-stable[^\"]*linux-arm64-upx\.tar\.gz" | head -n 1)
     if [ -n "$MIHOMO_URL" ]; then
         MAKEFILE_PATH="./nikki/nikki/Makefile"
