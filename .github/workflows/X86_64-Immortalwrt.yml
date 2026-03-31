@@ -12,11 +12,6 @@ on:
         required: true
         type: boolean
         default: true
-      release:
-        description: "上传到RELEASE"
-        required: true
-        type: boolean
-        default: true
   schedule:
     - cron: '0 22 * * 5' # 每周六 6:00（北京时间）自动编译
 
@@ -216,7 +211,7 @@ jobs:
         path: ${{ env.OPENWRT_PATH }}/artifact/*packages.tar.gz
 
     - name: 上传固件到 Release
-      if: steps.compile.outputs.status == 'success' && (github.event.inputs.release == 'true' || github.event_name == 'schedule')
+      if: steps.compile.outputs.status == 'success'
       uses: ncipollo/release-action@main
       with:
         name: R${{ env.DATE }} for ${{ env.DEVICE_TARGET }}
@@ -238,7 +233,7 @@ jobs:
 
     - name: 发送 Telegram 通知
       # 修复点：条件同上
-      if: steps.compile.outputs.status == 'success' && (github.event.inputs.release == 'true' || github.event_name == 'schedule')
+      if: steps.compile.outputs.status == 'success'
       run: |
         DT=$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M')
         DL_LINK="https://github.com/${{ github.repository }}/releases/tag/${{ env.DEVICE_TARGET }}"
