@@ -213,7 +213,7 @@ cd "$PKG_PATCH" || exit 1
 
 section "处理 mihomo 核心"
 if [ "$ARCH" = "arm64" ]; then
-    MIHOMO_URL=$(curl -sL "https://api.github.com/repos/acnixuil/AutoBuild_OP/releases/tags/upx-binary" | grep -oE "https://[^\"]*mihomo-alpha[^\"]*linux-arm64-upx\.tar\.gz" | head -n 1)
+    MIHOMO_URL=$(curl -sL "https://api.github.com/repos/acnixuil/AutoBuild_OP/releases/tags/upx-binary" | grep -oE "https://[^\"]*mihomo-stable[^\"]*linux-arm64-upx\.tar\.gz" | head -n 1)
     if [ -n "$MIHOMO_URL" ]; then
         MAKEFILE_PATH="./nikki/nikki/Makefile"
         if [ ! -f "$MAKEFILE_PATH" ]; then
