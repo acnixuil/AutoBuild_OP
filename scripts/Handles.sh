@@ -211,14 +211,20 @@ fi
 # 无论上述执行与否，最后统一安全退回基础路径
 cd "$PKG_PATCH" || exit 1
 
-section "处理 mihomo 核心"
-if [ "$ARCH" = "arm64" ]; then
-    MIHOMO_URL=$(curl -sL "https://api.github.com/repos/acnixuil/AutoBuild_OP/releases/tags/upx-binary" | grep -oE "https://[^\"]*mihomo-stable[^\"]*linux-arm64-upx\.tar\.gz" | head -n 1)
+section "替换 mihomo-meta 核心"
+
+if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "amd64" ]; then
+    
+    if [ "$ARCH" = "arm64" ]; then
+        DOWNLOAD_KEY="linux-arm64-upx"
+    else
+        DOWNLOAD_KEY="linux-amd64"
+    fi
+
+    MIHOMO_URL=$(curl -sL "https://api.github.com/repos/acnixuil/AutoBuild_OP/releases/tags/upx-binary" | grep -oE "https://[^\"]*mihomo-alpha[^\"]*${DOWNLOAD_KEY}\.tar\.gz" | head -n 1)
+    
     if [ -n "$MIHOMO_URL" ]; then
-        MAKEFILE_PATH="./nikki/nikki/Makefile"
-        if [ ! -f "$MAKEFILE_PATH" ]; then
-            MAKEFILE_PATH="./nikki/nikki/makefile"
-        fi
+        MAKEFILE_PATH=$(find ./ -path "*/mihomo-meta/Makefile" | head -n 1)
         
         if [ -f "$MAKEFILE_PATH" ]; then
             sed -i \
@@ -228,10 +234,9 @@ if [ "$ARCH" = "arm64" ]; then
                 -e '/^GO_PKG/d' \
                 -e '/golang-package.mk/d' \
                 -e '/GoBinPackage/d' \
-                -e '/GoPackage\/Package\/Install\/Bin/d' \
-                -e 's|\$(PKG_INSTALL_DIR)/usr/bin/mihomo|\$(PKG_BUILD_DIR)/mihomo|g' \
+                -e '/define Package\/mihomo-meta\/install/,/endef/d' \
                 -e '/define Build\/Prepare/,/endef/d' \
-                -e '/\$(eval \$(call BuildPackage,nikki))/d' \
+                -e '/\$(eval \$(call BuildPackage,mihomo-meta))/d' \
                 "$MAKEFILE_PATH"
 
             cat >> "$MAKEFILE_PATH" << EOF
@@ -241,24 +246,29 @@ define Build/Prepare
 endef
 
 define Build/Compile
-	echo "Downloading mihomo from $MIHOMO_URL..."
 	curl -L -k -o \$(PKG_BUILD_DIR)/mihomo.tar.gz "$MIHOMO_URL"
 	tar -xzvf \$(PKG_BUILD_DIR)/mihomo.tar.gz -C \$(PKG_BUILD_DIR)
-	mv \$(PKG_BUILD_DIR)/nikki \$(PKG_BUILD_DIR)/mihomo 2>/dev/null || true
+	REAL_BIN=\$\$(find \$(PKG_BUILD_DIR) -type f -iname "*mihomo*" | head -n 1); \\
+	[ -n "\$\$REAL_BIN" ] && mv -f "\$\$REAL_BIN" \$(PKG_BUILD_DIR)/mihomo || true
 	chmod +x \$(PKG_BUILD_DIR)/mihomo
 endef
 
-\$(eval \$(call BuildPackage,nikki))
+define Package/mihomo-meta/install
+	\$(INSTALL_DIR) \$(1)/usr/libexec
+	\$(INSTALL_BIN) \$(PKG_BUILD_DIR)/mihomo \$(1)/usr/libexec/mihomo
+endef
+
+\$(eval \$(call BuildPackage,mihomo-meta))
 EOF
-            log "完成替换 nikki/mihomo 核心配置 ✔"
+            log "mihomo-meta 核心替换成功"
         else
-            log "❌ 错误: 未能在路径找到 nikki Makefile"
+            log "未能找到 mihomo-meta Makefile"
         fi
     else
-        log "❌ 错误: 未能抓取到 mihomo 下载链接"
+        log "未能抓取到下载链接"
     fi
 else
-    log "跳过 mihomo 核心替换 (非 arm64 架构)"
+    log "当前架构不匹配，跳过执行"
 fi
 cd "$PKG_PATCH"
 
