@@ -212,7 +212,6 @@ fi
 cd "$PKG_PATCH" || exit 1
 
 section "替换 mihomo-meta 核心"
-
 if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "amd64" ]; then
     
     if [ "$ARCH" = "arm64" ]; then
@@ -224,9 +223,9 @@ if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "amd64" ]; then
     MIHOMO_URL=$(curl -sL "https://api.github.com/repos/acnixuil/AutoBuild_OP/releases/tags/upx-binary" | grep -oE "https://[^\"]*mihomo-alpha[^\"]*${DOWNLOAD_KEY}\.tar\.gz" | head -n 1)
     
     if [ -n "$MIHOMO_URL" ]; then
-        MAKEFILE_PATH=$(find ./ -path "*/mihomo-meta/Makefile" | head -n 1)
+        META_MAKEFILE=$(find ./ -path "*/mihomo-meta/Makefile" | head -n 1)
         
-        if [ -f "$MAKEFILE_PATH" ]; then
+        if [ -f "$META_MAKEFILE" ]; then
             sed -i \
                 -e '/^PKG_SOURCE/d' \
                 -e '/^PKG_MIRROR_HASH/d' \
@@ -237,9 +236,9 @@ if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "amd64" ]; then
                 -e '/define Package\/mihomo-meta\/install/,/endef/d' \
                 -e '/define Build\/Prepare/,/endef/d' \
                 -e '/\$(eval \$(call BuildPackage,mihomo-meta))/d' \
-                "$MAKEFILE_PATH"
+                "$META_MAKEFILE"
 
-            cat >> "$MAKEFILE_PATH" << EOF
+            cat >> "$META_MAKEFILE" << EOF
 
 define Build/Prepare
 	mkdir -p \$(PKG_BUILD_DIR)
@@ -259,9 +258,25 @@ endef
 \$(eval \$(call BuildPackage,mihomo-meta))
 EOF
             log "mihomo-meta 核心替换成功"
-        else
-            log "未能找到 mihomo-meta Makefile"
         fi
+
+        NIKKI_MAKEFILE=$(find ./ -path "*/nikki/Makefile" | head -n 1)
+        
+        if [ -f "$NIKKI_MAKEFILE" ]; then
+            sed -i \
+                -e '/^PKG_BUILD_DEPENDS:=golang\/host/d' \
+                -e '/^GO_PKG/d' \
+                -e '/golang-package.mk/d' \
+                -e 's/\$(GO_ARCH_DEPENDS) //g' \
+                -e '/GoBinPackage/d' \
+                "$NIKKI_MAKEFILE"
+            
+            sed -i '/\$(eval \$(call BuildPackage,nikki))/d' "$NIKKI_MAKEFILE"
+            echo "\$(eval \$(call BuildPackage,nikki))" >> "$NIKKI_MAKEFILE"
+
+            log "nikki Makefile Go 依赖清理成功"
+        fi
+
     else
         log "未能抓取到下载链接"
     fi
