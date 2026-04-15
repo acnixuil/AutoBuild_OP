@@ -37,9 +37,9 @@ jobs:
           gunzip arm64.gz
           chmod +x arm64
           upx --lzma --best arm64 || true
-          mv arm64 nikki
-          tar -czf mihomo-stable-${MIHOMO_VER}-linux-arm64-upx.tar.gz nikki
-          rm nikki
+          mv arm64 mihomo
+          tar -czf mihomo-stable-${MIHOMO_VER}-linux-arm64-upx.tar.gz mihomo
+          rm mihomo
 
       - name: Process Mihomo Alpha
         run: |
@@ -56,9 +56,9 @@ jobs:
           gunzip alpha_arm64.gz
           chmod +x alpha_arm64
           upx --lzma --best alpha_arm64 || true
-          mv alpha_arm64 nikki
-          tar -czf mihomo-alpha-${ALPHA_VER}-linux-arm64-upx.tar.gz nikki
-          rm nikki
+          mv alpha_arm64 mihomo
+          tar -czf mihomo-alpha-${ALPHA_VER}-linux-arm64-upx.tar.gz mihomo
+          rm mihomo
           
       - name: Upload Mihomo Artifacts
         uses: actions/upload-artifact@v6

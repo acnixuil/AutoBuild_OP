@@ -248,8 +248,6 @@ endef
 define Build/Compile
 	curl -L -k -o \$(PKG_BUILD_DIR)/mihomo.tar.gz "$MIHOMO_URL"
 	tar -xzvf \$(PKG_BUILD_DIR)/mihomo.tar.gz -C \$(PKG_BUILD_DIR)
-	REAL_BIN=\$\$(find \$(PKG_BUILD_DIR) -type f -iname "*mihomo*" | head -n 1); \\
-	[ -n "\$\$REAL_BIN" ] && mv -f "\$\$REAL_BIN" \$(PKG_BUILD_DIR)/mihomo || true
 	chmod +x \$(PKG_BUILD_DIR)/mihomo
 endef
 
