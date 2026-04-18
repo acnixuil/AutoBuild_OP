@@ -26,7 +26,7 @@ env:
   ARCH: arm64
   FIRMWARE_RELEASE: true
   TZ: Asia/Shanghai
-  CONFIG_FILE: ipq6000/nn6000v2.config
+  CONFIG_FILE: ipq6000/nn_nowifi.config
   FIRMWARE_TAG: nn6000v2
   RENAME_PREFIX: "" 
   DEFAULT_SUBNET: "3"
