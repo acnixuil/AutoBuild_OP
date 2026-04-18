@@ -29,7 +29,7 @@ jobs:
           mkdir -p workspace/mihomo
           cd workspace/mihomo
           
-          MIHOMO_VER=$(curl -s https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r .tag_name)
+          MIHOMO_VER=$(curl -sL -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r .tag_name)
           echo "MIHOMO_STABLE_VERSION=$MIHOMO_VER" >> $GITHUB_ENV
           
           URL_ARM64="https://github.com/MetaCubeX/mihomo/releases/download/${MIHOMO_VER}/mihomo-linux-arm64-${MIHOMO_VER}.gz"
@@ -45,7 +45,7 @@ jobs:
         run: |
           cd workspace/mihomo
           
-          JSON=$(curl -s https://api.github.com/repos/MetaCubeX/mihomo/releases/tags/Prerelease-Alpha)
+          JSON=$(curl -sL -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/MetaCubeX/mihomo/releases/tags/Prerelease-Alpha)
           
           URL_ARM64=$(echo "$JSON" | jq -r '.assets[].browser_download_url' | grep -P 'mihomo-linux-arm64-alpha-[0-9a-z]+\.gz' | head -n 1)
           FILE_ARM64=$(basename "$URL_ARM64")
@@ -59,7 +59,7 @@ jobs:
           mv alpha_arm64 mihomo
           tar -czf mihomo-alpha-${ALPHA_VER}-linux-arm64-upx.tar.gz mihomo
           rm mihomo
-          
+
       - name: Upload Mihomo Artifacts
         uses: actions/upload-artifact@v6
         with:
