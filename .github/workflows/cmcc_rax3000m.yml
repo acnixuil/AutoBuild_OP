@@ -1,0 +1,251 @@
+name: cmcc_rax3000m
+
+on:
+  workflow_dispatch:
+    inputs:
+      subnet:
+        description: "默认IP地址: 192.168.[X].1"
+        required: true
+        default: "2"
+      # cache:
+      #   description: "使用工具链缓存"
+      #   required: true
+      #   default: true
+      #   type: boolean
+  schedule:
+    - cron: '0 22 * * 5'   # 每周六 06:00（北京时间）
+
+permissions:
+  contents: write
+  actions: write
+
+env:
+  REPO_URL: https://github.com/padavanonly/immortalwrt-mt798x-6.6.git
+  REPO_BRANCH: openwrt-24.10-6.6
+  CONFIG_FILE: mt798x/cmcc_rax3000m.config
+  CUSTOM_SCRIPT: mt798x/custom.sh
+  FIRMWARE_RELEASE: true
+  ARCH: arm64
+  TZ: Asia/Shanghai
+  DEFAULT_SUBNET: "2"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检查服务器性能
+        run: |
+          echo "CPU 核心数: $(nproc)"
+          echo "CPU 型号: $(awk -F: '/model name/ {print $2; exit}' /proc/cpuinfo)"
+          free -h
+          df -hT
+
+      - name: 初始化编译环境
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo bash -c 'bash <(curl -sL https://build-scripts.immortalwrt.org/init_build_environment.sh)'
+          sudo apt -yqq install dos2unix rename python3-setuptools libfuse-dev
+          sudo apt -yqq autoremove --purge
+          sudo apt -yqq clean
+          sudo timedatectl set-timezone "$TZ"
+
+      # - name: 扩容磁盘空间
+      #   uses: easimon/maximize-build-space@master
+      #   with:
+      #     swap-size-mb: 1024
+      #     root-reserve-mb: 1024
+
+      - name: 检出仓库
+        uses: actions/checkout@main
+
+      - name: 克隆 OpenWrt 源码
+        run: |
+          git clone --depth=1 -b $REPO_BRANCH $REPO_URL openwrt
+          echo "OPENWRT_PATH=$PWD/openwrt" >> $GITHUB_ENV
+
+      - name: 生成配置与设备变量
+        run: |
+          # 确定 Subnet (如果是定时触发，inputs为空，则使用默认值)
+          SET_SUBNET="${{ github.event.inputs.subnet || env.DEFAULT_SUBNET }}"
+          echo "SUBNET=$SET_SUBNET" >> $GITHUB_ENV
+
+          echo "DEVICE_TARGET=$(grep '^CONFIG_TARGET_BOARD=' $CONFIG_FILE | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
+          echo "DEVICE_SUBTARGET=$(grep '^CONFIG_TARGET_SUBTARGET=' $CONFIG_FILE | awk -F '\"' '{print $2}')" >> $GITHUB_ENV
+          echo "DEVICE_MODEL=$(sed -n 's/^CONFIG_TARGET_PROFILE=\"DEVICE_\([^\"]*\)\"/\1/p' $CONFIG_FILE)" >> $GITHUB_ENV
+          echo "CACHE_DATE=$(date +'%Y-w%V')" >> $GITHUB_ENV
+
+      # - name: 缓存工具链
+      #   # 仅在“手动触发”且“开启缓存”时运行。周六定时任务不运行此步（全新编译）。
+      #   if: github.event_name == 'workflow_dispatch' && github.event.inputs.cache == 'true'
+      #   uses: actions/cache@v4
+      #   id: cache-toolchain
+      #   with:
+      #     # 使用周数作为 Key，实现一周内复用同一份缓存
+      #     key: ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-${{ env.CACHE_DATE }}
+      #     restore-keys: |
+      #       ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-
+      #     path: |
+      #       ${{ env.OPENWRT_PATH }}/.ccache
+      #       ${{ env.OPENWRT_PATH }}/staging_dir
+      #
+      # - name: 输出缓存结果
+      #   if: github.event_name == 'workflow_dispatch' && github.event.inputs.cache == 'true'
+      #   run: |
+      #     echo "使用的缓存键: ${{ steps.cache-toolchain.outputs.cache-key }}"
+      #     echo "缓存命中情况: ${{ steps.cache-toolchain.outputs.cache-hit }}"
+      #     echo "缓存目录大小："
+      #     du -sh ${{ env.OPENWRT_PATH }}/.ccache || echo ".ccache 目录不存在"
+      #     du -sh ${{ env.OPENWRT_PATH }}/staging_dir || echo "staging_dir 目录不存在"
+      #
+      # - name: 刷新缓存时间戳
+      #   if: github.event_name == 'workflow_dispatch' && github.event.inputs.cache == 'true'
+      #   run: |
+      #     echo "开始刷新缓存时间戳..."
+      #     if [ -d "$OPENWRT_PATH/staging_dir" ]; then
+      #       find "$OPENWRT_PATH/staging_dir" -type d -name "stamp" -not -path "*target*" | while read -r dir; do
+      #         find "$dir" -type f -exec touch {} +
+      #       done
+      #     fi
+      #     echo "缓存时间戳刷新完成。"
+
+      - name: 更新并安装 Feeds
+        run: |
+          cd $OPENWRT_PATH
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: 下载第三方包
+        run: |
+          chmod +x $GITHUB_WORKSPACE/scripts/Packages.sh
+          cd $OPENWRT_PATH/package
+          $GITHUB_WORKSPACE/scripts/Packages.sh
+
+      - name: 加载自定义脚本
+        env:
+          SUBNET: ${{ env.SUBNET }}
+        run: |
+          chmod +x $GITHUB_WORKSPACE/scripts/*.sh $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
+
+          cd $OPENWRT_PATH/package      
+          $GITHUB_WORKSPACE/scripts/Handles.sh
+          $GITHUB_WORKSPACE/$CUSTOM_SCRIPT       
+
+      - name: 下载源码依赖
+        run: |
+          cp $CONFIG_FILE $OPENWRT_PATH/.config
+          cd $OPENWRT_PATH
+          make defconfig
+          make download -j8
+          find dl -size -1024c -delete
+
+      - name: 编译固件
+        id: compile
+        run: |
+          cd $OPENWRT_PATH
+          mkdir -p files/etc/uci-defaults
+          cp $GITHUB_WORKSPACE/scripts/init-settings.sh files/etc/uci-defaults/99-init-settings
+          cp $GITHUB_WORKSPACE/scripts/init-tailscale.sh files/etc/uci-defaults/99-init-tailscale
+          make -j$(nproc) || make -j1 || make -j1 V=s
+          echo "status=success" >> $GITHUB_OUTPUT
+
+      - name: 整理固件
+        if: steps.compile.outputs.status == 'success'
+        run: |
+          set -e
+          rm -rf $OPENWRT_PATH/artifact
+          mkdir -p $OPENWRT_PATH/artifact/{firmware,buildinfo,package}
+          cd $OPENWRT_PATH/bin/targets/*/*
+          echo "KERNEL=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p')" >> $GITHUB_ENV
+          echo "DATE=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
+          find . -maxdepth 1 -type f \( -name "*sysupgrade*" -o -name "*factory*" \) -exec cp -f {} $OPENWRT_PATH/artifact/firmware/ \;
+          
+          tar -czf $OPENWRT_PATH/artifact/buildinfo/buildinfo.tar.gz config.buildinfo feeds.buildinfo version.buildinfo *.manifest
+          cd $OPENWRT_PATH/bin/packages
+          find . -type f \( -name "*.ipk" -o -name "*.apk" \) -exec cp -f --parents {} $OPENWRT_PATH/artifact/package/ \;
+          cd $OPENWRT_PATH/artifact
+          tar -czf packages.tar.gz package
+          rm -rf package
+
+      - name: 上传 Artifact
+        if: steps.compile.outputs.status == 'success'
+        uses: actions/upload-artifact@v6
+        with:
+          name: mt798x_release
+          path: |
+            ${{ env.OPENWRT_PATH }}/artifact/**
+
+      - name: 发布到 Release
+        if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
+        uses: ncipollo/release-action@main
+        with:
+          tag: ${{ env.DEVICE_TARGET }}
+          allowUpdates: true
+          replacesArtifacts: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: |
+            ${{ env.OPENWRT_PATH }}/artifact/firmware/*
+            ${{ env.OPENWRT_PATH }}/artifact/buildinfo/*.tar.gz
+            ${{ env.OPENWRT_PATH }}/artifact/packages.tar.gz
+          body: |           
+            `${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}`
+            `${{ env.REPO_URL }}`
+            `${{ env.REPO_BRANCH }}`
+            `${{ env.KERNEL }}`
+
+      - name: Telegram 通知
+        if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
+        run: |
+          DT=$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M')
+          DL_LINK="https://github.com/${{ github.repository }}/releases/tag/${{ env.DEVICE_TARGET }}"
+          
+          MSG="<b>🎉 OpenWrt 固件构建成功</b>
+          
+          <b>设备信息</b>
+          ━━━━━━━━━━━━━━━━━━
+          <b>设备型号:</b> <code>${{ env.DEVICE_MODEL }}</code>
+          <b>系统架构:</b> ${{ env.DEVICE_TARGET }} / ${{ env.DEVICE_SUBTARGET }}
+          <b>内核版本:</b> ${{ env.KERNEL }}
+          <b>源码分支:</b> ${{ env.REPO_BRANCH }}
+          
+          <b>📦 发布详情</b>
+          ━━━━━━━━━━━━━━━━━━
+          <b>编译时间:</b> $DT
+          <a href='$DL_LINK'><b>点击此处跳转下载页面</b></a>"
+
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
+            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d "parse_mode=HTML" \
+            -d "disable_web_page_preview=true" \
+            --data-urlencode "text=$MSG"
+
+      - name: TG Notification Failure
+        if: failure()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d text="❌ 警告！%0A仓库: ${{ github.repository }}%0A任务: ${{ github.workflow }} 运行失败，请及时检查！"
+
+      # - name: 删除旧缓存 (仅定时任务运行)
+      #   # 仅在周六定时任务时清理旧缓存，配合 actions/cache 自动保存新缓存，实现每周一更
+      #   if: github.event_name == 'schedule'
+      #   continue-on-error: true
+      #   run: |
+      #     echo "检测到定时构建，准备清理旧缓存以生成新的一周主缓存..."
+      #     gh cache list --key ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}- --json key --jq '.[] | .key' | while read -r key; do
+      #       echo "删除旧缓存: $key"
+      #       gh cache delete "$key" || true
+      #     done
+
+      - name: Delete workflow runs
+        if: always()
+        uses: Mattraks/delete-workflow-runs@main
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 0
+          keep_minimum_runs: 1
+          delete_workflow_pattern: "${{ github.workflow }}"
+          delete_workflow_by_state_pattern: "active"
+          delete_run_by_conclusion_pattern: "success, failure, cancelled, skipped"

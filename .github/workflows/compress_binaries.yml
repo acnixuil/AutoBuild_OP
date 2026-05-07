@@ -1,0 +1,108 @@
+name: Compress Binaries
+
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: '0 16 * * *'
+  # push:
+  #   branches:
+  #     - 'main'
+  #   paths:
+  #     - '.github/workflows/compress_binaries.yml'
+
+jobs:
+  process-binaries:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl tar gzip
+
+      - name: Setup UPX
+        uses: crazy-max/ghaction-upx@v4
+        with:
+          install-only: true
+
+      - name: Process Mihomo Stable
+        run: |
+          mkdir -p workspace/mihomo
+          cd workspace/mihomo
+          
+          MIHOMO_VER=$(curl -sL -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r .tag_name)
+          echo "MIHOMO_STABLE_VERSION=$MIHOMO_VER" >> $GITHUB_ENV
+          
+          URL_ARM64="https://github.com/MetaCubeX/mihomo/releases/download/${MIHOMO_VER}/mihomo-linux-arm64-${MIHOMO_VER}.gz"
+          curl -L -k -o arm64.gz "$URL_ARM64"
+          gunzip arm64.gz
+          chmod +x arm64
+          upx --lzma --best arm64 || true
+          mv arm64 mihomo
+          tar -czf mihomo-stable-${MIHOMO_VER}-linux-arm64-upx.tar.gz mihomo
+          rm mihomo
+
+      - name: Process Mihomo Alpha
+        run: |
+          cd workspace/mihomo
+          
+          JSON=$(curl -sL -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/MetaCubeX/mihomo/releases/tags/Prerelease-Alpha)
+          
+          URL_ARM64=$(echo "$JSON" | jq -r '.assets[].browser_download_url' | grep -P 'mihomo-linux-arm64-alpha-[0-9a-z]+\.gz' | head -n 1)
+          FILE_ARM64=$(basename "$URL_ARM64")
+          ALPHA_VER=$(echo "$FILE_ARM64" | grep -oP 'alpha-\K[0-9a-z]+(?=\.gz)')
+          echo "MIHOMO_ALPHA_VERSION=$ALPHA_VER" >> $GITHUB_ENV
+          
+          curl -L -k -o alpha_arm64.gz "$URL_ARM64"
+          gunzip alpha_arm64.gz
+          chmod +x alpha_arm64
+          upx --lzma --best alpha_arm64 || true
+          mv alpha_arm64 mihomo
+          tar -czf mihomo-alpha-${ALPHA_VER}-linux-arm64-upx.tar.gz mihomo
+          rm mihomo
+
+      - name: Upload Mihomo Artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: mihomo-artifacts
+          path: workspace/mihomo/*.tar.gz
+          retention-days: 1
+
+      - name: Publish Release
+        uses: ncipollo/release-action@main
+        with:
+          tag: upx-binary
+          name: upx-binary
+          allowUpdates: true
+          replacesArtifacts: true
+          removeArtifacts: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: "workspace/mihomo/*.tar.gz"
+          body: |
+            Mihomo-Stable Vesion: ${{ env.MIHOMO_STABLE_VERSION }}
+            Mihomo-Alpha Vesion: ${{ env.MIHOMO_ALPHA_VERSION }}
+
+      - name: TG Notification Success
+        if: success()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d text="🌵 upx处理完成辣！%0A===================%0A稳定版: ${{ env.MIHOMO_STABLE_VERSION }}%0A测试版: ${{ env.MIHOMO_ALPHA_VERSION }}"
+
+      - name: TG Notification Failure
+        if: failure()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d text="🥀 upx处理失败..."
+
+      - name: Delete workflow runs
+        if: always()
+        uses: Mattraks/delete-workflow-runs@main
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 0
+          keep_minimum_runs: 1
+          delete_workflow_pattern: "${{ github.workflow }}"
+          delete_workflow_by_state_pattern: "active"
+          delete_run_by_conclusion_pattern: "success, failure, cancelled, skipped"
