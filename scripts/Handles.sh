@@ -52,7 +52,7 @@ if [ -d "./luci-app-openclash" ]; then
   CORE_TYPE=$ARCH
   CORE_META="https://github.com/vernesong/OpenClash/raw/core/dev/meta/clash-linux-$CORE_TYPE.tar.gz"
 
-  download_ui "./luci-app-openclash/root/usr/share/openclash/ui/metacubexd"
+  download_ui "./luci-app-openclash/root/usr/share/openclash/ui/zashboard"
 
   cd ./luci-app-openclash/root/etc/openclash/
   download_geo_files
