@@ -4,16 +4,12 @@ SUBNET=${SUBNET:-2}
 TARGET_IP="192.168.${SUBNET}.1"
 TARGET_HOSTNAME="OpenWrt"
 
-if [[ "$CONFIG_FILE" == *"ruijie"* ]]; then
-  # 处理锐捷机型
-  sed -i '/ruijie,rg-x60\*/,/;;/ s/192\.168\.[0-9]\{1,3\}\.[0-9]\{1,3\}/'"${TARGET_IP}"'/' base-files/files/bin/config_generate
-  DETECTED_IP=$(awk '/ruijie,rg-x60\*/,/;;/' base-files/files/bin/config_generate | grep -oP '192\.168\.[0-9]{1,3}\.[0-9]{1,3}' | head -n 1)
+if [[ "$CONFIG_FILE" == *"ruijie"* ]] && grep -q "ruijie,rg-x60" base-files/files/bin/config_generate; then
+  sed -i '/ruijie,rg-x60/,/;;/ s/192\.168\.[0-9]\{1,3\}\.[0-9]\{1,3\}/'"${TARGET_IP}"'/' base-files/files/bin/config_generate
+  DETECTED_IP=$(awk '/ruijie,rg-x60/,/;;/' base-files/files/bin/config_generate | grep -oP '192\.168\.[0-9]{1,3}\.[0-9]{1,3}' | head -n 1)
 else
-  # 处理非锐捷通用机型（修复了此处 sed 的正则匹配问题）
-  sed -i '/case "\$board" in/,/esac/ {
-    /^[[:space:]]*\*)/,/;;/ s/192\.168\.[0-9]\{1,3\}\.[0-9]\{1,3\}/'"${TARGET_IP}"'/
-  }' base-files/files/bin/config_generate
-  DETECTED_IP=$(awk '/case "\$board" in/,/esac/' base-files/files/bin/config_generate | awk '/^[[:space:]]*\*\)/,/;;/' | grep -oP '192\.168\.[0-9]{1,3}\.[0-9]{1,3}' | head -n 1)
+  sed -i '/case "$board" in/,/esac/ { /\*)/,/;;/ s/192\.168\.[0-9]\{1,3\}\.[0-9]\{1,3\}/'"${TARGET_IP}"'/ }' base-files/files/bin/config_generate
+  DETECTED_IP=$(awk '/case "$board" in/,/esac/' base-files/files/bin/config_generate | awk '/\*\)/,/;;/' | grep -oP '192\.168\.[0-9]{1,3}\.[0-9]{1,3}' | head -n 1)
 fi
 
 # 处理主机名
