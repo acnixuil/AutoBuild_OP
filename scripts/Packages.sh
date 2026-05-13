@@ -14,16 +14,25 @@ section() {
   echo -e "\n${GREEN}==== $1 ====${RESET}"
 }
 
-# --- 1. 清理旧包 ---
+DETECTED_VERSION="unknown"
+VERSION_NUM=0
+
+if [ -f "../include/version.mk" ]; then
+    DETECTED_VERSION=$(grep -E '^VERSION_NUMBER:=\$\(if.*,' ../include/version.mk | awk -F',' '{print $3}' | tr -d ')' | grep -oE '^[0-9]+\.[0-9]+')
+    if [ -n "$DETECTED_VERSION" ]; then
+        VERSION_NUM=$(echo "$DETECTED_VERSION" | tr -d '.')
+    fi
+fi
+
+echo ">> 自动检测到当前源码的主版本为: ${DETECTED_VERSION:-"未匹配到数字版本"}"
+
 find ../ -name '*v2ray-geodata*' -exec rm -rf {} +
 find ../ -name '*mosdns*' -exec rm -rf {} +
 find ../feeds/luci/ -name '*passwall*' | xargs rm -rf
-find ../feeds/luci/ -name '*nikki*' | xargs rm -rf
 find ../feeds/luci/ -name '*openclash*' | xargs rm -rf
 find ../feeds/luci/ -name '*lucky*' | xargs rm -rf
 find ../feeds/luci/ -name '*adguardhome*' | xargs rm -rf
 find ../feeds/luci/ -name '*argon*' | xargs rm -rf
-find ../feeds/luci/ -name '*diskman*' | xargs rm -rf
 
 log "Updating Golang to 25.x..."
 rm -rf ../feeds/packages/lang/golang
@@ -41,20 +50,22 @@ git_sparse_clone() {
 }
 
 git_sparse_clone dev https://github.com/vernesong/OpenClash luci-app-openclash
-
 git clone --depth=1 --single-branch -b v5 https://github.com/sbwml/luci-app-mosdns.git mosdns
 git clone --depth=1 --single-branch -b master https://github.com/sbwml/v2ray-geodata.git v2ray-geodata
-
 git clone --depth=1 --single-branch -b master https://github.com/acnixuil/luci-app-adguardhome.git luci-app-adguardhome
 git clone --depth=1 --single-branch -b main https://github.com/sirpdboy/luci-app-lucky.git
-git clone --depth=1 --single-branch -b main https://github.com/sbwml/luci-app-diskman luci-app-diskman
-
 git clone --depth=1 --single-branch -b master https://github.com/yhl452493373/luci-theme-argon luci-theme-argon
 git clone --depth=1 --single-branch -b master https://github.com/jerrykuku/luci-app-argon-config.git luci-app-argon-config
 
-git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-nikki.git nikki
-git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-momo.git momo
-
-# git clone --depth=1 --single-branch -b master https://github.com/Tokisaki-Galaxy/luci-app-tailscale-community.git luci-app-tailscale-community
-
-section "完成插件列表处理"
+if [ "$VERSION_NUM" -ge 2410 ]; then
+    echo ">> 当前固件版本 ($DETECTED_VERSION) >= 24.10，拉取高版本专属插件..."
+    
+    find ../feeds/luci/ -name '*nikki*' | xargs rm -rf
+    find ../feeds/luci/ -name '*diskman*' | xargs rm -rf
+    
+    git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-nikki.git nikki
+    git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-momo.git momo
+    git clone --depth=1 --single-branch -b main https://github.com/sbwml/luci-app-diskman luci-app-diskman
+else
+    echo ">> 当前固件版本 ($DETECTED_VERSION) < 24.10，跳过高版本专属插件的拉取。"
+fi
