@@ -288,13 +288,13 @@ TS_MAKEFILE="../feeds/packages/net/tailscale/Makefile"
 if [ -f "$TS_MAKEFILE" ]; then
   log "正在获取 Tailscale 最新版本信息..."
   
-  TS_VERSION=$(curl -sL https://api.github.com/repos/admonstrator/glinet-tailscale-updater/releases/latest | grep '"tag_name":' | head -n 1 | awk -F '"' '{print $4}' || true)
+  TS_VERSION=$(curl -sL https://api.github.com/repos/acnixuil/glinet-tailscale-updater/releases/latest | grep '"tag_name":' | head -n 1 | awk -F '"' '{print $4}' || true)
 
   if [ -n "$TS_VERSION" ]; then
     log "获取到 Tailscale 精简版最新版本: ${TS_VERSION}"
     log "当前设备架构: ${ARCH}"
 
-    TS_URL="https://github.com/admonstrator/glinet-tailscale-updater/releases/download/${TS_VERSION}/tailscaled-linux-${ARCH}"
+    TS_URL="https://github.com/acnixuil/glinet-tailscale-updater/releases/download/${TS_VERSION}/tailscaled-linux-${ARCH}"
     log "目标下载地址: ${TS_URL}"
 
     cat > "$TS_MAKEFILE" << EOF
