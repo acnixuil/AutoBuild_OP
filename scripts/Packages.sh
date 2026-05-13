@@ -26,17 +26,14 @@ fi
 
 echo ">> 自动检测到当前源码的主版本为: ${DETECTED_VERSION:-"未匹配到数字版本"}"
 
-find ../ -name '*v2ray-geodata*' -exec rm -rf {} +
-find ../ -name '*mosdns*' -exec rm -rf {} +
-find ../feeds/luci/ -name '*passwall*' | xargs rm -rf
 find ../feeds/luci/ -name '*openclash*' | xargs rm -rf
 find ../feeds/luci/ -name '*lucky*' | xargs rm -rf
 find ../feeds/luci/ -name '*adguardhome*' | xargs rm -rf
 find ../feeds/luci/ -name '*argon*' | xargs rm -rf
 
-log "Updating Golang to 25.x..."
+log "Updating Golang"
 rm -rf ../feeds/packages/lang/golang
-git clone https://github.com/sbwml/packages_lang_golang -b 25.x ../feeds/packages/lang/golang
+git clone https://github.com/sbwml/packages_lang_golang -b 26.x ../feeds/packages/lang/golang
 
 section "下载/更新插件"
 git_sparse_clone() {
@@ -50,8 +47,6 @@ git_sparse_clone() {
 }
 
 git_sparse_clone dev https://github.com/vernesong/OpenClash luci-app-openclash
-git clone --depth=1 --single-branch -b v5 https://github.com/sbwml/luci-app-mosdns.git mosdns
-git clone --depth=1 --single-branch -b master https://github.com/sbwml/v2ray-geodata.git v2ray-geodata
 git clone --depth=1 --single-branch -b master https://github.com/acnixuil/luci-app-adguardhome.git luci-app-adguardhome
 git clone --depth=1 --single-branch -b main https://github.com/sirpdboy/luci-app-lucky.git
 git clone --depth=1 --single-branch -b master https://github.com/yhl452493373/luci-theme-argon luci-theme-argon
@@ -59,13 +54,17 @@ git clone --depth=1 --single-branch -b master https://github.com/jerrykuku/luci-
 
 if [ "$VERSION_NUM" -ge 2410 ]; then
     echo ">> 当前固件版本 ($DETECTED_VERSION) >= 24.10，拉取高版本专属插件..."
-    
+ 
+    find ../ -name '*v2ray-geodata*' -exec rm -rf {} +
+    find ../ -name '*mosdns*' -exec rm -rf {} +    
     find ../feeds/luci/ -name '*nikki*' | xargs rm -rf
     find ../feeds/luci/ -name '*diskman*' | xargs rm -rf
     
     git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-nikki.git nikki
     git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-momo.git momo
     git clone --depth=1 --single-branch -b main https://github.com/sbwml/luci-app-diskman luci-app-diskman
+    git clone --depth=1 --single-branch -b v5 https://github.com/sbwml/luci-app-mosdns.git mosdns
+    git clone --depth=1 --single-branch -b master https://github.com/sbwml/v2ray-geodata.git v2ray-geodata
 else
     echo ">> 当前固件版本 ($DETECTED_VERSION) < 24.10，跳过高版本专属插件的拉取。"
 fi
