@@ -23,9 +23,9 @@ env:
   # REPO_URL: https://github.com/padavanonly/immortalwrt-mt798x-6.6.git
   # REPO_BRANCH: openwrt-24.10-6.6
   # CONFIG_FILE: mt798x/cmcc_rax3000m.config
-  REPO_URL: https://github.com/Yuzhii0718/immortalwrt-mt798x-hanwckf.git
-  REPO_BRANCH: openwrt-21.02
-  CONFIG_FILE: mt798x/cmcc_rax3000m-2102.config
+  REPO_URL: https://github.com/chasey-dev/immortalwrt-mt798x-rebase.git
+  REPO_BRANCH: 25.12
+  CONFIG_FILE: mt798x/cmcc_rax3000m-2512.config
   CUSTOM_SCRIPT: mt798x/custom.sh
   FIRMWARE_RELEASE: true
   ARCH: arm64
@@ -54,11 +54,11 @@ jobs:
           sudo apt -yqq clean
           sudo timedatectl set-timezone "$TZ"
 
-      # - name: 扩容磁盘空间
-      #   uses: easimon/maximize-build-space@master
-      #   with:
-      #     swap-size-mb: 1024
-      #     root-reserve-mb: 1024
+      - name: 扩容磁盘空间
+        uses: easimon/maximize-build-space@master
+        with:
+          swap-size-mb: 1024
+          root-reserve-mb: 1024
 
       - name: 检出仓库
         uses: actions/checkout@main
@@ -133,7 +133,8 @@ jobs:
 
           cd $OPENWRT_PATH/package      
           $GITHUB_WORKSPACE/scripts/Handles.sh
-          $GITHUB_WORKSPACE/$CUSTOM_SCRIPT       
+          $GITHUB_WORKSPACE/$CUSTOM_SCRIPT    
+          rm -rf $OPENWRT_PATH/tmp/
 
       - name: 下载源码依赖
         run: |
@@ -162,7 +163,7 @@ jobs:
           cd $OPENWRT_PATH/bin/targets/*/*
           echo "KERNEL=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p')" >> $GITHUB_ENV
           echo "DATE=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
-          find . -maxdepth 1 -type f \( -name "*sysupgrade*" -o -name "*factory*" \) -exec cp -f {} $OPENWRT_PATH/artifact/firmware/ \;
+          find . -maxdepth 1 -type f \( -name "*cmcc_rax3000m*" -o -name "*factory*" \) -exec cp -f {} $OPENWRT_PATH/artifact/firmware/ \;
           
           tar -czf $OPENWRT_PATH/artifact/buildinfo/buildinfo.tar.gz config.buildinfo feeds.buildinfo version.buildinfo *.manifest
           cd $OPENWRT_PATH/bin/packages
