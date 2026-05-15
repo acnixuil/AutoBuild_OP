@@ -133,7 +133,8 @@ jobs:
 
           cd $OPENWRT_PATH/package      
           $GITHUB_WORKSPACE/scripts/Handles.sh
-          $GITHUB_WORKSPACE/$CUSTOM_SCRIPT       
+          $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
+          rm -rf $OPENWRT_PATH/tmp/
 
       - name: 下载源码依赖
         run: |
