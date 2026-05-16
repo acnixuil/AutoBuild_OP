@@ -186,8 +186,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           artifacts: |
             ${{ env.OPENWRT_PATH }}/artifact/firmware/*
-            ${{ env.OPENWRT_PATH }}/artifact/buildinfo/*.tar.gz
-            ${{ env.OPENWRT_PATH }}/artifact/packages.tar.gz
           body: |
             `${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}`
             `${{ env.REPO_URL }}`
