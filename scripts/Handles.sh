@@ -55,7 +55,8 @@ if [ -d "./luci-app-openclash" ]; then
   download_ui "./luci-app-openclash/root/usr/share/openclash/ui/zashboard"
 
   cd ./luci-app-openclash/root/etc/openclash/
-  download_geo_files
+  rm -f GeoSite.dat Country.mmdb
+  # download_geo_files
 
   log "正在获取 OpenClash 配置信息..."
   log "当前设备架构: ${ARCH}"
