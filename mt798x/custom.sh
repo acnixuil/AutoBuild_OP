@@ -1,48 +1,5 @@
 #!/bin/bash
 
-# SUBNET=${SUBNET:-2}
-# TARGET_IP="192.168.${SUBNET}.1"
-# FILE="base-files/files/bin/config_generate"
-#
-# if grep -q "ruijie,rg-x60" "$FILE"; then
-#   if [[ "$CONFIG_FILE" == *"ruijie"* ]]; then
-#     awk -v ip="$TARGET_IP" '
-#       /ruijie,rg-x60/ { in_ruijie=1 }
-#       in_ruijie && /ipad=\$\{ipaddr:-"/ {
-#           sub(/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/, ip)
-#           in_ruijie=0
-#       }
-#       /;;/ && in_ruijie { in_ruijie=0 }
-#       { print }
-#     ' "$FILE" > tmp_config && mv tmp_config "$FILE"
-#   else
-#     awk -v ip="$TARGET_IP" '
-#       /ruijie,rg-x60/ { in_ruijie=1 }
-#       in_ruijie && /;;/ { in_ruijie=0; after_ruijie=1 }
-#       after_ruijie && /ipad=\$\{ipaddr:-"/ {
-#           sub(/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/, ip)
-#           after_ruijie=0
-#       }
-#       /esac/ { after_ruijie=0 }
-#       { print }
-#     ' "$FILE" > tmp_config && mv tmp_config "$FILE"
-#   fi
-# else
-#   awk -v ip="$TARGET_IP" '
-#       /^[[:space:]]*lan\)/ { in_lan=1 }
-#       in_lan && /ipad=\$\{ipaddr:-"/ {
-#           sub(/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/, ip)
-#           in_lan=0
-#       }
-#       { print }
-#   ' "$FILE" > tmp_config && mv tmp_config "$FILE"
-# fi
-#
-# echo "=========================================================="
-# echo "当前编译环境 LAN IP 代码块修改结果验证："
-# awk '/^[[:space:]]*lan\)/,/esac/' "$FILE"
-# echo "=========================================================="
-
 # 处理主机名
 TARGET_HOSTNAME="OpenWrt"
 sed -i "s/\(set system.@system\[-1\].hostname=\).*/\1'${TARGET_HOSTNAME}'/" base-files/files/bin/config_generate
