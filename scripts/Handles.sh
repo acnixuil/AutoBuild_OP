@@ -49,14 +49,16 @@ download_geo_files() {
 
 if [ -d "./luci-app-openclash" ]; then
   section "处理 OpenClash 数据"
-  CORE_TYPE=$ARCH
-  CORE_META="https://github.com/vernesong/OpenClash/raw/core/dev/meta/clash-linux-$CORE_TYPE.tar.gz"
+  
+  MIHOMO_API="https://api.github.com/repos/MetaCubeX/mihomo/releases/latest"
+  LATEST_VERSION=$(curl -sL "$MIHOMO_API" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+  
+  CORE_META="https://github.com/MetaCubeX/mihomo/releases/download/${LATEST_VERSION}/mihomo-linux-${ARCH}-${LATEST_VERSION}.gz"
 
   download_ui "./luci-app-openclash/root/usr/share/openclash/ui/zashboard"
 
   cd ./luci-app-openclash/root/etc/openclash/
   rm -f GeoSite.dat Country.mmdb
-  # download_geo_files
 
   log "正在获取 OpenClash 配置信息..."
   log "当前设备架构: ${ARCH}"
@@ -64,14 +66,14 @@ if [ -d "./luci-app-openclash" ]; then
 
   TMP_DIR=$(mktemp -d)
   
-  if curl -sL "$CORE_META" | tar -xzf - -C "$TMP_DIR"; then
-    if [ -f "$TMP_DIR/clash" ]; then
+  if curl -sL "$CORE_META" | gzip -dc > "$TMP_DIR/clash_meta"; then
+    if [ -s "$TMP_DIR/clash_meta" ]; then
       mkdir -p ./core
-      mv -f "$TMP_DIR/clash" "./core/clash_meta"
+      mv -f "$TMP_DIR/clash_meta" "./core/clash_meta"
       chmod +x "./core/clash_meta"
       log "OpenClash 核心 meta 处理完成 ✔"
     else
-      log "❌ 错误: 解压成功，但在压缩包内未找到 clash 二进制文件"
+      log "❌ 错误: 解压成功，但生成的核心文件为空"
     fi
   else
     log "❌ 错误: OpenClash 核心下载或解压过程失败"
