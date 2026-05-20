@@ -20,9 +20,12 @@ permissions:
   actions: write
 
 env:
-  REPO_URL: https://github.com/padavanonly/immortalwrt-mt798x-6.6.git
-  REPO_BRANCH: openwrt-24.10-6.6
-  CONFIG_FILE: mt798x/qihoo_360t7.config
+  # REPO_URL: https://github.com/padavanonly/immortalwrt-mt798x-6.6.git
+  # REPO_BRANCH: openwrt-24.10-6.6
+  # CONFIG_FILE: mt798x/qihoo_360t7.config
+  REPO_URL: https://github.com/Yuzhii0718/immortalwrt-mt798x-hanwckf.git
+  REPO_BRANCH: openwrt-21.02
+  CONFIG_FILE: mt798x/qihoo_360t7-2102.config
   CUSTOM_SCRIPT: mt798x/custom.sh
   FIRMWARE_RELEASE: true
   ARCH: arm64
