@@ -54,11 +54,11 @@ jobs:
           sudo apt -yqq clean
           sudo timedatectl set-timezone "$TZ"
 
-      # - name: 扩容磁盘空间
-      #   uses: easimon/maximize-build-space@master
-      #   with:
-      #     swap-size-mb: 1024
-      #     root-reserve-mb: 1024
+      - name: 扩容磁盘空间
+        uses: easimon/maximize-build-space@master
+        with:
+          swap-size-mb: 1024
+          root-reserve-mb: 1024
 
       - name: 检出仓库
         uses: actions/checkout@main
