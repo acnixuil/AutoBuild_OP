@@ -50,6 +50,14 @@ jobs:
           free -h
           df -hT
 
+      - name: 磁盘清理（轻量）
+        if: ${{ inputs.cleanup != 'false' }}
+        run: |
+          echo "== 清理前 =="; df -h /
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL /usr/local/share/boost 2>/dev/null || true
+          sudo apt-get clean
+          echo "== 清理后 =="; df -h /
+
       - name: 初始化编译环境
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -67,6 +75,14 @@ jobs:
         run: |
           git clone --depth=1 -b $REPO_BRANCH $REPO_URL openwrt
           echo "OPENWRT_PATH=$PWD/openwrt" >> $GITHUB_ENV
+
+      - name: 恢复 dl 缓存
+        uses: actions/cache@main
+        with:
+          path: openwrt/dl
+          key: dl-${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ hashFiles(env.CONFIG_FILE) }}
+          restore-keys: |
+            dl-${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-
 
       - name: 生成配置与设备变量
         run: |
