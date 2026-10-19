@@ -51,7 +51,6 @@ jobs:
           df -hT
 
       - name: 磁盘清理（轻量）
-        if: ${{ inputs.cleanup != 'false' }}
         run: |
           echo "== 清理前 =="; df -h /
           sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL /usr/local/share/boost 2>/dev/null || true
