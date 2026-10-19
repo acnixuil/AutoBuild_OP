@@ -62,6 +62,7 @@ if [ "$VERSION_NUM" -ge 2410 ]; then
     
     git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-nikki.git nikki
     git clone --depth=1 --single-branch -b main https://github.com/nikkinikki-org/OpenWrt-momo.git momo
+    git clone --depth=1 --single-branch -b main https://github.com/VizzleTF/luci-theme-footstrap.git luci-theme-footstrap
     git clone --depth=1 --single-branch -b main https://github.com/sbwml/luci-app-diskman luci-app-diskman
     git clone --depth=1 --single-branch -b v5 https://github.com/sbwml/luci-app-mosdns.git mosdns
     git clone --depth=1 --single-branch -b master https://github.com/sbwml/v2ray-geodata.git v2ray-geodata
