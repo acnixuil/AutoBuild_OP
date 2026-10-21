@@ -61,11 +61,7 @@ download_ui() {
 
 check_openclash() { [ -d "./luci-app-openclash" ]; }
 handle_openclash() {
-  local alpha_api="https://api.github.com/repos/MetaCubeX/mihomo/releases/tags/Prerelease-Alpha"
-  local core_meta
-  core_meta=$(curl -sL "$alpha_api" | grep "browser_download_url" | grep -oE "https://[^\"]*mihomo-linux-${ARCH}-alpha-[0-9a-z]+\.gz" | head -n 1)
-
-  [ -n "$core_meta" ] || return 1
+  local core_url="https://github.com/vernesong/OpenClash/raw/core/dev/meta/clash-linux-${ARCH}.tar.gz"
 
   download_ui "./luci-app-openclash/root/usr/share/openclash/ui/zashboard" || return 1
 
@@ -74,10 +70,15 @@ handle_openclash() {
 
   local tmp_dir
   tmp_dir=$(mktemp -d)
-  if curl -sL "$core_meta" | gzip -dc > "$tmp_dir/clash_meta"; then
-    [ -s "$tmp_dir/clash_meta" ] || { rm -rf "$tmp_dir"; return 1; }
+  
+  if curl -sL "$core_url" -o "$tmp_dir/core.tar.gz" && tar -xzf "$tmp_dir/core.tar.gz" -C "$tmp_dir"; then
+    local extracted_core
+    extracted_core=$(find "$tmp_dir" -type f \( -name "clash_meta" -o -name "clash" \) | head -n 1)
+    
+    [ -n "$extracted_core" ] && [ -f "$extracted_core" ] || { rm -rf "$tmp_dir"; return 1; }
+    
     mkdir -p ./core
-    mv -f "$tmp_dir/clash_meta" "./core/clash_meta"
+    mv -f "$extracted_core" "./core/clash_meta"
     chmod +x "./core/clash_meta"
   else
     rm -rf "$tmp_dir"
