@@ -50,6 +50,10 @@ jobs:
           free -h
           df -hT
 
+      - name: 记录开始时间
+        id: build_start
+        run: echo "timestamp=$(date +%s)" >> $GITHUB_OUTPUT
+
       - name: 磁盘清理（轻量）
         run: |
           echo "== 清理前 =="; df -h /
@@ -141,7 +145,7 @@ jobs:
           rm -rf $OPENWRT_PATH/artifact
           mkdir -p $OPENWRT_PATH/artifact/{firmware,buildinfo,package}
           cd $OPENWRT_PATH/bin/targets/*/*
-          echo "KERNEL=$(grep '^kernel' *.manifest | sed -n 's/^kernel - \([0-9.]*\)~.*/\1/p')" >> $GITHUB_ENV
+          echo "KERNEL=$(grep '^kernel ' *.manifest | head -n 1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n 1 || echo 'unknown')" >> $GITHUB_ENV
           echo "DATE=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
           find . -maxdepth 1 -type f \( -name "*sysupgrade*" -o -name "*factory*" \) -exec cp -f {} $OPENWRT_PATH/artifact/firmware/ \;
           
@@ -181,7 +185,15 @@ jobs:
         run: |
           DT=$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M')
           DL_LINK="https://github.com/${{ github.repository }}/releases/tag/${{ env.DEVICE_TARGET }}"
+
+          END_TIME=$(date +%s)
+          START_TIME=${{ steps.build_start.outputs.timestamp }}
+          DURATION_SECONDS=$((END_TIME - START_TIME))
           
+          MINS=$((DURATION_SECONDS / 60))
+          SECS=$((DURATION_SECONDS % 60))
+          DURATION_STR="${MINS}分${SECS}秒"
+
           MSG="<b>🎉 OpenWrt 固件构建成功</b>
           
           <b>设备信息</b>
@@ -194,6 +206,7 @@ jobs:
           <b>📦 发布详情</b>
           ━━━━━━━━━━━━━━━━━━
           <b>编译时间:</b> $DT
+          <b>总耗时:</b> ${DURATION_STR}
           <a href='$DL_LINK'><b>点击此处跳转下载页面</b></a>"
 
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
@@ -202,25 +215,14 @@ jobs:
             -d "disable_web_page_preview=true" \
             --data-urlencode "text=$MSG"
 
-      - name: TG Notification Failure
+      - name: 失败通知
         if: failure()
         run: |
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
             -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
             -d text="❌ 警告！%0A仓库: ${{ github.repository }}%0A任务: ${{ github.workflow }} 运行失败，请及时检查！"
 
-      # - name: 删除旧缓存 (仅定时任务运行)
-      #   # 仅在周六定时任务时清理旧缓存，配合 actions/cache 自动保存新缓存，实现每周一更
-      #   if: github.event_name == 'schedule'
-      #   continue-on-error: true
-      #   run: |
-      #     echo "检测到定时构建，准备清理旧缓存以生成新的一周主缓存..."
-      #     gh cache list --key ${{ env.REPO_URL }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}- --json key --jq '.[] | .key' | while read -r key; do
-      #       echo "删除旧缓存: $key"
-      #       gh cache delete "$key" || true
-      #     done
-
-      - name: Delete workflow runs
+      - name: 删除旧流程
         if: always()
         uses: Mattraks/delete-workflow-runs@main
         with:
