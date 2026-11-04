@@ -65,7 +65,8 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo bash -c 'bash <(curl -sL https://build-scripts.immortalwrt.org/init_build_environment.sh)'
+          sudo apt-get -y update
+          sudo apt-get -y install $(curl -fsSL https://ophub.org/ubuntu2604-make-openwrt-depends)
           sudo apt -yqq install dos2unix rename python3-setuptools libfuse-dev
           sudo apt -yqq autoremove --purge
           sudo apt -yqq clean
