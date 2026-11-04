@@ -144,22 +144,51 @@ handle_singbox() {
 }
 
 check_tailscale() { [ -f "../feeds/packages/net/tailscale/Makefile" ]; }
+
 handle_tailscale() {
   local ts_makefile="../feeds/packages/net/tailscale/Makefile"
   [ -f "$PATCH_DIR/tailscale/Makefile" ] || return 1
 
   local ts_version
-  ts_version=$(curl -sL https://api.github.com/repos/acnixuil/glinet-tailscale-updater/releases/latest | grep '"tag_name":' | head -n 1 | awk -F '"' '{print $4}' || true)
+  ts_version=$(curl -sL https://api.github.com/repos/whzhni1/tailscale/releases/latest | grep '"tag_name":' | head -n 1 | awk -F '"' '{print $4}' || true)
   
   [ -n "$ts_version" ] || return 1
 
   local clean_version="${ts_version#v}"
-  local ts_url="https://github.com/acnixuil/glinet-tailscale-updater/releases/download/${ts_version}/tailscaled-linux-${ARCH}"
+
+  local target_arch="${ARCH}"
+  case "${ARCH}" in
+    "amd64" | "x86_64")
+      target_arch="x86_64"
+      ;;
+    "arm64" | "aarch64")
+      target_arch="aarch64"
+      ;;
+    *)
+      target_arch="${ARCH}"
+      ;;
+  esac
+
+  local tar_name="tailscale_${clean_version}_linux-${target_arch}.tar.gz"
+  local ts_url="https://github.com/whzhni1/tailscale/releases/download/${ts_version}/${tar_name}"
+
+  local tmp_dir
+  tmp_dir=$(mktemp -d)
+  if curl -sL -o "${tmp_dir}/${tar_name}" "${ts_url}"; then
+    tar -xzf "${tmp_dir}/${tar_name}" -C "${tmp_dir}"
+
+    cp -f "${tmp_dir}/tailscaled" "${PATCH_DIR}/tailscale/" 2>/dev/null || true
+    cp -f "${tmp_dir}/tailscale" "${PATCH_DIR}/tailscale/" 2>/dev/null || true
+  else
+    rm -rf "${tmp_dir}"
+    return 1
+  fi
+  rm -rf "${tmp_dir}"
 
   cp -f "$PATCH_DIR/tailscale/Makefile" "$ts_makefile"
 
   sed -i "s/__VERSION__/${clean_version}/g" "$ts_makefile"
-  sed -i "s#__URL__#${ts_url}#g" "$ts_makefile"  # 链接包含斜杠，sed 分隔符改用 #
+  sed -i "s#__URL__#${ts_url}#g" "$ts_makefile"
 
   return 0
 }
