@@ -2,7 +2,25 @@
 
 declare -a RESULTS=()          # 收集结果用于 summary
 FAILED=0
-ARCH="${ARCH:-unknown}"        # 防空
+# 架构：环境变量优先；否则从编译树的 .config 读 CONFIG_ARCH；再退到宿主机 uname
+if [ -z "$ARCH" ]; then
+  _arch_cfg=""
+  for _c in "$GITHUB_WORKSPACE/openwrt/.config" "../.config"; do
+    [ -f "$_c" ] && { _arch_cfg="$_c"; break; }
+  done
+  if [ -n "$_arch_cfg" ]; then
+    _arch_raw=$(sed -n 's/^CONFIG_ARCH="\([^"]*\)"/\1/p' "$_arch_cfg" | head -n 1)
+  fi
+  [ -n "$_arch_raw" ] || _arch_raw=$(uname -m)
+  case "$_arch_raw" in
+    aarch64|arm64) ARCH="arm64" ;;
+    x86_64|amd64) ARCH="amd64" ;;
+    armv7*|armv6*|arm) ARCH="armv7" ;;
+    i?86) ARCH="386" ;;
+    *) ARCH="$_arch_raw" ;;
+  esac
+fi
+ARCH="${ARCH:-unknown}"
 PKG_PATCH="$GITHUB_WORKSPACE/openwrt/package"
 PATCH_DIR="$GITHUB_WORKSPACE/patch"
 
