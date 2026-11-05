@@ -18,13 +18,21 @@ DETECTED_VERSION="unknown"
 VERSION_NUM=0
 
 if [ -f "../include/version.mk" ]; then
-    DETECTED_VERSION=$(grep -E '^VERSION_NUMBER:=\$\(if.*,' ../include/version.mk | awk -F',' '{print $3}' | tr -d ')' | grep -oE '^[0-9]+\.[0-9]+')
+    VERSION_RAW=$(grep -E '^VERSION_NUMBER:=\$\(if.*,' ../include/version.mk | head -n 1 | awk -F',' '{print $NF}' | tr -d ' )')
+    DETECTED_VERSION=$(printf '%s' "$VERSION_RAW" | grep -oE '^[0-9]+\.[0-9]+')
     if [ -n "$DETECTED_VERSION" ]; then
         VERSION_NUM=$(echo "$DETECTED_VERSION" | tr -d '.')
+    elif [ -n "$VERSION_RAW" ]; then
+        DETECTED_VERSION="$VERSION_RAW"
+        VERSION_NUM=9999
     fi
 fi
 
-echo ">> 自动检测到当前源码的主版本为: ${DETECTED_VERSION:-"未匹配到数字版本"}"
+if [ "$VERSION_NUM" -ge 9999 ]; then
+    echo ">> 自动检测到当前源码的主版本为: ${DETECTED_VERSION}（非数字版本号，按最新源码处理）"
+else
+    echo ">> 自动检测到当前源码的主版本为: ${DETECTED_VERSION:-没匹配到数字版本}"
+fi
 
 find ../feeds/luci/ -name '*openclash*' | xargs rm -rf
 find ../feeds/luci/ -name '*lucky*' | xargs rm -rf
