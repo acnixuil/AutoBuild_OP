@@ -29,11 +29,9 @@ define Build/Prepare
 endef
 
 define Build/Compile
-	echo "Downloading pre-compiled tailscale from __URL__"
-	curl -L -k -o $(PKG_BUILD_DIR)/ts.tar.gz "__URL__"
-	tar -xzf $(PKG_BUILD_DIR)/ts.tar.gz -C $(PKG_BUILD_DIR)
-	rm -f $(PKG_BUILD_DIR)/ts.tar.gz
-	TS_BIN=$$(find $(PKG_BUILD_DIR) -type f -name tailscaled | head -n 1); if [ -n "$$TS_BIN" ] && [ "$$TS_BIN" != "$(PKG_BUILD_DIR)/tailscaled" ]; then mv -f "$$TS_BIN" $(PKG_BUILD_DIR)/tailscaled; fi
+	echo "Downloading tiny tailscale from __URL__"
+	curl -fL -k -o $(PKG_BUILD_DIR)/tailscaled "__URL__"
+	head -c 4 $(PKG_BUILD_DIR)/tailscaled | od -An -tx1 | grep -q "7f 45 4c 46" || { echo "下载到的不是 ELF 二进制：__URL__"; rm -f $(PKG_BUILD_DIR)/tailscaled; exit 1; }
 	chmod +x $(PKG_BUILD_DIR)/tailscaled
 endef
 

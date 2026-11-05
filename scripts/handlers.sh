@@ -100,7 +100,21 @@ download_ui() {
 
 check_openclash() { [ -d "./luci-app-openclash" ]; }
 handle_openclash() {
-  local core_url="https://github.com/vernesong/OpenClash/raw/core/dev/meta/clash-linux-${ARCH}.tar.gz"
+  local core_arch
+  case "${ARCH}" in
+    amd64|x86_64) core_arch="amd64" ;;
+    arm64|aarch64) core_arch="arm64" ;;
+    armv7*|armv7l) core_arch="armv7" ;;
+    386|i?86) core_arch="386" ;;
+    *) core_arch="${ARCH}" ;;
+  esac
+
+  local core_ver
+  core_ver=$(curl -fsSL "https://api.github.com/repos/MetaCubeX/mihomo/releases/latest" | grep -m1 '"tag_name"' | awk -F '"' '{print $4}' || true)
+  echo "OpenClash 核心：mihomo ${core_ver} (${core_arch})"
+  [ -n "$core_ver" ] || return 1
+
+  local core_url="https://github.com/MetaCubeX/mihomo/releases/download/${core_ver}/mihomo-linux-${core_arch}-${core_ver}.gz"
 
   download_ui "./luci-app-openclash/root/usr/share/openclash/ui/zashboard" || return 1
 
@@ -110,14 +124,14 @@ handle_openclash() {
   local tmp_dir
   tmp_dir=$(mktemp -d)
   
-  if curl -sL "$core_url" -o "$tmp_dir/core.tar.gz" && tar -xzf "$tmp_dir/core.tar.gz" -C "$tmp_dir"; then
+  if curl -fsSL "$core_url" -o "$tmp_dir/core.gz" && gzip -dc "$tmp_dir/core.gz" > "$tmp_dir/clash_meta"; then
     local extracted_core
-    extracted_core=$(find "$tmp_dir" -type f \( -name "clash_meta" -o -name "clash" \) | head -n 1)
+    extracted_core=$(head -c 4 "$tmp_dir/clash_meta" | od -An -tx1 | cut -c2-12)
     
-    [ -n "$extracted_core" ] && [ -f "$extracted_core" ] || { rm -rf "$tmp_dir"; return 1; }
+    [ "$extracted_core" = "7f 45 4c 46" ] || { rm -rf "$tmp_dir"; return 1; }
     
     mkdir -p ./core
-    mv -f "$extracted_core" "./core/clash_meta"
+    mv -f "$tmp_dir/clash_meta" "./core/clash_meta"
     chmod +x "./core/clash_meta"
   else
     rm -rf "$tmp_dir"
@@ -188,34 +202,38 @@ handle_tailscale() {
   local ts_makefile="../feeds/packages/net/tailscale/Makefile"
   [ -f "$PATCH_DIR/tailscale/Makefile" ] || return 1
 
+  local ts_repo="acnixuil/glinet-tailscale-updater"
+  local ts_tag="tiny-noupx"
+  local ts_base="https://github.com/${ts_repo}/releases/download/${ts_tag}"
+
   local ts_version
-  ts_version=$(curl -sL https://api.github.com/repos/whzhni1/tailscale/releases/latest | grep '"tag_name":' | head -n 1 | awk -F '"' '{print $4}' || true)
+  ts_version=$(curl -fsSL "${ts_base}/version.txt" | sed -n '1s/[[:space:]]*$//p' | head -n 1 || true)
   
   [ -n "$ts_version" ] || return 1
 
   local clean_version="${ts_version#v}"
 
-  local target_arch="${ARCH}"
+  local target_arch
   case "${ARCH}" in
     "amd64" | "x86_64")
-      target_arch="x86_64"
+      target_arch="amd64"
       ;;
     "arm64" | "aarch64")
-      target_arch="aarch64"
+      target_arch="arm64"
       ;;
     *)
       target_arch="${ARCH}"
       ;;
   esac
 
-  local tar_name="tailscale_${clean_version}_linux-${target_arch}.tar.gz"
-  local ts_url="https://github.com/whzhni1/tailscale/releases/download/${ts_version}/${tar_name}"
+  local ts_url="${ts_base}/tailscaled-linux-${target_arch}"
 
   local tmp_dir
   tmp_dir=$(mktemp -d)
-  if curl -sL -o "${tmp_dir}/${tar_name}" "${ts_url}"; then
-    tar -xzf "${tmp_dir}/${tar_name}" -C "${tmp_dir}"
+  if curl -fsSL -o "${tmp_dir}/tailscaled" "${ts_url}"; then
+    head -c 4 "${tmp_dir}/tailscaled" | od -An -tx1 | cut -c2-12 > "${tmp_dir}/magic.txt"
 
+    [ "$(cat "${tmp_dir}/magic.txt")" = "7f 45 4c 46" ] || { rm -rf "${tmp_dir}"; return 1; }
     cp -f "${tmp_dir}/tailscaled" "${PATCH_DIR}/tailscale/" 2>/dev/null || true
     cp -f "${tmp_dir}/tailscale" "${PATCH_DIR}/tailscale/" 2>/dev/null || true
   else
