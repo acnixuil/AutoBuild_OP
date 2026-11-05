@@ -1,0 +1,446 @@
+name: Build-OpenWrt
+
+# 可复用编译流程：机型相关的一切（仓库、分支、config、脚本、产物名、Subnet、筛选规则）
+# 都由调用方通过 inputs 传入，这份文件里不出现任何具体机型。
+on:
+  workflow_call:
+    inputs:
+      repo_url:
+        description: "OpenWrt/ImmortalWrt 源码仓库"
+        required: true
+        type: string
+      repo_branch:
+        description: "源码分支"
+        required: true
+        type: string
+      config_file:
+        description: "机型配置（完整 .config 或 diffconfig 均可）"
+        required: true
+        type: string
+      custom_script:
+        description: "机型自定义脚本，如 mt798x/custom.sh"
+        required: true
+        type: string
+      default_subnet:
+        description: "默认 IP 192.168.[X].1 的 X"
+        required: false
+        type: string
+        default: "2"
+      arch:
+        description: "架构标记，仅用于通知展示"
+        required: false
+        type: string
+        default: "arm64"
+      extra_feed:
+        description: "额外 feed 行，留空则不加"
+        required: false
+        type: string
+        default: ""
+      rename_prefix:
+        description: "固件文件名前缀，如 nowifi-"
+        required: false
+        type: string
+        default: ""
+      artifact_name:
+        description: "填了就只传一个同名产物，留空则按 base+firmware/buildinfo/package 分三个"
+        required: false
+        type: string
+        default: ""
+      artifact_path:
+        description: "单产物模式的路径（相对 OPENWRT_PATH），留空为 artifact/**"
+        required: false
+        type: string
+        default: ""
+      artifact_base:
+        description: "三产物模式的基础名，留空为 <rename_prefix><DEVICE_MODEL>"
+        required: false
+        type: string
+        default: ""
+      artifact_sep:
+        description: "三产物模式连接符"
+        required: false
+        type: string
+        default: "-"
+      firmware_glob:
+        description: "固件筛选模式，空格分隔，如 *sysupgrade* *factory*"
+        required: false
+        type: string
+        default: "*sysupgrade* *factory* *.ubi* *.bin*"
+      package_tar_name:
+        description: "包压缩包名，@ARCH@ 会替换成 CONFIG_TARGET_ARCH_PACKAGES"
+        required: false
+        type: string
+        default: "packages.tar.gz"
+      release_artifacts:
+        description: "发布到 Release 的路径列表，留空为 <OPENWRT_PATH>/artifact/firmware/*"
+        required: false
+        type: string
+        default: ""
+      apply_subnet:
+        description: "是否把 SUBNET 写进 init-settings"
+        required: false
+        type: boolean
+        default: true
+      init_settings_name:
+        description: "uci-defaults 里的文件名"
+        required: false
+        type: string
+        default: "99-init-settings"
+      release_tag:
+        description: "Release 标签，留空则用 DEVICE_TARGET（与原工作流一致）"
+        required: false
+        type: string
+        default: ""
+      firmware_release:
+        description: "是否发布到 Release"
+        required: false
+        type: boolean
+        default: true
+      delete_old_workflows:
+        description: "结束后清理旧的运行记录"
+        required: false
+        type: boolean
+        default: true
+      use_ccache:
+        description: "是否缓存 ccache（默认关闭，与现有行为一致）"
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      TELEGRAM_TOKEN:
+        required: false
+      TELEGRAM_CHAT_ID:
+        required: false
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+
+    env:
+      REPO_URL: ${{ inputs.repo_url }}
+      REPO_BRANCH: ${{ inputs.repo_branch }}
+      CONFIG_FILE: ${{ inputs.config_file }}
+      CUSTOM_SCRIPT: ${{ inputs.custom_script }}
+      RENAME_PREFIX: ${{ inputs.rename_prefix }}
+      DEFAULT_SUBNET: ${{ inputs.default_subnet }}
+      ARCH: ${{ inputs.arch }}
+      EXTRA_FEED: ${{ inputs.extra_feed }}
+      ARTIFACT_NAME: ${{ inputs.artifact_name }}
+      ARTIFACT_PATH: ${{ inputs.artifact_path }}
+      ARTIFACT_BASE: ${{ inputs.artifact_base }}
+      ARTIFACT_SEP: ${{ inputs.artifact_sep }}
+      FIRMWARE_GLOB: ${{ inputs.firmware_glob }}
+      PACKAGE_TAR_NAME: ${{ inputs.package_tar_name }}
+      RELEASE_ARTIFACTS: ${{ inputs.release_artifacts }}
+      INIT_SETTINGS_NAME: ${{ inputs.init_settings_name }}
+      RELEASE_TAG: ${{ inputs.release_tag }}
+      FIRMWARE_RELEASE: ${{ inputs.firmware_release }}
+      USE_CCACHE: ${{ inputs.use_ccache }}
+      TZ: Asia/Shanghai
+
+    steps:
+      - name: 检查服务器性能
+        run: |
+          echo "CPU 核心数: $(nproc)"
+          echo "CPU 型号: $(awk -F: '/model name/ {print $2; exit}' /proc/cpuinfo)"
+          free -h
+          df -hT
+
+      - name: 记录开始时间
+        id: build_start
+        run: echo "timestamp=$(date +%s)" >> $GITHUB_OUTPUT
+
+      - name: 磁盘清理（轻量）
+        run: |
+          echo "== 清理前 =="; df -h /
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL /usr/local/share/boost 2>/dev/null || true
+          sudo apt-get clean
+          echo "== 清理后 =="; df -h /
+
+      # 依赖清单写死在这里，不再调用 init_build_environment.sh 或远程依赖文件：
+      # runner 镜像换版本时，脚本里的包名消失就会整条流水线红，这里至少是可控的。
+      - name: 初始化编译环境
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo -E apt-get -y update
+          sudo -E apt-get -y install ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
+            bzip2 ccache cmake cpio curl device-tree-compiler fastjar flex gawk gettext gcc-multilib g++-multilib \
+            git gperf haveged help2man intltool jq libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev \
+            libmpc-dev libmpfr-dev libncurses5-dev libncursesw5-dev libreadline-dev libfuse-dev libssl-dev libtool lrzsz \
+            genisoimage msmtp nano ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip libpython3-dev qemu-utils \
+            rename rsync scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev
+          sudo -E apt-get -y install dos2unix python3-setuptools
+          sudo apt -yqq autoremove --purge
+          sudo apt -yqq clean
+          sudo timedatectl set-timezone "$TZ"
+          for bin in make gcc g++ python3 rsync unzip; do
+            command -v "$bin" > /dev/null || { echo "缺少构建依赖: $bin"; exit 1; }
+          done
+
+      - name: 检出仓库
+        uses: actions/checkout@main
+
+      - name: 克隆 OpenWrt 源码
+        run: |
+          df -hT $GITHUB_WORKSPACE
+          git clone --depth=1 -b $REPO_BRANCH $REPO_URL openwrt
+          echo "OPENWRT_PATH=$PWD/openwrt" >> $GITHUB_ENV
+
+      - name: 恢复 dl 缓存
+        uses: actions/cache@main
+        with:
+          path: openwrt/dl
+          key: dl-${{ inputs.repo_url }}-${{ inputs.repo_branch }}-${{ hashFiles(inputs.config_file) }}
+          restore-keys: |
+            dl-${{ inputs.repo_url }}-${{ inputs.repo_branch }}-
+
+      - name: 恢复 ccache 缓存
+        if: inputs.use_ccache
+        uses: actions/cache@main
+        with:
+          path: openwrt/.ccache
+          key: ccache-${{ inputs.repo_url }}-${{ inputs.repo_branch }}-${{ hashFiles(inputs.config_file) }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-${{ inputs.repo_url }}-${{ inputs.repo_branch }}-${{ hashFiles(inputs.config_file) }}-
+            ccache-${{ inputs.repo_url }}-${{ inputs.repo_branch }}-
+
+      - name: 更新并安装 Feeds
+        run: |
+          cd $OPENWRT_PATH
+          if [ -n "$EXTRA_FEED" ]; then
+            grep -qxF "$EXTRA_FEED" feeds.conf.default || echo "$EXTRA_FEED" >> feeds.conf.default
+          fi
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: 下载第三方包
+        run: |
+          chmod +x $GITHUB_WORKSPACE/scripts/Packages.sh
+          cd $OPENWRT_PATH/package
+          $GITHUB_WORKSPACE/scripts/Packages.sh
+
+      - name: 加载自定义脚本
+        run: |
+          chmod +x $GITHUB_WORKSPACE/scripts/*.sh $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
+          cd $OPENWRT_PATH/package
+          $GITHUB_WORKSPACE/scripts/Handles.sh
+          $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
+          rm -rf $OPENWRT_PATH/tmp/
+
+      # 完整 .config（mt798x）和 diffconfig（ipq6000/x86）都在 defconfig 展开之后
+      # 从 openwrt/.config 取变量：diffconfig 里只有 CONFIG_TARGET_xxx=y 这类布尔行，
+      # 直接 grep 机型 config 文件会拿到空值。
+      - name: 生成配置与设备变量
+        run: |
+          cp $CONFIG_FILE $OPENWRT_PATH/.config
+          cd $OPENWRT_PATH
+          make defconfig > /dev/null 2>&1
+
+          DEVICE_TARGET=$(sed -n 's/^CONFIG_TARGET_BOARD="\([^"]*\)"/\1/p' .config)
+          DEVICE_SUBTARGET=$(sed -n 's/^CONFIG_TARGET_SUBTARGET="\([^"]*\)"/\1/p' .config)
+          DEVICE_MODEL=$(sed -n 's/^CONFIG_TARGET_PROFILE="DEVICE_\([^"]*\)"/\1/p' .config)
+          DEVICE_ARCH_PACKAGES=$(sed -n 's/^CONFIG_TARGET_ARCH_PACKAGES="\([^"]*\)"/\1/p' .config)
+          SUBNET="${{ github.event.inputs.subnet || inputs.default_subnet }}"
+
+          {
+            echo "DEVICE_TARGET=$DEVICE_TARGET"
+            echo "DEVICE_SUBTARGET=$DEVICE_SUBTARGET"
+            echo "DEVICE_MODEL=$DEVICE_MODEL"
+            echo "DEVICE_ARCH_PACKAGES=$DEVICE_ARCH_PACKAGES"
+            echo "SUBNET=$SUBNET"
+            echo "RELEASE_TAG=${RELEASE_TAG:-$DEVICE_TARGET}"
+            echo "ARTIFACT_BASE_RESOLVED=${ARTIFACT_BASE:-${RENAME_PREFIX}${DEVICE_MODEL}}"
+            echo "CACHE_DATE=$(date +'%Y-w%V')"
+          } >> $GITHUB_ENV
+
+          echo "板型: $DEVICE_TARGET / $DEVICE_SUBTARGET，型号: $DEVICE_MODEL，Subnet: $SUBNET，产物基础名: ${ARTIFACT_BASE:-${RENAME_PREFIX}${DEVICE_MODEL}}"
+
+      - name: 下载源码依赖
+        run: |
+          cd $OPENWRT_PATH
+          for attempt in 1 2 3; do
+            if make download -j"$(nproc)"; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "make download 连续失败 3 次" >&2
+              exit 1
+            fi
+            echo "::warning::make download 第 $attempt 次失败，清理残渣后重试"
+            find dl -type f -size -1024c -print -delete
+            sleep $((attempt * 5))
+          done
+
+      - name: 编译固件
+        id: compile
+        run: |
+          cd $OPENWRT_PATH
+          if [ "$USE_CCACHE" = "true" ]; then
+            ccache -M 2G
+          fi
+          mkdir -p files/etc/uci-defaults
+          cp $GITHUB_WORKSPACE/scripts/init-settings.sh files/etc/uci-defaults/$INIT_SETTINGS_NAME
+          if [ "${{ inputs.apply_subnet }}" = "true" ]; then
+            sed -i "/exit 0/i uci set network.lan.ipaddr=\"192.168.${SUBNET}.1\"\nuci commit network\n" files/etc/uci-defaults/$INIT_SETTINGS_NAME
+          fi
+          cp $GITHUB_WORKSPACE/scripts/init-tailscale.sh files/etc/uci-defaults/99-init-tailscale
+          make -j"$(nproc)" || make -j1 || make -j1 V=s
+          echo "status=success" >> $GITHUB_OUTPUT
+
+      - name: 整理固件
+        if: steps.compile.outputs.status == 'success'
+        run: |
+          set -e
+          rm -rf $OPENWRT_PATH/artifact
+          mkdir -p $OPENWRT_PATH/artifact/{firmware,buildinfo,package}
+          cd $OPENWRT_PATH/bin/targets/*/*
+          echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
+          echo "KERNEL=$(grep '^kernel' *.manifest | head -n 1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n 1 || echo 'unknown')" >> $GITHUB_ENV
+          echo "DATE=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
+
+          for pattern in $FIRMWARE_GLOB; do
+            for f in $pattern; do
+              [ -f "$f" ] || continue
+              target="$f"
+              if [ -n "$RENAME_PREFIX" ]; then
+                case "$(basename "$f")" in
+                  "$RENAME_PREFIX"*) target="$f" ;;
+                  *) target="$(dirname "$f")/${RENAME_PREFIX}$(basename "$f")" ;;
+                esac
+              fi
+              cp -f "$f" "$OPENWRT_PATH/artifact/firmware/$(basename "$target")"
+            done
+          done
+
+          if [ -z "$(ls -A $OPENWRT_PATH/artifact/firmware)" ]; then
+            echo "没有匹配到任何固件文件，筛选模式: $FIRMWARE_GLOB" >&2
+            ls -l
+            exit 1
+          fi
+
+          tar -czf $OPENWRT_PATH/artifact/buildinfo/buildinfo.tar.gz config.buildinfo feeds.buildinfo version.buildinfo *.manifest 2>/dev/null \
+            || tar -czf $OPENWRT_PATH/artifact/buildinfo/buildinfo.tar.gz *.buildinfo *.manifest 2>/dev/null \
+            || echo "buildinfo 打包跳过"
+
+          PACKAGE_TAR="${PACKAGE_TAR_NAME//@ARCH@/$DEVICE_ARCH_PACKAGES}"
+          find $OPENWRT_PATH/bin/packages -type f \( -name "*.ipk" -o -name "*.apk" \) -exec cp -f --parents {} $OPENWRT_PATH/artifact/package/ \; 2>/dev/null || true
+          if [ -n "$(ls -A $OPENWRT_PATH/artifact/package 2>/dev/null)" ]; then
+            tar -czf "$OPENWRT_PATH/artifact/$PACKAGE_TAR" -C $OPENWRT_PATH/artifact package
+          else
+            echo "没有编出 ipk/apk，跳过包压缩"
+          fi
+
+          ls -lh $OPENWRT_PATH/artifact/firmware/
+          df -hT
+
+      - name: 上传 Artifact（单产物）
+        if: steps.compile.outputs.status == 'success' && env.ARTIFACT_NAME != ''
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.ARTIFACT_PATH != '' && format('{0}/{1}', env.OPENWRT_PATH, env.ARTIFACT_PATH) || format('{0}/artifact/**', env.OPENWRT_PATH) }}
+
+      - name: 上传固件到 Artifact
+        if: steps.compile.outputs.status == 'success' && env.ARTIFACT_NAME == ''
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.ARTIFACT_BASE_RESOLVED }}${{ env.ARTIFACT_SEP }}firmware
+          path: ${{ env.OPENWRT_PATH }}/artifact/firmware/**
+          compression-level: 9
+          if-no-files-found: error
+          overwrite: true
+
+      - name: 上传版本文件到 Artifact
+        if: steps.compile.outputs.status == 'success' && env.ARTIFACT_NAME == ''
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.ARTIFACT_BASE_RESOLVED }}${{ env.ARTIFACT_SEP }}buildinfo
+          path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/**
+          compression-level: 9
+          if-no-files-found: ignore
+          overwrite: true
+
+      - name: 上传包到 Artifact
+        if: steps.compile.outputs.status == 'success' && env.ARTIFACT_NAME == ''
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.ARTIFACT_BASE_RESOLVED }}${{ env.ARTIFACT_SEP }}package
+          path: ${{ env.OPENWRT_PATH }}/artifact/*packages.tar.gz
+          compression-level: 9
+          if-no-files-found: ignore
+          overwrite: true
+
+      - name: 发布到 Release
+        if: steps.compile.outputs.status == 'success' && inputs.firmware_release
+        uses: ncipollo/release-action@main
+        with:
+          name: ${{ env.RELEASE_TAG }}
+          allowUpdates: true
+          replacesArtifacts: true
+          tag: ${{ env.RELEASE_TAG }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: ${{ inputs.release_artifacts != '' && inputs.release_artifacts || format('{0}/artifact/firmware/*', env.OPENWRT_PATH) }}
+          body: |
+            `${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}`
+            `${{ env.REPO_URL }}`
+            `${{ env.REPO_BRANCH }}`
+            `${{ env.KERNEL }}`
+
+      - name: Telegram 通知
+        if: steps.compile.outputs.status == 'success' && inputs.firmware_release
+        run: |
+          DT=$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M')
+          DL_LINK="https://github.com/${{ github.repository }}/releases/tag/${RELEASE_TAG}"
+
+          END_TIME=$(date +%s)
+          START_TIME=${{ steps.build_start.outputs.timestamp }}
+          DURATION_SECONDS=$((END_TIME - START_TIME))
+          MINS=$((DURATION_SECONDS / 60))
+          SECS=$((DURATION_SECONDS % 60))
+          DURATION_STR="${MINS}分${SECS}秒"
+
+          MSG="<b>🎉 OpenWrt 固件构建成功</b>
+
+          <b>设备信息</b>
+          ━━━━━━━━━━━━━━━━━━
+          <b>设备型号:</b> <code>${DEVICE_MODEL}</code>
+          <b>系统架构:</b> ${DEVICE_TARGET} / ${DEVICE_SUBTARGET}
+          <b>内核版本:</b> ${KERNEL}
+          <b>源码分支:</b> ${REPO_BRANCH}
+
+          <b>📦 发布详情</b>
+          ━━━━━━━━━━━━━━━━━━
+          <b>编译时间:</b> $DT
+          <b>总耗时:</b> ${DURATION_STR}
+          <a href='$DL_LINK'><b>点击此处跳转下载页面</b></a>"
+
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
+            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d "parse_mode=HTML" \
+            -d "disable_web_page_preview=true" \
+            --data-urlencode "text=$MSG"
+
+      - name: 失败通知
+        if: failure()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d text="❌ 警告！%0A仓库: ${{ github.repository }}%0A任务: ${{ github.workflow }} 运行失败，请及时检查！"
+
+      - name: 删除旧流程
+        if: always() && inputs.delete_old_workflows
+        uses: Mattraks/delete-workflow-runs@main
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 0
+          keep_minimum_runs: 1
+          delete_workflow_pattern: "${{ github.workflow }}"
+          delete_workflow_by_state_pattern: "active"
+          delete_run_by_conclusion_pattern: "success, failure, cancelled, skipped"

@@ -33,7 +33,7 @@ find ../feeds/luci/ -name '*argon*' | xargs rm -rf
 
 log "Updating Golang"
 rm -rf ../feeds/packages/lang/golang
-git clone https://github.com/sbwml/packages_lang_golang -b 26.x ../feeds/packages/lang/golang
+git clone https://github.com/sbwml/packages_lang_golang -b 27.x ../feeds/packages/lang/golang
 
 section "下载/更新插件"
 git_sparse_clone() {
