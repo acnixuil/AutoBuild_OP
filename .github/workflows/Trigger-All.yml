@@ -34,9 +34,10 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
         run: |
           set -uo pipefail
+          set +e
           BLACKLIST=(Build-OpenWrt.yml Delete-Old-Workflows.yml compress_binaries.yml Trigger-All.yml)
           NORM() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | sed 's/\.yml$//g; s/[^a-z0-9]//g'; }
-          EXCLUDE_LIST="$(printf '%s\n' "${EXCLUDE:-}" | tr ',' '\n' | while IFS= read -r item; do [ -n "$item" ] && printf '%s ' "$(NORM "$item")"; done)"
+          EXCLUDE_LIST="$(printf '%s\n' "${EXCLUDE:-}" | tr ',' '\n' | sed '/^$/d' | while IFS= read -r item; do printf '%s ' "$(NORM "$item")"; done)"
           is_blocked() {
             local key
             key="$(NORM "$1")"
@@ -45,6 +46,14 @@ jobs:
             for b in $EXCLUDE_LIST; do [ "$b" = "$key" ] && return 0; done
             return 1
           }
+          BRANCH="${REF_NAME:-main}"
+          echo "仓库 $GH_REPO，分支 $BRANCH"
+          if probe="$(gh api "repos/$GH_REPO" --jq .full_name 2>&1)"; then
+            echo "令牌可访问仓库：$probe"
+          else
+            echo "::error::令牌无法访问仓库 $GH_REPO → $probe"
+            exit 1
+          fi
           failed=0
           sent=0
           skipped=0
@@ -66,11 +75,11 @@ jobs:
               sent=$((sent + 1))
               continue
             fi
-            if gh workflow run "$wf" --ref "${REF_NAME:-main}"; then
+            if out="$(gh api --method POST "repos/$GH_REPO/actions/workflows/$wf/dispatches" -f ref="$BRANCH" 2>&1)"; then
               echo "已触发：$wf"
               sent=$((sent + 1))
             else
-              echo "::error::触发失败：$wf"
+              echo "::error::触发失败：$wf → $out"
               failed=$((failed + 1))
             fi
             sleep 2
