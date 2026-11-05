@@ -112,7 +112,7 @@ handle_openclash() {
   local core_ver
   local core_api
   core_api=$(curl -fsSL "https://api.github.com/repos/MetaCubeX/mihomo/releases/latest" || true)
-  core_ver=$(printf '%s' "$core_api" | grep -m1 '"tag_name"' | awk -F '"' '{print $4}')
+  core_ver=$(printf '%s' "$core_api" | awk -F '"' '{ if (!got) for (i=1;i<=NF;i++) if ($i=="tag_name") { v=$(i+2); got=1; break } } END { print v }')
   echo "OpenClash 核心：mihomo ${core_ver} (${core_arch})"
   [ -n "$core_ver" ] || return 1
 
@@ -169,7 +169,7 @@ handle_adguard() {
   local agh_core
   local agh_api
   agh_api=$(curl -sL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest || true)
-  agh_core=$(printf '%s' "$agh_api" | grep "browser_download_url" | grep -oE "https://[^\"]*AdGuardHome_linux_${ARCH}\.tar\.gz" | head -n 1)
+  agh_core=$(printf '%s' "$agh_api" | grep "browser_download_url" | grep -oE "https://[^\"]*AdGuardHome_linux_${ARCH}\.tar\.gz" | sed -n '1p')
   [ -n "$agh_core" ] || return 1
 
   local tmp_dir
@@ -213,7 +213,7 @@ handle_tailscale() {
   local ts_version
   local ts_txt
   ts_txt=$(curl -fsSL "${ts_base}/version.txt" || true)
-  ts_version=$(printf '%s' "$ts_txt" | sed -n '1s/[[:space:]]*$//p' | head -n 1)
+  ts_version=$(printf '%s' "$ts_txt" | sed -n '1s/[[:space:]]*$//p')
   
   [ -n "$ts_version" ] || return 1
 
