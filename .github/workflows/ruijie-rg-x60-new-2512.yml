@@ -26,4 +26,3 @@ jobs:
       artifact_name: "mt798x_release"
       firmware_glob: "*sysupgrade* *factory*"
       default_subnet: "2"
-      arch: "arm64"

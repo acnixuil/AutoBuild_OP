@@ -24,15 +24,5 @@ jobs:
       config_file: "x86_imm/x86.config"
       custom_script: "x86_imm/custom.sh"
       default_subnet: "2"
-      arch: "amd64"
-      artifact_base: "OpenWrt"
-      artifact_sep: "_"
+      artifact_base: "OpenWrt_"
       firmware_glob: "*.img* *.vmdk *.tar.gz"
-      package_tar_name: "@ARCH@_packages.tar.gz"
-      init_settings_name: "999-init-settings"
-      apply_subnet: false
-      release_artifacts: |
-        openwrt/bin/targets/*/*.tar.gz
-        openwrt/bin/targets/*/*combined-efi.img.gz
-        openwrt/bin/targets/*/*combined.img.gz
-        openwrt/bin/targets/*/*.vmdk

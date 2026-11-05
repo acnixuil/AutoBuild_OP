@@ -1,7 +1,5 @@
 name: Build-OpenWrt
 
-# 可复用编译流程：机型相关的一切（仓库、分支、config、脚本、产物名、Subnet、筛选规则）
-# 都由调用方通过 inputs 传入，这份文件里不出现任何具体机型。
 on:
   workflow_call:
     inputs:
@@ -26,86 +24,36 @@ on:
         required: false
         type: string
         default: "2"
-      arch:
-        description: "架构标记，仅用于通知展示"
-        required: false
-        type: string
-        default: "arm64"
       extra_feed:
         description: "额外 feed 行，留空则不加"
         required: false
         type: string
         default: ""
       rename_prefix:
-        description: "固件文件名前缀，如 nowifi-"
+        description: "固件文件名前缀，一般只给 nowifi 用"
         required: false
         type: string
         default: ""
+      firmware_glob:
+        description: "固件筛选模式，空格分隔"
+        required: false
+        type: string
+        default: "*sysupgrade* *factory*"
       artifact_name:
-        description: "填了就只传一个同名产物，留空则按 base+firmware/buildinfo/package 分三个"
+        description: "填了就只传一个同名产物，留空则分 firmware/buildinfo/package 三件"
         required: false
         type: string
         default: ""
       artifact_path:
-        description: "单产物模式的路径（相对 OPENWRT_PATH），留空为 artifact/**"
+        description: "单产物模式的路径，默认整个 artifact 目录"
         required: false
         type: string
-        default: ""
+        default: "artifact/**"
       artifact_base:
-        description: "三产物模式的基础名，留空为 <rename_prefix><DEVICE_MODEL>"
+        description: "三产物模式的基础名，默认 <rename_prefix><DEVICE_MODEL>-"
         required: false
         type: string
         default: ""
-      artifact_sep:
-        description: "三产物模式连接符"
-        required: false
-        type: string
-        default: "-"
-      firmware_glob:
-        description: "固件筛选模式，空格分隔，如 *sysupgrade* *factory*"
-        required: false
-        type: string
-        default: "*sysupgrade* *factory* *.ubi* *.bin*"
-      package_tar_name:
-        description: "包压缩包名，@ARCH@ 会替换成 CONFIG_TARGET_ARCH_PACKAGES"
-        required: false
-        type: string
-        default: "packages.tar.gz"
-      release_artifacts:
-        description: "发布到 Release 的路径列表，留空为 <OPENWRT_PATH>/artifact/firmware/*"
-        required: false
-        type: string
-        default: ""
-      apply_subnet:
-        description: "是否把 SUBNET 写进 init-settings"
-        required: false
-        type: boolean
-        default: true
-      init_settings_name:
-        description: "uci-defaults 里的文件名"
-        required: false
-        type: string
-        default: "99-init-settings"
-      release_tag:
-        description: "Release 标签，留空则用 DEVICE_TARGET（与原工作流一致）"
-        required: false
-        type: string
-        default: ""
-      firmware_release:
-        description: "是否发布到 Release"
-        required: false
-        type: boolean
-        default: true
-      delete_old_workflows:
-        description: "结束后清理旧的运行记录"
-        required: false
-        type: boolean
-        default: true
-      use_ccache:
-        description: "是否缓存 ccache（默认关闭，与现有行为一致）"
-        required: false
-        type: boolean
-        default: false
     secrets:
       TELEGRAM_TOKEN:
         required: false
@@ -127,20 +75,7 @@ jobs:
       CONFIG_FILE: ${{ inputs.config_file }}
       CUSTOM_SCRIPT: ${{ inputs.custom_script }}
       RENAME_PREFIX: ${{ inputs.rename_prefix }}
-      DEFAULT_SUBNET: ${{ inputs.default_subnet }}
-      ARCH: ${{ inputs.arch }}
-      EXTRA_FEED: ${{ inputs.extra_feed }}
-      ARTIFACT_NAME: ${{ inputs.artifact_name }}
-      ARTIFACT_PATH: ${{ inputs.artifact_path }}
-      ARTIFACT_BASE: ${{ inputs.artifact_base }}
-      ARTIFACT_SEP: ${{ inputs.artifact_sep }}
       FIRMWARE_GLOB: ${{ inputs.firmware_glob }}
-      PACKAGE_TAR_NAME: ${{ inputs.package_tar_name }}
-      RELEASE_ARTIFACTS: ${{ inputs.release_artifacts }}
-      INIT_SETTINGS_NAME: ${{ inputs.init_settings_name }}
-      RELEASE_TAG: ${{ inputs.release_tag }}
-      FIRMWARE_RELEASE: ${{ inputs.firmware_release }}
-      USE_CCACHE: ${{ inputs.use_ccache }}
       TZ: Asia/Shanghai
 
     steps:
@@ -162,8 +97,6 @@ jobs:
           sudo apt-get clean
           echo "== 清理后 =="; df -h /
 
-      # 依赖清单写死在这里，不再调用 init_build_environment.sh 或远程依赖文件：
-      # runner 镜像换版本时，脚本里的包名消失就会整条流水线红，这里至少是可控的。
       - name: 初始化编译环境
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -192,6 +125,18 @@ jobs:
           git clone --depth=1 -b $REPO_BRANCH $REPO_URL openwrt
           echo "OPENWRT_PATH=$PWD/openwrt" >> $GITHUB_ENV
 
+      - name: 屏蔽大陆镜像源
+        run: |
+          cd $OPENWRT_PATH
+          MIRROR_FILE="scripts/projectsmirrors.json"
+          if [ -f "$MIRROR_FILE" ]; then
+            jq 'with_entries(.value |= map(select(test("^https?://(mirrors\\.tencent\\.com|mirrors\\.aliyun\\.com|mirrors\\.tuna\\.tsinghua\\.edu\\.cn|mirrors\\.ustc\\.edu\\.cn|mirror\\.iscas\\.ac\\.cn|mirror\\.nju\\.edu\\.cn)(/|$)") | not)))' "$MIRROR_FILE" > "$MIRROR_FILE.tmp" && mv "$MIRROR_FILE.tmp" "$MIRROR_FILE"
+            echo "剩余镜像条目: $(jq 'length' "$MIRROR_FILE")"
+          else
+            echo "$MIRROR_FILE 不存在（21.02 这类老树没有该清单），跳过"
+          fi
+          sed -i '/raw\.gitmirror\.com/d' scripts/download.pl 2>/dev/null || true
+
       - name: 恢复 dl 缓存
         uses: actions/cache@main
         with:
@@ -200,19 +145,10 @@ jobs:
           restore-keys: |
             dl-${{ inputs.repo_url }}-${{ inputs.repo_branch }}-
 
-      - name: 恢复 ccache 缓存
-        if: inputs.use_ccache
-        uses: actions/cache@main
-        with:
-          path: openwrt/.ccache
-          key: ccache-${{ inputs.repo_url }}-${{ inputs.repo_branch }}-${{ hashFiles(inputs.config_file) }}-${{ github.run_id }}
-          restore-keys: |
-            ccache-${{ inputs.repo_url }}-${{ inputs.repo_branch }}-${{ hashFiles(inputs.config_file) }}-
-            ccache-${{ inputs.repo_url }}-${{ inputs.repo_branch }}-
-
       - name: 更新并安装 Feeds
         run: |
           cd $OPENWRT_PATH
+          EXTRA_FEED="${{ inputs.extra_feed }}"
           if [ -n "$EXTRA_FEED" ]; then
             grep -qxF "$EXTRA_FEED" feeds.conf.default || echo "$EXTRA_FEED" >> feeds.conf.default
           fi
@@ -233,9 +169,6 @@ jobs:
           $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
           rm -rf $OPENWRT_PATH/tmp/
 
-      # 完整 .config（mt798x）和 diffconfig（ipq6000/x86）都在 defconfig 展开之后
-      # 从 openwrt/.config 取变量：diffconfig 里只有 CONFIG_TARGET_xxx=y 这类布尔行，
-      # 直接 grep 机型 config 文件会拿到空值。
       - name: 生成配置与设备变量
         run: |
           cp $CONFIG_FILE $OPENWRT_PATH/.config
@@ -247,6 +180,8 @@ jobs:
           DEVICE_MODEL=$(sed -n 's/^CONFIG_TARGET_PROFILE="DEVICE_\([^"]*\)"/\1/p' .config)
           DEVICE_ARCH_PACKAGES=$(sed -n 's/^CONFIG_TARGET_ARCH_PACKAGES="\([^"]*\)"/\1/p' .config)
           SUBNET="${{ github.event.inputs.subnet || inputs.default_subnet }}"
+          [ -n "$SUBNET" ] || SUBNET=1
+          ARTIFACT_BASE="${{ inputs.artifact_base }}"
 
           {
             echo "DEVICE_TARGET=$DEVICE_TARGET"
@@ -254,12 +189,10 @@ jobs:
             echo "DEVICE_MODEL=$DEVICE_MODEL"
             echo "DEVICE_ARCH_PACKAGES=$DEVICE_ARCH_PACKAGES"
             echo "SUBNET=$SUBNET"
-            echo "RELEASE_TAG=${RELEASE_TAG:-$DEVICE_TARGET}"
-            echo "ARTIFACT_BASE_RESOLVED=${ARTIFACT_BASE:-${RENAME_PREFIX}${DEVICE_MODEL}}"
-            echo "CACHE_DATE=$(date +'%Y-w%V')"
+            echo "ARTIFACT_BASE_FINAL=${ARTIFACT_BASE:-${RENAME_PREFIX}${DEVICE_MODEL}-}"
           } >> $GITHUB_ENV
 
-          echo "板型: $DEVICE_TARGET / $DEVICE_SUBTARGET，型号: $DEVICE_MODEL，Subnet: $SUBNET，产物基础名: ${ARTIFACT_BASE:-${RENAME_PREFIX}${DEVICE_MODEL}}"
+          echo "板型: $DEVICE_TARGET / $DEVICE_SUBTARGET，型号: $DEVICE_MODEL，Subnet: $SUBNET，产物基础名: ${ARTIFACT_BASE:-${RENAME_PREFIX}${DEVICE_MODEL}-}"
 
       - name: 下载源码依赖
         run: |
@@ -281,14 +214,15 @@ jobs:
         id: compile
         run: |
           cd $OPENWRT_PATH
-          if [ "$USE_CCACHE" = "true" ]; then
-            ccache -M 2G
-          fi
           mkdir -p files/etc/uci-defaults
-          cp $GITHUB_WORKSPACE/scripts/init-settings.sh files/etc/uci-defaults/$INIT_SETTINGS_NAME
-          if [ "${{ inputs.apply_subnet }}" = "true" ]; then
-            sed -i "/exit 0/i uci set network.lan.ipaddr=\"192.168.${SUBNET}.1\"\nuci commit network\n" files/etc/uci-defaults/$INIT_SETTINGS_NAME
+          cp $GITHUB_WORKSPACE/scripts/init-settings.sh files/etc/uci-defaults/99-init-settings
+          CONFIG_GENERATE="package/base-files/files/bin/config_generate"
+          if [ -f "$CONFIG_GENERATE" ] && grep -qF 'ipad/$prefix' "$CONFIG_GENERATE"; then
+            LAN_IP="192.168.${SUBNET}.1/24"
+          else
+            LAN_IP="192.168.${SUBNET}.1"
           fi
+          sed -i "/exit 0/i uci set network.lan.ipaddr=\"$LAN_IP\"\nuci commit network\n" files/etc/uci-defaults/99-init-settings
           cp $GITHUB_WORKSPACE/scripts/init-tailscale.sh files/etc/uci-defaults/99-init-tailscale
           make -j"$(nproc)" || make -j1 || make -j1 V=s
           echo "status=success" >> $GITHUB_OUTPUT
@@ -328,7 +262,7 @@ jobs:
             || tar -czf $OPENWRT_PATH/artifact/buildinfo/buildinfo.tar.gz *.buildinfo *.manifest 2>/dev/null \
             || echo "buildinfo 打包跳过"
 
-          PACKAGE_TAR="${PACKAGE_TAR_NAME//@ARCH@/$DEVICE_ARCH_PACKAGES}"
+          PACKAGE_TAR="packages.tar.gz"
           find $OPENWRT_PATH/bin/packages -type f \( -name "*.ipk" -o -name "*.apk" \) -exec cp -f --parents {} $OPENWRT_PATH/artifact/package/ \; 2>/dev/null || true
           if [ -n "$(ls -A $OPENWRT_PATH/artifact/package 2>/dev/null)" ]; then
             tar -czf "$OPENWRT_PATH/artifact/$PACKAGE_TAR" -C $OPENWRT_PATH/artifact package
@@ -340,52 +274,52 @@ jobs:
           df -hT
 
       - name: 上传 Artifact（单产物）
-        if: steps.compile.outputs.status == 'success' && env.ARTIFACT_NAME != ''
+        if: steps.compile.outputs.status == 'success' && inputs.artifact_name != ''
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.ARTIFACT_NAME }}
-          path: ${{ env.ARTIFACT_PATH != '' && format('{0}/{1}', env.OPENWRT_PATH, env.ARTIFACT_PATH) || format('{0}/artifact/**', env.OPENWRT_PATH) }}
+          name: ${{ inputs.artifact_name }}
+          path: ${{ env.OPENWRT_PATH }}/${{ inputs.artifact_path }}
 
       - name: 上传固件到 Artifact
-        if: steps.compile.outputs.status == 'success' && env.ARTIFACT_NAME == ''
+        if: steps.compile.outputs.status == 'success' && inputs.artifact_name == ''
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.ARTIFACT_BASE_RESOLVED }}${{ env.ARTIFACT_SEP }}firmware
+          name: ${{ env.ARTIFACT_BASE_FINAL }}firmware
           path: ${{ env.OPENWRT_PATH }}/artifact/firmware/**
           compression-level: 9
           if-no-files-found: error
           overwrite: true
 
       - name: 上传版本文件到 Artifact
-        if: steps.compile.outputs.status == 'success' && env.ARTIFACT_NAME == ''
+        if: steps.compile.outputs.status == 'success' && inputs.artifact_name == ''
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.ARTIFACT_BASE_RESOLVED }}${{ env.ARTIFACT_SEP }}buildinfo
+          name: ${{ env.ARTIFACT_BASE_FINAL }}buildinfo
           path: ${{ env.OPENWRT_PATH }}/artifact/buildinfo/**
           compression-level: 9
           if-no-files-found: ignore
           overwrite: true
 
       - name: 上传包到 Artifact
-        if: steps.compile.outputs.status == 'success' && env.ARTIFACT_NAME == ''
+        if: steps.compile.outputs.status == 'success' && inputs.artifact_name == ''
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.ARTIFACT_BASE_RESOLVED }}${{ env.ARTIFACT_SEP }}package
+          name: ${{ env.ARTIFACT_BASE_FINAL }}package
           path: ${{ env.OPENWRT_PATH }}/artifact/*packages.tar.gz
           compression-level: 9
           if-no-files-found: ignore
           overwrite: true
 
       - name: 发布到 Release
-        if: steps.compile.outputs.status == 'success' && inputs.firmware_release
+        if: steps.compile.outputs.status == 'success'
         uses: ncipollo/release-action@main
         with:
-          name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.DEVICE_TARGET }}
+          tag: ${{ env.DEVICE_TARGET }}
           allowUpdates: true
           replacesArtifacts: true
-          tag: ${{ env.RELEASE_TAG }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          artifacts: ${{ inputs.release_artifacts != '' && inputs.release_artifacts || format('{0}/artifact/firmware/*', env.OPENWRT_PATH) }}
+          artifacts: ${{ env.OPENWRT_PATH }}/artifact/firmware/*
           body: |
             `${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}`
             `${{ env.REPO_URL }}`
@@ -393,17 +327,15 @@ jobs:
             `${{ env.KERNEL }}`
 
       - name: Telegram 通知
-        if: steps.compile.outputs.status == 'success' && inputs.firmware_release
+        if: steps.compile.outputs.status == 'success'
         run: |
-          DT=$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M')
-          DL_LINK="https://github.com/${{ github.repository }}/releases/tag/${RELEASE_TAG}"
+          DT=$(date '+%Y-%m-%d %H:%M')
+          DL_LINK="https://github.com/${{ github.repository }}/releases/tag/${DEVICE_TARGET}"
 
           END_TIME=$(date +%s)
           START_TIME=${{ steps.build_start.outputs.timestamp }}
           DURATION_SECONDS=$((END_TIME - START_TIME))
-          MINS=$((DURATION_SECONDS / 60))
-          SECS=$((DURATION_SECONDS % 60))
-          DURATION_STR="${MINS}分${SECS}秒"
+          DURATION_STR="$((DURATION_SECONDS / 60))分$((DURATION_SECONDS % 60))秒"
 
           MSG="<b>🎉 OpenWrt 固件构建成功</b>
 
@@ -434,7 +366,7 @@ jobs:
             -d text="❌ 警告！%0A仓库: ${{ github.repository }}%0A任务: ${{ github.workflow }} 运行失败，请及时检查！"
 
       - name: 删除旧流程
-        if: always() && inputs.delete_old_workflows
+        if: always()
         uses: Mattraks/delete-workflow-runs@main
         with:
           token: ${{ github.token }}
