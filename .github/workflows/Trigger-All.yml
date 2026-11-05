@@ -35,7 +35,7 @@ jobs:
         run: |
           set -uo pipefail
           set +e
-          BLACKLIST=(Build-OpenWrt.yml Delete-Old-Workflows.yml compress_binaries.yml Trigger-All.yml)
+          BLACKLIST=(Build-OpenWrt.yml Delete-Old-Workflows.yml compress_binaries.yml Trigger-All.yml Keep-Active.yml)
           NORM() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | sed 's/\.yml$//g; s/[^a-z0-9]//g'; }
           EXCLUDE_LIST="$(printf '%s\n' "${EXCLUDE:-}" | tr ',' '\n' | sed '/^$/d' | while IFS= read -r item; do printf '%s ' "$(NORM "$item")"; done)"
           is_blocked() {
