@@ -2,16 +2,35 @@
 
 declare -a RESULTS=()          # 收集结果用于 summary
 FAILED=0
-# 架构：环境变量优先；否则从编译树的 .config 读 CONFIG_ARCH；再退到宿主机 uname
+# 架构：环境变量优先；否则按 编译树 .config → 机型 config → 目标平台映射 → 宿主机 uname 的顺序判断
 if [ -z "$ARCH" ]; then
-  _arch_cfg=""
-  for _c in "$GITHUB_WORKSPACE/openwrt/.config" "../.config"; do
-    [ -f "$_c" ] && { _arch_cfg="$_c"; break; }
+  _cfg=""
+  for _c in "$GITHUB_WORKSPACE/openwrt/.config" "${GITHUB_WORKSPACE:+$GITHUB_WORKSPACE/}${CONFIG_FILE:-}" "${CONFIG_FILE:-}"; do
+    [ -n "$_c" ] && [ -f "$_c" ] && { _cfg="$_c"; break; }
   done
-  if [ -n "$_arch_cfg" ]; then
-    _arch_raw=$(sed -n 's/^CONFIG_ARCH="\([^"]*\)"/\1/p' "$_arch_cfg" | head -n 1)
+  _arch_raw=""
+  _arch_src=""
+  if [ -n "$_cfg" ]; then
+    _arch_raw=$(sed -n 's/^CONFIG_ARCH="\([^"]*\)"/\1/p' "$_cfg" | head -n 1)
+    [ -n "$_arch_raw" ] && _arch_src="$_cfg 的 CONFIG_ARCH"
   fi
-  [ -n "$_arch_raw" ] || _arch_raw=$(uname -m)
+  if [ -z "$_arch_raw" ] && [ -n "$_cfg" ]; then
+    _board=$(sed -n 's/^CONFIG_TARGET_BOARD="\([^"]*\)"/\1/p' "$_cfg" | head -n 1)
+    if [ -z "$_board" ]; then
+      _board=$(sed -n 's/^CONFIG_TARGET_\([A-Za-z0-9]*\)=y$/\1/p' "$_cfg" | head -n 1)
+    fi
+    case "${_board%%_*}" in
+      mediatek|qualcommax|rockchip) _arch_raw="aarch64" ;;
+      x86) _arch_raw="x86_64" ;;
+      *) _arch_raw="" ;;
+    esac
+    [ -n "$_arch_raw" ] && _arch_src="$_cfg 的目标平台 ${_board%%_*}"
+  fi
+  if [ -z "$_arch_raw" ]; then
+    _arch_raw=$(uname -m)
+    _arch_src="宿主机 uname -m"
+    echo "::warning::没从配置里认出目标架构，退回避难宿主机 $_arch_raw"
+  fi
   case "$_arch_raw" in
     aarch64|arm64) ARCH="arm64" ;;
     x86_64|amd64) ARCH="amd64" ;;
@@ -20,7 +39,8 @@ if [ -z "$ARCH" ]; then
     *) ARCH="$_arch_raw" ;;
   esac
 fi
-echo "当前架构为 ${ARCH}/${_arch_raw:-$ARCH}"
+[ -n "${_arch_src:-}" ] || _arch_src="环境变量 ARCH"
+echo "当前架构为 ${ARCH}/${_arch_raw:-$ARCH}（来源：${_arch_src}）"
 ARCH="${ARCH:-unknown}"
 PKG_PATCH="$GITHUB_WORKSPACE/openwrt/package"
 PATCH_DIR="$GITHUB_WORKSPACE/patch"
