@@ -20,6 +20,7 @@ if [ -z "$ARCH" ]; then
     *) ARCH="$_arch_raw" ;;
   esac
 fi
+echo "当前架构为 ${ARCH}/${_arch_raw:-$ARCH}"
 ARCH="${ARCH:-unknown}"
 PKG_PATCH="$GITHUB_WORKSPACE/openwrt/package"
 PATCH_DIR="$GITHUB_WORKSPACE/patch"
@@ -236,7 +237,7 @@ handle_syspatch() {
 summary() {
   [ -n "$GITHUB_STEP_SUMMARY" ] || return 0
   {
-    echo "### Handles.sh 处理结果"
+    echo "### handlers.sh 处理结果"
     echo "| 步骤 | 状态 | 耗时 |"
     echo "|---|---|---|"
     printf '%s\n' "${RESULTS[@]}"

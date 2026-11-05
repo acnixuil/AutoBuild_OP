@@ -1,0 +1,79 @@
+name: Trigger All
+
+on:
+  workflow_dispatch:
+    inputs:
+      exclude:
+        description: "额外不触发的 workflow（黑名单之外再加），逗号分隔，可写文件名或工作流名"
+        required: false
+        type: string
+        default: ""
+      dry_run:
+        description: "只列出将触发的清单，不实际触发"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@main
+
+      - name: 批量触发
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          EXCLUDE: ${{ inputs.exclude }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -uo pipefail
+          BLACKLIST=(Build-OpenWrt.yml Delete-Old-Workflows.yml compress_binaries.yml Trigger-All.yml)
+          NORM() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | sed 's/\.yml$//g; s/[^a-z0-9]//g'; }
+          EXCLUDE_LIST="$(printf '%s\n' "${EXCLUDE:-}" | tr ',' '\n' | while IFS= read -r item; do [ -n "$item" ] && printf '%s ' "$(NORM "$item")"; done)"
+          is_blocked() {
+            local key
+            key="$(NORM "$1")"
+            local b
+            for b in "${BLACKLIST[@]}"; do [ "$(NORM "$b")" = "$key" ] && return 0; done
+            for b in $EXCLUDE_LIST; do [ "$b" = "$key" ] && return 0; done
+            return 1
+          }
+          failed=0
+          sent=0
+          skipped=0
+          for f in .github/workflows/*.yml .github/workflows/*.yaml; do
+            [ -f "$f" ] || continue
+            wf="$(basename "$f")"
+            if is_blocked "$wf"; then
+              echo "跳过：$wf（黑名单或排除名单）"
+              skipped=$((skipped + 1))
+              continue
+            fi
+            if ! grep -q 'workflow_dispatch' "$f"; then
+              echo "跳过：$wf（没有 workflow_dispatch）"
+              skipped=$((skipped + 1))
+              continue
+            fi
+            if [ "${DRY_RUN:-false}" = "true" ]; then
+              echo "将触发：$wf"
+              sent=$((sent + 1))
+              continue
+            fi
+            if gh workflow run "$wf" --ref "${REF_NAME:-main}"; then
+              echo "已触发：$wf"
+              sent=$((sent + 1))
+            else
+              echo "::error::触发失败：$wf"
+              failed=$((failed + 1))
+            fi
+            sleep 2
+          done
+          echo "合计：触发 $sent 个，跳过 $skipped 个，失败 $failed 个"
+          [ "$failed" -eq 0 ]

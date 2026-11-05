@@ -28,5 +28,3 @@ else
    sed -i "s/OPENWRT_RELEASE=.*/OPENWRT_RELEASE=\"OpenWrt R$(TZ=UTC-8 date +'%y.%-m.%-d') (By @COLDFISH build $(TZ=UTC-8 date '+%Y-%m-%d %H:%M'))\"/g"  base-files/files/usr/lib/os-release
    echo -e "\e[92m当前写入的编译时间: $(grep 'OPENWRT_RELEASE' base-files/files/usr/lib/os-release)\e[0m"
 fi
-
-echo "定制化设置已完成"

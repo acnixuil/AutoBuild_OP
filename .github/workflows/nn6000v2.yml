@@ -20,8 +20,6 @@ jobs:
       config_file: "ipq6000/nn6000v2.config"
       rename_prefix: ""
       default_subnet: "3"
-      artifact_name: "nn6000v2"
-      artifact_path: "artifact/firmware/**"
       custom_script: "ipq6000/custom.sh"
       repo_url: "https://github.com/LiBwrt/openwrt-6.x.git"
       repo_branch: "25.12-nss"

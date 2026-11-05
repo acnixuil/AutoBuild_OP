@@ -24,5 +24,4 @@ jobs:
       config_file: "x86_imm/x86.config"
       custom_script: "x86_imm/custom.sh"
       default_subnet: "2"
-      artifact_base: "OpenWrt_"
       firmware_glob: "*.img* *.vmdk *.tar.gz"

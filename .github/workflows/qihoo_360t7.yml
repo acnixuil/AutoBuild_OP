@@ -23,6 +23,5 @@ jobs:
       repo_branch: "openwrt-21.02"
       config_file: "mt798x/qihoo_360t7-2102.config"
       custom_script: "mt798x/custom.sh"
-      artifact_name: "mt798x_release"
       firmware_glob: "*sysupgrade* *factory*"
       default_subnet: "5"

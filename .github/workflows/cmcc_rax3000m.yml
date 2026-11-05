@@ -23,6 +23,5 @@ jobs:
       repo_branch: "25.12"
       config_file: "mt798x/cmcc_rax3000m-2512.config"
       custom_script: "mt798x/custom.sh"
-      artifact_name: "mt798x_release"
       firmware_glob: "*sysupgrade* *factory*"
       default_subnet: "2"

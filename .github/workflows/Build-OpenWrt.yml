@@ -39,21 +39,6 @@ on:
         required: false
         type: string
         default: "*sysupgrade* *factory*"
-      artifact_name:
-        description: "填了就只传一个同名产物，留空则分 firmware/buildinfo/package 三件"
-        required: false
-        type: string
-        default: ""
-      artifact_path:
-        description: "单产物模式的路径，默认整个 artifact 目录"
-        required: false
-        type: string
-        default: "artifact/**"
-      artifact_base:
-        description: "三产物模式的基础名，默认 <rename_prefix><DEVICE_MODEL>-"
-        required: false
-        type: string
-        default: ""
     secrets:
       TELEGRAM_TOKEN:
         required: false
@@ -157,15 +142,15 @@ jobs:
 
       - name: 下载第三方包
         run: |
-          chmod +x $GITHUB_WORKSPACE/scripts/Packages.sh
+          chmod +x $GITHUB_WORKSPACE/scripts/packages.sh
           cd $OPENWRT_PATH/package
-          $GITHUB_WORKSPACE/scripts/Packages.sh
+          $GITHUB_WORKSPACE/scripts/packages.sh
 
       - name: 加载自定义脚本
         run: |
           chmod +x $GITHUB_WORKSPACE/scripts/*.sh $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
           cd $OPENWRT_PATH/package
-          $GITHUB_WORKSPACE/scripts/Handles.sh
+          $GITHUB_WORKSPACE/scripts/handlers.sh
           $GITHUB_WORKSPACE/$CUSTOM_SCRIPT
           rm -rf $OPENWRT_PATH/tmp/
 
@@ -181,7 +166,6 @@ jobs:
           DEVICE_ARCH_PACKAGES=$(sed -n 's/^CONFIG_TARGET_ARCH_PACKAGES="\([^"]*\)"/\1/p' .config)
           SUBNET="${{ github.event.inputs.subnet || inputs.default_subnet }}"
           [ -n "$SUBNET" ] || SUBNET=1
-          ARTIFACT_BASE="${{ inputs.artifact_base }}"
 
           {
             echo "DEVICE_TARGET=$DEVICE_TARGET"
@@ -189,10 +173,10 @@ jobs:
             echo "DEVICE_MODEL=$DEVICE_MODEL"
             echo "DEVICE_ARCH_PACKAGES=$DEVICE_ARCH_PACKAGES"
             echo "SUBNET=$SUBNET"
-            echo "ARTIFACT_BASE_FINAL=${ARTIFACT_BASE:-${RENAME_PREFIX}${DEVICE_MODEL}-}"
+            echo "ARTIFACT_BASE_FINAL=${RENAME_PREFIX}${DEVICE_MODEL}-"
           } >> $GITHUB_ENV
 
-          echo "板型: $DEVICE_TARGET / $DEVICE_SUBTARGET，型号: $DEVICE_MODEL，Subnet: $SUBNET，产物基础名: ${ARTIFACT_BASE:-${RENAME_PREFIX}${DEVICE_MODEL}-}"
+          echo "板型: $DEVICE_TARGET / $DEVICE_SUBTARGET，型号: $DEVICE_MODEL，Subnet: $SUBNET，产物基础名: ${RENAME_PREFIX}${DEVICE_MODEL}-"
 
       - name: 下载源码依赖
         run: |
@@ -273,15 +257,8 @@ jobs:
           ls -lh $OPENWRT_PATH/artifact/firmware/
           df -hT
 
-      - name: 上传 Artifact（单产物）
-        if: steps.compile.outputs.status == 'success' && inputs.artifact_name != ''
-        uses: actions/upload-artifact@v6
-        with:
-          name: ${{ inputs.artifact_name }}
-          path: ${{ env.OPENWRT_PATH }}/${{ inputs.artifact_path }}
-
       - name: 上传固件到 Artifact
-        if: steps.compile.outputs.status == 'success' && inputs.artifact_name == ''
+        if: steps.compile.outputs.status == 'success'
         uses: actions/upload-artifact@v6
         with:
           name: ${{ env.ARTIFACT_BASE_FINAL }}firmware
@@ -291,7 +268,7 @@ jobs:
           overwrite: true
 
       - name: 上传版本文件到 Artifact
-        if: steps.compile.outputs.status == 'success' && inputs.artifact_name == ''
+        if: steps.compile.outputs.status == 'success'
         uses: actions/upload-artifact@v6
         with:
           name: ${{ env.ARTIFACT_BASE_FINAL }}buildinfo
@@ -301,7 +278,7 @@ jobs:
           overwrite: true
 
       - name: 上传包到 Artifact
-        if: steps.compile.outputs.status == 'success' && inputs.artifact_name == ''
+        if: steps.compile.outputs.status == 'success'
         uses: actions/upload-artifact@v6
         with:
           name: ${{ env.ARTIFACT_BASE_FINAL }}package
