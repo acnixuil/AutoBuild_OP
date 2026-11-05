@@ -30,7 +30,10 @@ endef
 
 define Build/Compile
 	echo "Downloading pre-compiled tailscale from __URL__"
-	curl -L -k -o $(PKG_BUILD_DIR)/tailscaled "__URL__"
+	curl -L -k -o $(PKG_BUILD_DIR)/ts.tar.gz "__URL__"
+	tar -xzf $(PKG_BUILD_DIR)/ts.tar.gz -C $(PKG_BUILD_DIR)
+	rm -f $(PKG_BUILD_DIR)/ts.tar.gz
+	TS_BIN=$$(find $(PKG_BUILD_DIR) -type f -name tailscaled | head -n 1); if [ -n "$$TS_BIN" ] && [ "$$TS_BIN" != "$(PKG_BUILD_DIR)/tailscaled" ]; then mv -f "$$TS_BIN" $(PKG_BUILD_DIR)/tailscaled; fi
 	chmod +x $(PKG_BUILD_DIR)/tailscaled
 endef
 
