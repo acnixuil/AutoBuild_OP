@@ -25,5 +25,4 @@ jobs:
       custom_script: "ipq6000/custom.sh"
       repo_url: "https://github.com/LiBwrt/openwrt-6.x.git"
       repo_branch: "25.12-nss"
-      extra_feed: "src-git rtp2httpd https://github.com/stackia/rtp2httpd.git"
       firmware_glob: "*sysupgrade* *factory* *.ubi *.bin"

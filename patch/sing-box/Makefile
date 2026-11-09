@@ -1,10 +1,10 @@
-include \$(TOPDIR)/rules.mk
+include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sing-box
 PKG_VERSION:=1.0.0
-PKG_RELEASE:=\$(shell date +%Y%m%d)
+PKG_RELEASE:=$(shell date +%Y%m%d)
 
-include \$(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/package.mk
 
 define Package/sing-box
   SECTION:=net
@@ -18,22 +18,24 @@ define Package/sing-box/description
 endef
 
 define Build/Prepare
-	mkdir -p \$(PKG_BUILD_DIR)
+	mkdir -p $(PKG_BUILD_DIR)
 endef
 
 define Build/Compile
-	echo "Downloading sing-box for ${ARCH}..."
-	curl -L -k -o \$(PKG_BUILD_DIR)/sing-box.tar.gz "${SINGBOX_URL}"
-	tar -xzvf \$(PKG_BUILD_DIR)/sing-box.tar.gz -C \$(PKG_BUILD_DIR)
-	rm -f \$(PKG_BUILD_DIR)/sing-box.tar.gz
-	SB_BIN=\$\$(find \$(PKG_BUILD_DIR) -type f -iname "*sing*box*" | head -n 1); \\
-	[ -n "\$\$SB_BIN" ] && mv -f "\$\$SB_BIN" \$(PKG_BUILD_DIR)/sing-box || true
-	chmod +x \$(PKG_BUILD_DIR)/sing-box
+	echo "Downloading sing-box: __SINGBOX_URL__"
+	curl -fL -k -o $(PKG_BUILD_DIR)/sing-box.tar.gz "__SINGBOX_URL__"
+	mkdir -p $(PKG_BUILD_DIR)/extract
+	tar -xzf $(PKG_BUILD_DIR)/sing-box.tar.gz -C $(PKG_BUILD_DIR)/extract
+	rm -f $(PKG_BUILD_DIR)/sing-box.tar.gz
+	find $(PKG_BUILD_DIR)/extract -type f -name "sing-box" -exec cp -f {} $(PKG_BUILD_DIR)/sing-box \;
+	[ -s $(PKG_BUILD_DIR)/sing-box ] || find $(PKG_BUILD_DIR)/extract -type f -iname "*sing*box*" -exec cp -f {} $(PKG_BUILD_DIR)/sing-box \;
+	head -c 4 $(PKG_BUILD_DIR)/sing-box | od -An -tx1 | cut -c2-12 | grep -q "7f 45 4c 46"
+	chmod +x $(PKG_BUILD_DIR)/sing-box
 endef
 
 define Package/sing-box/install
-	\$(INSTALL_DIR) \$(1)/usr/bin
-	\$(INSTALL_BIN) \$(PKG_BUILD_DIR)/sing-box \$(1)/usr/bin/sing-box
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/sing-box $(1)/usr/bin/sing-box
 endef
 
-\$(eval \$(call BuildPackage,sing-box))
+$(eval $(call BuildPackage,sing-box))

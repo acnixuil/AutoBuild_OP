@@ -158,7 +158,9 @@ jobs:
         run: |
           cp $CONFIG_FILE $OPENWRT_PATH/.config
           cd $OPENWRT_PATH
-          make defconfig > /dev/null 2>&1
+          make defconfig
+
+          grep -qE '^CONFIG_PACKAGE_sing-box=' .config || echo "::warning::sing-box 未进入 .config，momo 会因此缺少依赖"
 
           DEVICE_TARGET=$(sed -n 's/^CONFIG_TARGET_BOARD="\([^"]*\)"/\1/p' .config)
           DEVICE_SUBTARGET=$(sed -n 's/^CONFIG_TARGET_SUBTARGET="\([^"]*\)"/\1/p' .config)

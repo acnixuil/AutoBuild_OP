@@ -60,6 +60,12 @@ git clone --depth=1 --single-branch -b main https://github.com/sirpdboy/luci-app
 git clone --depth=1 --single-branch -b master https://github.com/yhl452493373/luci-theme-argon luci-theme-argon
 git clone --depth=1 --single-branch -b master https://github.com/jerrykuku/luci-app-argon-config.git luci-app-argon-config
 
+log "添加 rtp2httpd"
+find ./feeds ../feeds -name '*rtp2httpd*' -exec rm -rf {} + 2>/dev/null || true
+git_sparse_clone main https://github.com/stackia/rtp2httpd.git openwrt-support
+mv -f openwrt-support/rtp2httpd/Makefile.versioned openwrt-support/rtp2httpd/Makefile
+mv -f openwrt-support/luci-app-rtp2httpd/Makefile.versioned openwrt-support/luci-app-rtp2httpd/Makefile
+
 if [ "$VERSION_NUM" -ge 2410 ]; then
     echo ">> 当前固件版本 ($DETECTED_VERSION) >= 24.10，拉取高版本专属插件..."
  

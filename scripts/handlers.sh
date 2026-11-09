@@ -197,6 +197,13 @@ handle_singbox() {
   local SINGBOX_URL="https://singbox-custom-dl.pages.dev/sing-box-reF1nd-stable-${ARCH}.tar.gz"
 
   cp -f "$PATCH_DIR/sing-box/Makefile" ./sing-box/Makefile
+
+  sed -i "s#__SINGBOX_URL__#${SINGBOX_URL}#g" ./sing-box/Makefile
+  if grep -q "__SINGBOX_URL__" ./sing-box/Makefile; then
+    echo "sing-box 下载地址注入失败"
+    return 1
+  fi
+
   return 0
 }
 
@@ -295,7 +302,7 @@ run_step "OpenClash"    check_openclash    handle_openclash    optional
 run_step "Nikki"        check_nikki        handle_nikki        optional
 run_step "Momo"         check_momo         handle_momo         optional
 run_step "AdGuardHome"  check_adguard      handle_adguard      optional
-run_step "sing-box"     check_singbox      handle_singbox      optional
+run_step "sing-box"     check_singbox      handle_singbox      required
 run_step "Tailscale"    check_tailscale    handle_tailscale    required
 run_step "Argon 样式"   check_argon        handle_argon        optional
 run_step "系统修补"     true               handle_syspatch     required
