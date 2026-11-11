@@ -56,7 +56,14 @@ git_sparse_clone() {
 
 git_sparse_clone dev https://github.com/vernesong/OpenClash luci-app-openclash
 git clone --depth=1 --single-branch -b master https://github.com/acnixuil/luci-app-adguardhome.git luci-app-adguardhome
-git clone --depth=1 --single-branch -b main https://github.com/sirpdboy/luci-app-lucky.git
+git clone --depth=1 --single-branch -b main https://github.com/gdy666/luci-app-lucky.git lucky-dist
+rm -rf ./lucky
+mv -f lucky-dist/lucky ./lucky
+rm -rf lucky-dist
+git clone --depth=1 --single-branch -b main https://github.com/sirpdboy/luci-app-lucky.git lucky-app
+rm -rf ./luci-app-lucky
+mv -f lucky-app/luci-app-lucky ./luci-app-lucky
+rm -rf lucky-app
 git clone --depth=1 --single-branch -b master https://github.com/yhl452493373/luci-theme-argon luci-theme-argon
 git clone --depth=1 --single-branch -b master https://github.com/jerrykuku/luci-app-argon-config.git luci-app-argon-config
 

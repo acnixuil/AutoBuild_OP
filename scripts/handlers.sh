@@ -263,6 +263,29 @@ handle_tailscale() {
   return 0
 }
 
+check_lucky() { [ -d "./lucky" ]; }
+
+handle_lucky() {
+  [ -f "$PATCH_DIR/lucky/Makefile" ] || return 1
+  [ -f "$PATCH_DIR/lucky/luckyuci" ] || return 1
+  cp -f "$PATCH_DIR/lucky/Makefile" ./lucky/Makefile || return 1
+  cp -f "$PATCH_DIR/lucky/luckyuci" ./lucky/files/luckyuci || return 1
+  sed -i 's#^DEFAULT_CONFIG_DIR=.*#DEFAULT_CONFIG_DIR=/etc/lucky#' ./lucky/files/lucky.init || return 1
+  grep -q 'LUCKY_PRODUCT:=xiaojv' ./lucky/Makefile || return 1
+  grep -q 'PKG_VERSION:=3.8.0' ./lucky/Makefile || return 1
+  grep -q "configdir '/etc/lucky'" ./lucky/files/luckyuci || return 1
+  grep -q '^DEFAULT_CONFIG_DIR=/etc/lucky$' ./lucky/files/lucky.init || return 1
+
+  local newest
+  newest=$(curl -fsSL https://release.66666.host/ 2>/dev/null | grep -oE 'v[0-9]+\.[0-9]+(\.[0-9]+)?' | sort -uV | tail -n 1)
+  newest="${newest#v}"
+  if [ -n "$newest" ] && [ "$newest" != "3.8.0" ] && [ "$(printf '%s\n%s\n' 3.8.0 "$newest" | sort -V | tail -n 1)" = "$newest" ]; then
+    echo "::warning::Lucky 发布站已有 ${newest}，本次仍编 3.8.0；升级只需改 patch/lucky/Makefile 的 PKG_VERSION 与两行 PKG_HASH"
+  fi
+
+  return 0
+}
+
 check_argon() { [ -d "./luci-theme-argon" ]; }
 handle_argon() {
   cp -f "$GITHUB_WORKSPACE/images/bg1.jpg" "luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg" 2>/dev/null || true
@@ -302,6 +325,7 @@ run_step "OpenClash"    check_openclash    handle_openclash    optional
 run_step "Nikki"        check_nikki        handle_nikki        optional
 run_step "Momo"         check_momo         handle_momo         optional
 run_step "AdGuardHome"  check_adguard      handle_adguard      optional
+run_step "Lucky 核心"   check_lucky        handle_lucky        required
 run_step "sing-box"     check_singbox      handle_singbox      required
 run_step "Tailscale"    check_tailscale    handle_tailscale    required
 run_step "Argon 样式"   check_argon        handle_argon        optional
