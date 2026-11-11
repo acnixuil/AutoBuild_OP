@@ -23,3 +23,8 @@ else
    sed -i "s/OPENWRT_RELEASE=.*/OPENWRT_RELEASE=\"OpenWrt R$(TZ=UTC-8 date +'%y.%-m.%-d') (By @COLDFISH build $(TZ=UTC-8 date '+%Y-%m-%d %H:%M'))\"/g"  base-files/files/usr/lib/os-release
    echo -e "\e[92m当前写入的编译时间: $(grep 'OPENWRT_RELEASE' base-files/files/usr/lib/os-release)\e[0m"
 fi
+
+# 把 2.5G 口并入 LAN、原 LAN1 作为 WAN（仅 RG-X60 New）
+case "$CONFIG_FILE" in
+  *ruijie-rg-x60-new*) bash "$GITHUB_WORKSPACE/patch/mt798x/wan-lan-swap.sh" ;;
+esac
