@@ -28,3 +28,8 @@ fi
 # case "$CONFIG_FILE" in
 #   *ruijie-rg-x60-new*) bash "$GITHUB_WORKSPACE/patch/mt798x/wan-lan-swap.sh" ;;
 # esac
+
+# 2026-11-12 已把原厂 MAC 写回 product_info，DTS 能直接读到，下面的兜底先停用
+# case "$CONFIG_FILE" in
+#   *ruijie-rg-x60-new*) bash "$GITHUB_WORKSPACE/patch/mt798x/mac-fix.sh" ;;
+# esac

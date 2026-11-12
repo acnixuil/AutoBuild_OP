@@ -1,5 +1,7 @@
-config lucky
-        option enabled '1'
-        option logger '1'
-        option watchdog '0'
-        option configdir '/etc/lucky'
+config lucky 'lucky'
+	option logger '0'
+	option port '16601'
+	option configdir '/etc/lucky'
+	option enabled '1'
+	option ssl '0'
+	option delay '60'
