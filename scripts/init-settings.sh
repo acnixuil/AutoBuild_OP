@@ -24,6 +24,9 @@ uci set momo.proxy.proxy_tcp_dport='21 22 80 110 143 194 443 465 853 993 995 808
 uci set momo.proxy.proxy_udp_dport='123 443 8443'
 uci commit momo
 
+uci set footstrap.settings.palette='forum'
+uci commit footstrap
+
 uci set argon.@global[0].mode='dark'
 uci set argon.@global[0].online_wallpaper='none'
 uci commit argon
